@@ -4,6 +4,7 @@ import React from 'react';
 import { Volume2, VolumeX, Sparkles, Pause, Trophy, Heart, Zap } from 'lucide-react';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { MAX_DAILY_LIVES } from '@/lib/game/livesManager';
+import { WalletButton } from './WalletButton';
 
 interface HUDProps {
   score: number;
@@ -62,7 +63,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* Center Top: Daily Lives Hearts */}
-      <div className="pointer-events-auto hidden sm:flex items-center gap-1.5 bg-white/85 backdrop-blur-md border-2 border-white/90 rounded-2xl px-3.5 py-2 shadow-md">
+      <div className="pointer-events-auto hidden md:flex items-center gap-1.5 bg-white/85 backdrop-blur-md border-2 border-white/90 rounded-2xl px-3.5 py-2 shadow-md">
         <span className="text-xs uppercase font-black tracking-wider text-rose-500 mr-1 flex items-center gap-1">
           <Heart className="w-3.5 h-3.5 fill-rose-500" /> Lives:
         </span>
@@ -81,11 +82,14 @@ export const HUD: React.FC<HUDProps> = ({
         })}
       </div>
 
-      {/* Right side: Highscore, Carrot Bank, Mobile Lives & Utility Actions */}
+      {/* Right side: Wallet, Highscore, Carrot Bank, Mobile Lives & Utility Actions */}
       <div className="flex flex-col items-end gap-2 pointer-events-auto">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* Web3 Wallet Connect Button */}
+          <WalletButton />
+
           {/* Mobile Hearts Pill */}
-          <div className="sm:hidden hud-pill bg-white/90 backdrop-blur-md border-2 border-white/80 rounded-2xl px-2.5 py-1.5 shadow-md flex items-center gap-1">
+          <div className="md:hidden hud-pill bg-white/90 backdrop-blur-md border-2 border-white/80 rounded-2xl px-2.5 py-1.5 shadow-md flex items-center gap-1">
             <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
             <span className="text-sm font-black text-rose-600">{lives}/{MAX_DAILY_LIVES}</span>
           </div>

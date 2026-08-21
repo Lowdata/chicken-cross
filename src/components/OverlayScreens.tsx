@@ -10,6 +10,7 @@ import {
   EXTRA_LIFE_CARROT_COST,
   getRemainingTimeUntilMidnight,
 } from '@/lib/game/livesManager';
+import { WalletButton } from './WalletButton';
 
 interface StartOverlayProps {
   onStart: () => void;
@@ -46,6 +47,11 @@ export const StartOverlay: React.FC<StartOverlayProps> = ({
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-gradient-to-b from-sky-400/40 via-sky-300/60 to-emerald-300/70 backdrop-blur-sm select-none animate-fade-in">
       <div className="bg-white/95 backdrop-blur-xl rounded-3xl border-4 border-amber-300 max-w-md w-full p-6 sm:p-8 shadow-2xl text-center relative overflow-hidden">
+        {/* Top Wallet Connect Option */}
+        <div className="absolute top-4 right-4 z-10 scale-90 sm:scale-100 origin-top-right">
+          <WalletButton compact />
+        </div>
+
         {/* Subtle decorative glow */}
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-amber-300/30 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-emerald-300/30 rounded-full blur-2xl pointer-events-none" />
