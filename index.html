@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bunny Hop</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; user-select:none; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#7ec8f0; font-family: 'Trebuchet MS', 'Segoe UI', Arial, sans-serif; }
+  #game-container { position:fixed; inset:0; }
+  canvas { display:block; touch-action:none; }
+
+  #hud { position:fixed; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:flex-start; padding:16px 18px; pointer-events:none; z-index:10; }
+  #score-box, #best-box {
+    background:rgba(255,255,255,0.85); border-radius:16px; padding:8px 18px;
+    font-weight:800; font-size:26px; color:#3a3a3a; text-shadow:1px 1px 0 #fff;
+    box-shadow:0 4px 0 rgba(0,0,0,0.12); border:3px solid #fff;
+  }
+  #best-box { font-size:16px; color:#777; padding:10px 16px; }
+  #best-box span { color:#f2994a; font-size:20px; font-weight:800; }
+
+  .overlay {
+    position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:linear-gradient(180deg, rgba(126,200,240,0.55), rgba(80,160,210,0.75));
+    z-index:20; text-align:center; padding:20px;
+  }
+  .hidden { display:none !important; }
+  .panel {
+    background:#fff; border-radius:28px; padding:34px 30px; box-shadow:0 12px 0 rgba(0,0,0,0.15);
+    border:5px solid #ffe07a; max-width:360px; width:100%;
+  }
+  .title {
+    font-size:44px; font-weight:900; color:#ff8fa3; text-shadow: 3px 3px 0 #ffe07a;
+    margin-bottom:6px; letter-spacing:1px;
+  }
+  .subtitle { color:#666; font-size:15px; margin-bottom:20px; font-weight:600; }
+  .big-score { font-size:52px; font-weight:900; color:#4caf7d; margin:6px 0 2px; }
+  .label { color:#999; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+  .best-line { margin-top:10px; margin-bottom:20px; color:#f2994a; font-weight:800; font-size:16px; }
+  button.play-btn {
+    background:linear-gradient(180deg,#7ee08a,#4caf7d); color:#fff; border:none; border-radius:18px;
+    padding:16px 38px; font-size:22px; font-weight:900; cursor:pointer; box-shadow:0 6px 0 #37855c;
+    letter-spacing:1px;
+  }
+  button.play-btn:active { transform:translateY(4px); box-shadow:0 2px 0 #37855c; }
+  .howto { margin-top:18px; font-size:12px; color:#aaa; line-height:1.6; }
+
+  #controls {
+    position:fixed; bottom:18px; left:0; right:0; display:flex; justify-content:center;
+    pointer-events:none; z-index:10;
+  }
+  #dpad {
+    display:grid; grid-template-columns:60px 60px 60px; grid-template-rows:60px 60px 60px;
+    gap:6px; pointer-events:auto;
+  }
+  .dbtn {
+    background:rgba(255,255,255,0.85); border:3px solid #fff; border-radius:16px;
+    display:flex; align-items:center; justify-content:center; font-size:26px; color:#555;
+    box-shadow:0 4px 0 rgba(0,0,0,0.15); cursor:pointer; font-weight:900;
+  }
+  .dbtn:active { transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,0.15); background:rgba(255,224,122,0.9); }
+  #btn-up { grid-column:2; grid-row:1; }
+  #btn-left { grid-column:1; grid-row:2; }
+  #btn-right { grid-column:3; grid-row:2; }
+  #btn-down { grid-column:2; grid-row:3; }
+
+  @media (min-width: 720px) {
+    #dpad { display:none; }
+  }
+</style>
+</head>
+<body>
+<div id="game-container"></div>
+
+<div id="hud">
+  <div id="score-box">0</div>
+  <div id="best-box">BEST<br><span id="best-val">0</span></div>
+</div>
+
+<div id="start-overlay" class="overlay">
+  <div class="panel">
+    <div class="title">🐰 Bunny Hop</div>
+    <div class="subtitle">Hop across roads &amp; rivers. Don't get squished!</div>
+    <button class="play-btn" id="start-btn">PLAY</button>
+    <div class="howto">Arrow keys / WASD / swipe / tap the arrows below<br>Ride the logs, avoid the cars &amp; water</div>
+  </div>
+</div>
+
+<div id="gameover-overlay" class="overlay hidden">
+  <div class="panel">
+    <div class="title" style="font-size:34px;">Squish!</div>
+    <div class="label">Score</div>
+    <div class="big-score" id="final-score">0</div>
+    <div class="best-line" id="new-best-line">Best: 0</div>
+    <button class="play-btn" id="retry-btn">PLAY AGAIN</button>
+  </div>
+</div>
+
+<div id="controls">
+  <div id="dpad">
+    <div class="dbtn" id="btn-up">▲</div>
+    <div class="dbtn" id="btn-left">◀</div>
+    <div class="dbtn" id="btn-right">▶</div>
+    <div class="dbtn" id="btn-down">▼</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ============================= CONSTANTS ============================= */
+const TILE = 1;              // world units per tile
+const HALF_WIDTH = 7;        // columns from -HALF_WIDTH..HALF_WIDTH
+const ROW_LOOKAHEAD = 26;    // rows generated ahead of player
+const ROW_KEEP_BEHIND = 6;   // rows kept behind player before cleanup
+const HOP_DURATION = 140;    // ms
+const CAM_OFFSET = new THREE.Vector3(-8.5, 11, 12.5);
+
+const COLORS = {
+  grass1: 0x8fd35a,
+  grass2: 0x7fc94e,
+  road: 0x4a4a52,
+  roadLine: 0xf5e04a,
+  river: 0x4fb8e8,
+  riverDeep: 0x3aa0d4,
+  sidewalk: 0xcfcfd4,
+  log: 0x9a6a3c,
+  logDark: 0x7d5230,
+  bunnyBody: 0xffffff,
+  bunnyEarIn: 0xff9fb3,
+  bunnyNose: 0xff6f91,
+  treeLeaf: 0x4fae4f,
+  treeTrunk: 0x8a5a34,
+  shadow: 0x000000,
+};
+
+const CAR_COLORS = [0xff6b6b, 0xffd93d, 0x6bcBef, 0x9b7bff, 0xff9f5b, 0x5be0a0, 0xff6fae];
+
+/* ============================= SCENE SETUP ============================= */
+const container = document.getElementById('game-container');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9fd8f5);
+scene.fog = new THREE.Fog(0x9fd8f5, 26, 46);
+
+const camera = new THREE.PerspectiveCamera(38, window.innerWidth/window.innerHeight, 0.1, 100);
+
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+container.appendChild(renderer.domElement);
+
+// Lights - simple cartoon toon-ish lighting, no shadow maps (keeps it light)
+const hemi = new THREE.HemisphereLight(0xffffff, 0x88aa66, 0.95);
+scene.add(hemi);
+const dir = new THREE.DirectionalLight(0xffffff, 0.85);
+dir.position.set(-6, 12, 8);
+scene.add(dir);
+const ambient = new THREE.AmbientLight(0xffffff, 0.25);
+scene.add(ambient);
+
+/* ============================= HELPERS ============================= */
+function box(w,h,d,color){
+  const geo = new THREE.BoxGeometry(w,h,d);
+  const mat = new THREE.MeshLambertMaterial({ color });
+  return new THREE.Mesh(geo, mat);
+}
+function cyl(r1,r2,h,color,seg){
+  const geo = new THREE.CylinderGeometry(r1,r2,h, seg||8);
+  const mat = new THREE.MeshLambertMaterial({ color });
+  return new THREE.Mesh(geo, mat);
+}
+function sphere(r,color,seg){
+  const geo = new THREE.SphereGeometry(r, seg||10, seg||8);
+  const mat = new THREE.MeshLambertMaterial({ color });
+  return new THREE.Mesh(geo, mat);
+}
+function cone(r,h,color,seg){
+  const geo = new THREE.ConeGeometry(r,h,seg||8);
+  const mat = new THREE.MeshLambertMaterial({ color });
+  return new THREE.Mesh(geo, mat);
+}
+function shadowBlob(scale){
+  const geo = new THREE.CircleGeometry(0.4*scale, 16);
+  const mat = new THREE.MeshBasicMaterial({ color: COLORS.shadow, transparent:true, opacity:0.22, depthWrite:false });
+  const m = new THREE.Mesh(geo, mat);
+  m.rotation.x = -Math.PI/2;
+  return m;
+}
+function rand(min,max){ return min + Math.random()*(max-min); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+/* ============================= BUNNY MODEL ============================= */
+function buildBunny(){
+  const g = new THREE.Group();
+
+  const body = box(0.52, 0.4, 0.62, COLORS.bunnyBody);
+  body.position.y = 0.32;
+  g.add(body);
+
+  const head = box(0.4, 0.36, 0.4, COLORS.bunnyBody);
+  head.position.set(0, 0.62, 0.2);
+  g.add(head);
+
+  // ears
+  const earL = box(0.12, 0.46, 0.1, COLORS.bunnyBody);
+  earL.position.set(-0.11, 0.98, 0.16);
+  earL.rotation.z = 0.12;
+  g.add(earL);
+  const earLin = box(0.06, 0.32, 0.02, COLORS.bunnyEarIn);
+  earLin.position.set(-0.11, 0.94, 0.21);
+  earLin.rotation.z = 0.12;
+  g.add(earLin);
+
+  const earR = box(0.12, 0.46, 0.1, COLORS.bunnyBody);
+  earR.position.set(0.11, 0.98, 0.16);
+  earR.rotation.z = -0.12;
+  g.add(earR);
+  const earRin = box(0.06, 0.32, 0.02, COLORS.bunnyEarIn);
+  earRin.position.set(0.11, 0.94, 0.21);
+  earRin.rotation.z = -0.12;
+  g.add(earRin);
+
+  // nose
+  const nose = sphere(0.06, COLORS.bunnyNose, 8);
+  nose.position.set(0, 0.58, 0.42);
+  g.add(nose);
+
+  // cheeks/eyes (simple black dots)
+  const eyeGeo = new THREE.SphereGeometry(0.045, 8, 6);
+  const eyeMat = new THREE.MeshBasicMaterial({ color:0x2a2a2a });
+  const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.13, 0.66, 0.4); g.add(eyeL);
+  const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.13, 0.66, 0.4); g.add(eyeR);
+
+  // tail
+  const tail = sphere(0.1, COLORS.bunnyBody, 8);
+  tail.position.set(0, 0.36, -0.32);
+  g.add(tail);
+
+  // feet
+  const feetMat = COLORS.bunnyBody;
+  const fl = box(0.16,0.14,0.22, feetMat); fl.position.set(-0.16,0.08,0.16); g.add(fl);
+  const fr = box(0.16,0.14,0.22, feetMat); fr.position.set(0.16,0.08,0.16); g.add(fr);
+
+  const shadow = shadowBlob(1);
+  shadow.position.y = 0.01;
+  g.add(shadow);
+
+  g.userData.parts = { body, head, earL, earR, tail, fl, fr, shadow };
+  return g;
+}
+
+const bunny = buildBunny();
+scene.add(bunny);
+
+/* ============================= WORLD / ROWS ============================= */
+// Row types: 'grass' (safe, may have trees), 'road' (cars), 'river' (logs)
+const rows = new Map(); // key: row index -> {type, group, data...}
+let farthestGenerated = -1;
+
+function terrainMeshForRow(type){
+  const w = HALF_WIDTH*2 + 1;
+  let color;
+  if (type === 'grass') color = Math.random() < 0.5 ? COLORS.grass1 : COLORS.grass2;
+  else if (type === 'road') color = COLORS.road;
+  else color = COLORS.river;
+  const m = box(w, 0.4, TILE*0.98, color);
+  m.position.y = -0.2;
+  return m;
+}
+
+function generateRow(index){
+  if (rows.has(index)) return;
+  const group = new THREE.Group();
+  group.position.z = -index * TILE;
+  scene.add(group);
+
+  let type;
+  if (index <= 2) {
+    type = 'grass';
+  } else {
+    const r = Math.random();
+    // difficulty scaling: more roads/rivers as index grows, capped
+    const riverChance = Math.min(0.32, 0.14 + index*0.002);
+    const roadChance = Math.min(0.42, 0.30 + index*0.002);
+    if (r < riverChance) type = 'river';
+    else if (r < riverChance + roadChance) type = 'road';
+    else type = 'grass';
+    // avoid 3 water/road rows in a row being too punishing: occasionally force grass
+    const prev = rows.get(index-1);
+    const prev2 = rows.get(index-2);
+    if (prev && prev2 && prev.type !== 'grass' && prev2.type !== 'grass') type = 'grass';
+  }
+
+  const terrain = terrainMeshForRow(type);
+  group.add(terrain);
+
+  const rowData = { type, group, index };
+
+  if (type === 'grass') {
+    rowData.blocked = new Set();
+    // maybe add trees as obstacles (not on center path spawn column necessarily)
+    const treeCount = Math.random() < 0.55 ? Math.floor(rand(1,4)) : 0;
+    const usedCols = new Set();
+    for (let i=0;i<treeCount;i++){
+      let c = Math.floor(rand(-HALF_WIDTH, HALF_WIDTH+1));
+      if (usedCols.has(c)) continue;
+      usedCols.add(c);
+      rowData.blocked.add(c);
+      const tree = new THREE.Group();
+      const trunk = cyl(0.08,0.1,0.32, COLORS.treeTrunk, 6);
+      trunk.position.y = 0.16;
+      tree.add(trunk);
+      const leaf = cone(0.34, 0.55, COLORS.treeLeaf, 8);
+      leaf.position.y = 0.58;
+      tree.add(leaf);
+      const leaf2 = sphere(0.22, COLORS.treeLeaf, 8);
+      leaf2.position.y = 0.42;
+      tree.add(leaf2);
+      const sh = shadowBlob(1.1); sh.position.set(0,0.01,0);
+      tree.add(sh);
+      tree.position.set(c*TILE, 0, 0);
+      group.add(tree);
+    }
+  } else if (type === 'road') {
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    const speed = rand(1.6, 2.6 + Math.min(index*0.01, 1.6)) * dir;
+    const gap = rand(3.2, 5.2);
+    rowData.dir = dir;
+    rowData.speed = speed;
+    rowData.cars = [];
+    let pos = rand(-HALF_WIDTH, HALF_WIDTH);
+    const count = Math.floor((HALF_WIDTH*2) / gap) + 1;
+    const color = pick(CAR_COLORS);
+    for (let i=0;i<count;i++){
+      const car = buildCar(color);
+      const x = ((pos + i*gap) % (HALF_WIDTH*2+2)) - HALF_WIDTH - 1;
+      car.position.set(x, 0.22, 0);
+      if (dir < 0) car.rotation.y = Math.PI;
+      group.add(car);
+      rowData.cars.push(car);
+    }
+    // add sidewalk strip look via slight color variance already handled
+  } else if (type === 'river') {
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    const speed = rand(1.0, 1.8 + Math.min(index*0.008, 1.0)) * dir;
+    const gap = rand(2.4, 3.6);
+    rowData.dir = dir;
+    rowData.speed = speed;
+    rowData.logs = [];
+    let pos = rand(-HALF_WIDTH, HALF_WIDTH);
+    const count = Math.floor((HALF_WIDTH*2) / gap) + 2;
+    const logLen = rand(1.6, 2.6);
+    for (let i=0;i<count;i++){
+      const log = buildLog(logLen);
+      const x = ((pos + i*gap) % (HALF_WIDTH*2+4)) - HALF_WIDTH - 2;
+      log.position.set(x, 0.02, 0);
+      group.add(log);
+      rowData.logs.push({ mesh: log, halfLen: logLen/2 });
+    }
+  }
+
+  rows.set(index, rowData);
+  farthestGenerated = Math.max(farthestGenerated, index);
+}
+
+function buildCar(color){
+  const g = new THREE.Group();
+  const body = box(0.9, 0.32, 0.6, color);
+  body.position.y = 0.2;
+  g.add(body);
+  const cabin = box(0.5, 0.24, 0.56, 0xffffff);
+  cabin.position.set(-0.05, 0.42, 0);
+  g.add(cabin);
+  const wheelMat = 0x2a2a2a;
+  const wheelGeo = () => cyl(0.12,0.12,0.12, wheelMat, 10);
+  const positions = [[-0.28,0.05,0.32],[0.28,0.05,0.32],[-0.28,0.05,-0.32],[0.28,0.05,-0.32]];
+  positions.forEach(p=>{
+    const wheel = wheelGeo();
+    wheel.rotation.x = Math.PI/2;
+    wheel.position.set(p[0],p[1],p[2]);
+    g.add(wheel);
+  });
+  const sh = shadowBlob(1.4); sh.position.y=0.01; g.add(sh);
+  return g;
+}
+
+function buildLog(len){
+  const g = new THREE.Group();
+  const main = cyl(0.22,0.22,len, COLORS.log, 10);
+  main.rotation.z = Math.PI/2;
+  g.add(main);
+  const endCapGeo = new THREE.CircleGeometry(0.22, 10);
+  const endMat = new THREE.MeshLambertMaterial({ color: COLORS.logDark });
+  const capL = new THREE.Mesh(endCapGeo, endMat);
+  capL.rotation.y = Math.PI/2; capL.position.x = -len/2;
+  g.add(capL);
+  const capR = new THREE.Mesh(endCapGeo, endMat);
+  capR.rotation.y = -Math.PI/2; capR.position.x = len/2;
+  g.add(capR);
+  return g;
+}
+
+function removeRow(index){
+  const rd = rows.get(index);
+  if (!rd) return;
+  scene.remove(rd.group);
+  rd.group.traverse(o=>{
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) o.material.dispose();
+  });
+  rows.delete(index);
+}
+
+/* ============================= GAME STATE ============================= */
+let player = { col: 0, row: 0, x: 0, z: 0, facing: 0 }; // facing: 0=up(-z/forward),1=right,2=down,3=left
+let hopping = false;
+let hopStart = 0;
+let hopFrom = {x:0,z:0}, hopTo = {x:0,z:0};
+let alive = true;
+let ended = false;
+let started = false;
+let score = 0;
+let best = parseInt(localStorage.getItem('bunnyhop_best')||'0', 10);
+document.getElementById('best-val').textContent = best;
+
+let riderLogOffset = null; // if standing on a log, track offset
+
+function resetGame(){
+  // clear rows
+  Array.from(rows.keys()).forEach(removeRow);
+  farthestGenerated = -1;
+  player = { col:0, row:0, x:0, z:0, facing:0 };
+  bunny.position.set(0,0,0);
+  bunny.rotation.y = 0;
+  hopping = false;
+  alive = true;
+  ended = false;
+  score = 0;
+  riderLogOffset = null;
+  updateScoreUI();
+  for (let i=-2;i<=ROW_LOOKAHEAD;i++) generateRow(i);
+}
+
+function updateScoreUI(){
+  document.getElementById('score-box').textContent = score;
+}
+
+/* ============================= INPUT ============================= */
+function attemptMove(dc, dr, facing){
+  if (!started || !alive || hopping) return;
+  const baseCol = Math.round(player.x / TILE);
+  const newCol = baseCol + dc;
+  const newRow = player.row + dr;
+  if (newCol < -HALF_WIDTH || newCol > HALF_WIDTH) return; // can't leave road bounds
+  if (newRow < 0 && dr < 0) return; // don't go behind start... actually allow small back but not negative
+  // check destination blocked by tree
+  const destRowData = rows.get(newRow);
+  if (destRowData && destRowData.type === 'grass' && destRowData.blocked && destRowData.blocked.has(newCol)) {
+    return; // blocked by tree
+  }
+
+  hopFrom = { x: player.x, z: player.z };
+  hopTo = { x: newCol*TILE, z: -newRow*TILE };
+  player.col = newCol;
+  player.row = newRow;
+  player.facing = facing;
+  hopping = true;
+  hopStart = performance.now();
+
+  if (newRow > score) {
+    score = newRow;
+    updateScoreUI();
+  }
+
+  // generate further rows as needed
+  while (farthestGenerated < newRow + ROW_LOOKAHEAD) {
+    generateRow(farthestGenerated+1);
+  }
+  // cleanup old rows behind
+  const cleanupBefore = newRow - ROW_KEEP_BEHIND;
+  Array.from(rows.keys()).forEach(k=>{ if (k < cleanupBefore) removeRow(k); });
+}
+
+const FACE = { up: [0,-1,0], right: [1,0,Math.PI/2], down: [0,1,Math.PI], left: [-1,0,-Math.PI/2] };
+function moveUp(){ attemptMove(0,1, 0); }
+function moveDown(){ attemptMove(0,-1, Math.PI); }
+function moveLeft(){ attemptMove(-1,0, -Math.PI/2); }
+function moveRight(){ attemptMove(1,0, Math.PI/2); }
+
+window.addEventListener('keydown', (e)=>{
+  switch(e.key){
+    case 'ArrowUp': case 'w': case 'W': moveUp(); break;
+    case 'ArrowDown': case 's': case 'S': moveDown(); break;
+    case 'ArrowLeft': case 'a': case 'A': moveLeft(); break;
+    case 'ArrowRight': case 'd': case 'D': moveRight(); break;
+  }
+});
+
+document.getElementById('btn-up').addEventListener('click', moveUp);
+document.getElementById('btn-down').addEventListener('click', moveDown);
+document.getElementById('btn-left').addEventListener('click', moveLeft);
+document.getElementById('btn-right').addEventListener('click', moveRight);
+['btn-up','btn-down','btn-left','btn-right'].forEach(id=>{
+  document.getElementById(id).addEventListener('touchstart', (e)=>{ e.preventDefault(); });
+});
+
+// swipe
+let touchStartX=0, touchStartY=0, touchActive=false;
+renderer.domElement.addEventListener('touchstart', (e)=>{
+  if (e.touches.length!==1) return;
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  touchActive = true;
+}, {passive:true});
+renderer.domElement.addEventListener('touchend', (e)=>{
+  if (!touchActive) return;
+  touchActive = false;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  const absX = Math.abs(dx), absY = Math.abs(dy);
+  const THRESH = 24;
+  if (Math.max(absX,absY) < THRESH) return;
+  if (absX > absY) { dx > 0 ? moveRight() : moveLeft(); }
+  else { dy > 0 ? moveDown() : moveUp(); }
+}, {passive:true});
+
+/* ============================= UI WIRING ============================= */
+const startOverlay = document.getElementById('start-overlay');
+const gameoverOverlay = document.getElementById('gameover-overlay');
+
+document.getElementById('start-btn').addEventListener('click', ()=>{
+  startOverlay.classList.add('hidden');
+  resetGame();
+  started = true;
+});
+document.getElementById('retry-btn').addEventListener('click', ()=>{
+  gameoverOverlay.classList.add('hidden');
+  resetGame();
+  started = true;
+});
+
+// pre-generate a few rows so scene isn't empty behind start screen
+for (let i=-2;i<=ROW_LOOKAHEAD;i++) generateRow(i);
+
+function die(){
+  if (ended) return;
+  ended = true;
+  alive = false;
+  started = false;
+  if (score > best) {
+    best = score;
+    localStorage.setItem('bunnyhop_best', String(best));
+  }
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('new-best-line').textContent = 'Best: ' + best;
+  document.getElementById('best-val').textContent = best;
+  setTimeout(()=>{ gameoverOverlay.classList.remove('hidden'); }, 550);
+}
+
+/* ============================= ANIMATION LOOP ============================= */
+let lastT = performance.now();
+
+function updateHop(now){
+  if (!hopping) return;
+  const t = Math.min(1, (now - hopStart) / HOP_DURATION);
+  const ease = t; // linear horizontal
+  const x = hopFrom.x + (hopTo.x - hopFrom.x) * ease;
+  const z = hopFrom.z + (hopTo.z - hopFrom.z) * ease;
+  const hopHeight = Math.sin(Math.PI * t) * 0.42;
+  player.x = x; player.z = z;
+  bunny.position.set(x, hopHeight, z);
+  // face direction smoothly
+  const targetRot = player.facing;
+  let curRot = bunny.rotation.y;
+  let diff = targetRot - curRot;
+  while (diff > Math.PI) diff -= Math.PI*2;
+  while (diff < -Math.PI) diff += Math.PI*2;
+  bunny.rotation.y = curRot + diff * 0.6;
+  // squash/stretch on ears/body via scale
+  const squash = 1 - Math.sin(Math.PI*t)*0.12;
+  bunny.scale.set(1/squash, squash, 1/squash);
+
+  if (t >= 1) {
+    hopping = false;
+    bunny.position.set(x, 0, z);
+    bunny.scale.set(1,1,1);
+    bunny.rotation.y = targetRot;
+    checkLanding();
+  }
+}
+
+function checkLanding(){
+  const rd = rows.get(player.row);
+  if (!rd) return;
+  if (rd.type === 'river') {
+    // must be on a log
+    const onLog = rd.logs.some(l => Math.abs(l.mesh.position.x - player.col*TILE) < l.halfLen - 0.1);
+    if (!onLog) {
+      alive = false;
+      // splash animation
+      startSplash();
+    }
+  } else if (rd.type === 'road') {
+    // collision handled continuously in update loop too, this is just landing safety
+    checkCarCollision(rd);
+  }
+}
+
+let splashing = false, splashStart = 0;
+function startSplash(){
+  splashing = true;
+  splashStart = performance.now();
+}
+
+function checkCarCollision(rd){
+  const px = player.col * TILE;
+  for (const car of rd.cars) {
+    const dx = Math.abs(car.position.x - px);
+    if (dx < 0.55) {
+      alive = false;
+      die();
+      return;
+    }
+  }
+}
+
+function updateRows(dt){
+  rows.forEach(rd=>{
+    if (rd.type === 'road') {
+      rd.cars.forEach(car=>{
+        car.position.x += rd.speed * dt;
+        const bound = HALF_WIDTH + 1.4;
+        if (rd.speed > 0 && car.position.x > bound) car.position.x = -bound;
+        if (rd.speed < 0 && car.position.x < -bound) car.position.x = bound;
+      });
+      if (rd.index === player.row && !hopping && alive) {
+        checkCarCollision(rd);
+      }
+    } else if (rd.type === 'river') {
+      rd.logs.forEach(l=>{
+        l.mesh.position.x += rd.speed * dt;
+        const bound = HALF_WIDTH + 2.4;
+        if (rd.speed > 0 && l.mesh.position.x > bound) l.mesh.position.x = -bound;
+        if (rd.speed < 0 && l.mesh.position.x < -bound) l.mesh.position.x = bound;
+      });
+      if (rd.index === player.row && !hopping && alive) {
+        const onLog = rd.logs.find(l => Math.abs(l.mesh.position.x - player.col*TILE) < l.halfLen - 0.1);
+        if (onLog) {
+          player.x += rd.speed * dt;
+          bunny.position.x = player.x;
+          player.col = player.x / TILE;
+          if (player.col < -HALF_WIDTH-1 || player.col > HALF_WIDTH+1) {
+            alive = false; startSplash();
+          }
+        } else {
+          alive = false; startSplash();
+        }
+      }
+    }
+  });
+}
+
+function updateCamera(){
+  const targetX = bunny.position.x * 0.35; // partial follow horizontally
+  const targetZ = player.z;
+  const camTargetPos = new THREE.Vector3(targetX + CAM_OFFSET.x*0.55, CAM_OFFSET.y, targetZ + CAM_OFFSET.z);
+  camera.position.lerp(camTargetPos, 0.12);
+  camera.lookAt(targetX, 0.3, targetZ - 1.5);
+}
+
+let earFlapT = 0;
+function idleAnim(dt){
+  earFlapT += dt;
+  if (!hopping) {
+    const bob = Math.sin(earFlapT*3) * 0.02;
+    bunny.position.y = Math.max(0, bob) + (splashing?0:0);
+  }
+}
+
+function updateSplash(now){
+  if (!splashing) return;
+  const t = (now - splashStart) / 500;
+  if (t < 1) {
+    bunny.position.y = -t*0.6;
+    bunny.scale.set(1 - t*0.3, 1 - t*0.5, 1 - t*0.3);
+    bunny.rotation.x = t * 0.5;
+  } else {
+    splashing = false;
+    die();
+  }
+}
+
+function animate(now){
+  requestAnimationFrame(animate);
+  const dt = Math.min(0.05, (now - lastT)/1000);
+  lastT = now;
+
+  if (started && alive) {
+    updateHop(now);
+    if (!hopping) idleAnim(dt);
+    updateRows(dt);
+  } else if (splashing) {
+    updateSplash(now);
+    updateRows(dt*0.3);
+  } else {
+    updateRows(dt*0.6); // keep ambient motion on menus
+  }
+
+  updateCamera();
+  renderer.render(scene, camera);
+}
+camera.position.copy(CAM_OFFSET);
+camera.lookAt(0,0.3,-1.5);
+requestAnimationFrame(animate);
+
+/* ============================= RESIZE ============================= */
+window.addEventListener('resize', ()=>{
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+})();
+</script>
+</body>
+</html>

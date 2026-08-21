@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;900&family=Outfit:wght@400;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+:root {
+  --font-fredoka: 'Fredoka', cursive, sans-serif;
+  --font-outfit: 'Outfit', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-outfit), system-ui, -apple-system, sans-serif;
+  background-color: #a0e7e5;
+  touch-action: manipulation;
+}
+
+h1, h2, h3, .font-fredoka {
+  font-family: var(--font-fredoka), system-ui, sans-serif;
+}
+
+/* Animations */
+@keyframes floatPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0px) scale(0.6);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -24px) scale(1.15);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -48px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -64px) scale(0.8);
+  }
+}
+
+@keyframes bounceSubtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-float-pop {
+  animation: floatPop 0.9s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+.animate-bounce-subtle {
+  animation: bounceSubtle 2s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* Custom Scrollbar for wardrobe modal */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* D-Pad Buttons Tactile Press */
+.dpad-btn {
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+  touch-action: none;
+}
+.dpad-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* HUD elements */
+.hud-pill {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
