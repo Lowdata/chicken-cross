@@ -102,6 +102,7 @@ export const GameContainer: React.FC = () => {
         sitekey: siteKey,
         theme: 'light',
         size: 'invisible',
+        action: 'start_game',
         callback: (token: string) => {
           setCfTurnstileToken(token);
         },

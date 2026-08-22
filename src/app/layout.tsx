@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import '@rainbow-me/rainbowkit/styles.css';
 import './globals.css';
 import { Web3Provider } from '@/components/Web3Provider';
@@ -48,29 +48,10 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Google Analytics 4 */}
-        {GA_ID && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script id="ga4-init" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${GA_ID}', {
-                  page_path: window.location.pathname,
-                  anonymize_ip: true,
-                });
-              `}
-            </Script>
-          </>
-        )}
       </head>
       <body className="antialiased">
         <Web3Provider>{children}</Web3Provider>
+        {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
       </body>
     </html>
   );

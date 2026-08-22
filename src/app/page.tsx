@@ -121,9 +121,9 @@ const CARROT_POSITIONS = [
    Reward Tier Badge
 ────────────────────────────────────────────── */
 const TierBadge = ({
-  icon, label, description, color
-}: { icon: string; label: string; description: string; color: string }) => (
-  <div className={`rounded-2xl p-4 border ${color} text-left transition-transform hover:scale-[1.02]`}>
+  icon, label, description, highlightClass
+}: { icon: string; label: string; description: string; highlightClass?: string }) => (
+  <div className={`card-surface text-left ${highlightClass || ''}`}>
     <div className="text-2xl mb-2">{icon}</div>
     <div className="font-black text-sm mb-1">{label}</div>
     <div className="text-[11px] opacity-75 leading-relaxed">{description}</div>
@@ -213,7 +213,7 @@ export default function LandingPage() {
             <a href="#rewards" className="text-white/60 hover:text-white text-xs font-semibold transition-colors hidden sm:block">Rewards</a>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-400 text-white text-xs font-black transition-all active:scale-95 shadow-lg shadow-orange-900/40"
+              className="btn-primary py-2 px-4 text-xs sm:text-sm"
             >
               Play Now 🎮
             </button>
@@ -263,15 +263,14 @@ export default function LandingPage() {
           </p>
 
           {/* CTA */}
-          <div className="fade-up fade-up-3 flex flex-col sm:flex-row gap-3 items-center">
+          <div className="fade-up fade-up-3 flex flex-col sm:flex-row gap-3 items-center mt-6">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="pixel-pulse relative px-8 py-4 rounded-2xl text-white font-black text-base sm:text-lg tracking-wide transition-all hover:scale-105 active:scale-95 shadow-2xl"
-              style={{ background: 'linear-gradient(135deg, #f97316 0%, #fbbf24 100%)', boxShadow: '0 8px 40px rgba(249,115,22,0.45)' }}
+              className="btn-primary pixel-pulse text-base sm:text-lg"
             >
               🎮 Play Now &amp; Earn Carrots
             </button>
-            <a href="#how" className="px-6 py-3.5 rounded-2xl border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-semibold text-sm transition-all">
+            <a href="#how" className="btn-secondary text-sm">
               Learn More ↓
             </a>
           </div>
@@ -298,7 +297,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── HOW IT WORKS ── */}
-        <section id="how" className="py-20 px-5 sm:px-10 max-w-5xl mx-auto">
+        <section id="how" className="py-20 px-5 sm:px-10 max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <span className="inline-block px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-black uppercase tracking-widest mb-4">How It Works</span>
             <h2 className="text-3xl sm:text-4xl font-black text-white" style={{ fontFamily: 'var(--font-fredoka, Fredoka, sans-serif)' }}>
@@ -320,9 +319,8 @@ export default function LandingPage() {
                 desc: 'Connect your wallet, complete tasks, and claim your Web3 rewards. Refer friends for bonus carrots and exclusive perks.'
               },
             ].map((s) => (
-              <div key={s.step} className="relative rounded-3xl p-6 border border-white/10 hover:border-orange-500/30 transition-all group"
-                style={{ background: 'rgba(255,255,255,0.03)' }}>
-                <div className="absolute -top-3 left-5 px-2 py-0.5 rounded-md bg-orange-500 text-white text-[10px] font-black tracking-widest">{s.step}</div>
+              <div key={s.step} className="card-surface relative group">
+                <div className="absolute -top-3 left-5 px-2 py-0.5 rounded-md bg-brand-orange text-white text-[10px] font-black tracking-widest">{s.step}</div>
                 <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{s.emoji}</div>
                 <h3 className="text-white font-black text-lg mb-2">{s.title}</h3>
                 <p className="text-white/50 text-sm leading-relaxed">{s.desc}</p>
@@ -332,7 +330,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── REWARDS ── */}
-        <section id="rewards" className="py-20 px-5 sm:px-10 max-w-5xl mx-auto">
+        <section id="rewards" className="py-20 px-5 sm:px-10 max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <span className="inline-block px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-black uppercase tracking-widest mb-4">Reward Tiers</span>
             <h2 className="text-3xl sm:text-4xl font-black text-white" style={{ fontFamily: 'var(--font-fredoka, Fredoka, sans-serif)' }}>
@@ -344,25 +342,25 @@ export default function LandingPage() {
             <TierBadge
               icon="🟤" label="1–4 Carrots: No Reward"
               description="You're warming up! Keep hopping and grab more carrots next run."
-              color="bg-slate-800/50 border-slate-700/50 text-slate-300"
+              highlightClass="opacity-75"
             />
             <TierBadge
               icon="⚡" label="5–8 Carrots: FCFS Tier"
               description="First-Come-First-Served! Submit your score early to claim from the reward pool."
-              color="bg-orange-900/30 border-orange-700/50 text-orange-200"
+              highlightClass="border-brand-orange/50 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
             />
             <TierBadge
               icon="💎" label="9 Carrots: GUARANTEED"
               description="The 9th carrot has 1-in-100 spawn odds. Hit it and a guaranteed reward is yours — no racing needed."
-              color="bg-violet-900/30 border-violet-700/50 text-violet-200"
+              highlightClass="border-brand-purple/50 shadow-[0_0_20px_rgba(139,92,246,0.15)] bg-brand-purple/5 hover:bg-brand-purple/10"
             />
           </div>
         </section>
 
         {/* ── TASKS & EARN MORE ── */}
-        <section className="py-20 px-5 sm:px-10 max-w-5xl mx-auto">
-          <div className="rounded-3xl border border-white/10 p-8 sm:p-10" style={{ background: 'linear-gradient(135deg, rgba(249,115,22,0.08) 0%, rgba(124,58,237,0.08) 100%)' }}>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <section className="py-20 px-5 sm:px-10 max-w-7xl mx-auto">
+          <div className="card-surface p-8 sm:p-10 border-brand-purple/20 bg-gradient-to-br from-brand-orange/5 to-brand-purple/10">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 md:gap-12">
               <div>
                 <span className="text-3xl mb-3 block">🎁</span>
                 <h2 className="text-2xl sm:text-3xl font-black text-white mb-2" style={{ fontFamily: 'var(--font-fredoka, Fredoka, sans-serif)' }}>
@@ -403,8 +401,7 @@ export default function LandingPage() {
           </p>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="mx-auto px-10 py-4 rounded-2xl text-white font-black text-lg tracking-wide transition-all hover:scale-105 active:scale-95 shadow-2xl"
-            style={{ background: 'linear-gradient(135deg, #f97316 0%, #fbbf24 100%)', boxShadow: '0 8px 50px rgba(249,115,22,0.5)' }}
+            className="btn-primary mx-auto text-lg"
           >
             🐰 Start Playing Now
           </button>

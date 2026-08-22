@@ -40,7 +40,6 @@ export async function ensureIndexes() {
     // ── ip_rate_limits ──
     const ipLimits = db.collection('ip_rate_limits');
     await ipLimits.createIndex({ ip: 1 }, { unique: true, background: true });
-    await ipLimits.createIndex({ windowStart: 1 }, { background: true });
     // TTL: auto-delete IP records after 2 hours (rate limit window)
     await ipLimits.createIndex(
       { windowStart: 1 },

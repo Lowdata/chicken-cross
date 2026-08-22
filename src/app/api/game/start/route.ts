@@ -15,17 +15,47 @@ async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
   const secret = process.env.CF_TURNSTILE_SECRET_KEY;
   if (!secret || secret.startsWith('1x0000000000000000000000')) return true;
   if (token === 'dev-bypass') return true;
+
+  const expectedAction = 'start_game';
+  const expectedHostnames = new Set(
+    (process.env.TURNSTILE_HOSTNAMES ?? 'localhost,127.0.0.1')
+      .split(',')
+      .map((h) => h.trim())
+      .filter(Boolean)
+  );
+
+  if (
+    typeof token !== 'string' ||
+    token.length === 0 ||
+    token.length > 2048 ||
+    expectedHostnames.size === 0
+  ) {
+    return false;
+  }
+
+  let result;
   try {
-    const res = await fetch(CF_TURNSTILE_VERIFY_URL, {
+    const r = await fetch(CF_TURNSTILE_VERIFY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      signal: AbortSignal.timeout(10_000),
       body: new URLSearchParams({ secret, response: token, remoteip: ip }),
     });
-    const data = await res.json() as { success: boolean };
-    return data.success === true;
+    if (!r.ok) throw new Error(`siteverify ${r.status}`);
+    result = await r.json();
   } catch {
-    return true; // fail-open
+    return false;
   }
+
+  if (
+    !result.success ||
+    result.action !== expectedAction ||
+    !expectedHostnames.has(result.hostname)
+  ) {
+    return false;
+  }
+  
+  return true;
 }
 
 export async function POST(req: NextRequest) {

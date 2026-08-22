@@ -45,9 +45,9 @@ export async function POST(req: NextRequest) {
     const elapsedMs = Date.now() - payload.startTime;
     const { sessionId, maxCarrots } = payload;
 
-    // Anti-bot: minimum run duration check
-    if (elapsedMs < MIN_RUN_DURATION_MS) {
-      return NextResponse.json({ error: 'Run duration too short (bot suspected)' }, { status: 400 });
+    // Anti-bot: minimum run duration check for successful runs
+    if (carrots > 0 && elapsedMs < MIN_RUN_DURATION_MS) {
+      return NextResponse.json({ error: 'Run duration too short for carrots (bot suspected)' }, { status: 400 });
     }
 
     // Anti-bot: speed check — minimum time per carrot

@@ -50,30 +50,30 @@ export const HUD: React.FC<HUDProps> = ({
       {/* Left side: Score, Live Carrots, and Speed Multiplier */}
       <div className="flex flex-col gap-1.5 sm:gap-2 items-start pointer-events-auto">
         {/* Score pill */}
-        <div className="hud-pill bg-white/90 backdrop-blur-md border-2 border-white/80 rounded-2xl px-3 sm:px-4 py-1.5 sm:py-2 shadow-lg flex items-center gap-2 transition-transform hover:scale-105">
-          <span className="text-[10px] sm:text-xs uppercase font-extrabold tracking-wider text-slate-400">SCORE</span>
-          <span className="text-xl sm:text-3xl font-black text-slate-800 tracking-tight leading-none">
+        <div className="hud-pill bg-brand-surface/80 backdrop-blur-md border border-white/10 rounded-2xl px-3 sm:px-4 py-1.5 sm:py-2 shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex items-center gap-2 transition-transform hover:scale-105">
+          <span className="text-[10px] sm:text-xs uppercase font-extrabold tracking-wider text-white/50">SCORE</span>
+          <span className="text-xl sm:text-3xl font-black text-white tracking-tight leading-none">
             {score}
           </span>
         </div>
 
         {/* Live session carrots collected - shows X/maxCarrots */}
-        <div className="hud-pill bg-gradient-to-r from-orange-500/90 to-amber-500/90 text-white backdrop-blur-md border-2 border-orange-200/50 rounded-2xl px-2.5 sm:px-3.5 py-1 sm:py-1.5 shadow-md flex items-center gap-1.5 sm:gap-2 animate-bounce-subtle">
+        <div className="hud-pill bg-brand-orange/20 text-brand-orange backdrop-blur-md border border-brand-orange/40 rounded-2xl px-2.5 sm:px-3.5 py-1 sm:py-1.5 shadow-[0_0_15px_rgba(245,158,11,0.2)] flex items-center gap-1.5 sm:gap-2 animate-bounce-subtle">
           <span className="text-base sm:text-lg">🥕</span>
-          <span className="font-extrabold text-sm sm:text-xl tracking-wide">{sessionCarrots}/{maxCarrots}</span>
+          <span className="font-extrabold text-sm sm:text-xl tracking-wide text-white">{sessionCarrots}/{maxCarrots}</span>
         </div>
 
         {/* Speed / Difficulty boost badge (shows when multiplier > 1.0) */}
         {gameStatus === 'playing' && difficultyMultiplier > 1.0 && (
-          <div className="hud-pill bg-gradient-to-r from-amber-500/90 to-rose-500/90 text-white backdrop-blur-md border-2 border-amber-200/60 rounded-xl px-2 sm:px-2.5 py-0.5 sm:py-1 shadow-md flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-black tracking-wide animate-pulse">
-            <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-white" />
-            <span>{difficultyMultiplier}x Spd</span>
+          <div className="hud-pill bg-brand-purple/20 text-brand-purple backdrop-blur-md border border-brand-purple/40 rounded-xl px-2 sm:px-2.5 py-0.5 sm:py-1 shadow-[0_0_15px_rgba(139,92,246,0.2)] flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-black tracking-wide animate-pulse">
+            <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-brand-purple" />
+            <span className="text-white">{difficultyMultiplier}x Spd</span>
           </div>
         )}
       </div>
 
       {/* Center Top: Daily Lives Hearts (Visible on tablet & desktop) */}
-      <div className="pointer-events-auto hidden md:flex items-center gap-1.5 bg-white/85 backdrop-blur-md border-2 border-white/90 rounded-2xl px-3.5 py-2 shadow-md">
+      <div className="pointer-events-auto hidden md:flex items-center gap-1.5 bg-brand-surface/80 backdrop-blur-md border border-white/10 rounded-2xl px-3.5 py-2 shadow-md">
         <span className="text-xs uppercase font-black tracking-wider text-rose-500 mr-1 flex items-center gap-1">
           <Heart className="w-3.5 h-3.5 fill-rose-500" /> Lives:
         </span>
@@ -99,9 +99,9 @@ export const HUD: React.FC<HUDProps> = ({
           <WalletButton />
 
           {/* Mobile Hearts Pill */}
-          <div className="md:hidden hud-pill bg-white/90 backdrop-blur-md border-2 border-white/80 rounded-2xl px-2 py-1 shadow-md flex items-center gap-1">
+          <div className="md:hidden hud-pill bg-brand-surface/80 backdrop-blur-md border border-white/10 rounded-2xl px-2 py-1 shadow-md flex items-center gap-1">
             <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
-            <span className="text-xs font-black text-rose-600">{lives}/{MAX_DAILY_LIVES}</span>
+            <span className="text-xs font-black text-rose-400">{lives}/{MAX_DAILY_LIVES}</span>
           </div>
 
           {/* Total Carrot Bank */}
@@ -112,11 +112,11 @@ export const HUD: React.FC<HUDProps> = ({
               onOpenWardrobe();
             }}
             title="Carrot Bank & Skins"
-            className="hud-pill bg-amber-50/90 hover:bg-amber-100/95 backdrop-blur-md border-2 border-amber-300/80 rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-md flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all active:scale-95 group"
+            className="hud-pill bg-brand-surface/80 hover:bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-md flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all active:scale-95 group"
           >
             <span className="text-sm sm:text-base group-hover:rotate-12 transition-transform">🥕</span>
-            <span className="text-xs sm:text-base font-black text-amber-900">{totalCarrots}</span>
-            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-500 ml-0.5" />
+            <span className="text-xs sm:text-base font-black text-white">{totalCarrots}</span>
+            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-brand-orange ml-0.5" />
           </button>
 
           {/* Tasks & Rewards Button */}
@@ -129,7 +129,7 @@ export const HUD: React.FC<HUDProps> = ({
               }
             }}
             title="Tasks & Rewards"
-            className="hud-pill bg-gradient-to-r from-amber-400/90 to-orange-400/90 hover:from-amber-300 hover:to-orange-300 text-white backdrop-blur-md border-2 border-amber-300/60 rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-md flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all active:scale-95 group"
+            className="hud-pill bg-brand-purple hover:bg-brand-purple-dark text-white rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-[0_2px_0_var(--color-brand-purple-dark)] active:translate-y-0.5 active:shadow-none flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all group border-none"
           >
             <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" />
             <span className="text-[10px] sm:text-xs font-black hidden xs:inline">EARN</span>
@@ -146,11 +146,11 @@ export const HUD: React.FC<HUDProps> = ({
                 triggerHaptic('tap');
                 onToggleControlMode();
               }}
-              className="hud-btn h-8 sm:h-10 px-2.5 rounded-2xl bg-white/85 hover:bg-white backdrop-blur-md border-2 border-white/90 shadow-md flex items-center justify-center gap-1 text-slate-700 hover:text-slate-900 active:scale-90 transition-all cursor-pointer text-[10px] font-black uppercase tracking-wider"
+              className="hud-btn h-8 sm:h-10 px-2.5 rounded-2xl bg-brand-surface/80 hover:bg-white/10 backdrop-blur-md border border-white/10 shadow-md flex items-center justify-center gap-1 text-white/80 hover:text-white active:scale-90 transition-all cursor-pointer text-[10px] font-black uppercase tracking-wider"
               title={`Current Controls: ${controlMode.toUpperCase()}`}
               aria-label="Toggle Control Mode"
             >
-              <Gamepad2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600" />
+              <Gamepad2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-purple" />
               <span className="hidden xs:inline">{controlMode}</span>
             </button>
           )}
@@ -162,14 +162,14 @@ export const HUD: React.FC<HUDProps> = ({
               triggerHaptic('tap');
               onToggleSound();
             }}
-            className="hud-btn w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-white/85 hover:bg-white backdrop-blur-md border-2 border-white/90 shadow-md flex items-center justify-center text-slate-700 hover:text-slate-900 active:scale-90 transition-all cursor-pointer"
+            className="hud-btn w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-brand-surface/80 hover:bg-white/10 backdrop-blur-md border border-white/10 shadow-md flex items-center justify-center text-white/80 hover:text-white active:scale-90 transition-all cursor-pointer"
             title={soundEnabled ? 'Mute Audio' : 'Unmute Audio'}
             aria-label="Toggle Sound"
           >
             {soundEnabled ? (
-              <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
+              <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-brand-orange" />
             ) : (
-              <VolumeX className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+              <VolumeX className="w-4 h-4 sm:w-5 sm:h-5 text-white/40" />
             )}
           </button>
 
@@ -181,11 +181,11 @@ export const HUD: React.FC<HUDProps> = ({
                 triggerHaptic('tap');
                 onPause();
               }}
-              className="hud-btn w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-white/85 hover:bg-white backdrop-blur-md border-2 border-white/90 shadow-md flex items-center justify-center text-slate-700 hover:text-slate-900 active:scale-90 transition-all cursor-pointer"
+              className="hud-btn w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-brand-surface/80 hover:bg-white/10 backdrop-blur-md border border-white/10 shadow-md flex items-center justify-center text-white/80 hover:text-white active:scale-90 transition-all cursor-pointer"
               title="Pause Game"
               aria-label="Pause Game"
             >
-              <Pause className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" />
+              <Pause className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
             </button>
           )}
         </div>

@@ -48,40 +48,40 @@ export const StartOverlay: React.FC<StartOverlayProps> = ({
   const canAffordLife = totalCarrots >= EXTRA_LIFE_CARROT_COST;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-4 bg-gradient-to-b from-sky-400/40 via-sky-300/60 to-emerald-300/70 backdrop-blur-sm select-none animate-fade-in">
-      <div className="bg-white/95 backdrop-blur-xl rounded-3xl border-4 border-amber-300 max-w-md w-full p-4 sm:p-8 shadow-2xl text-center relative overflow-hidden max-h-[92dvh] overflow-y-auto">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm select-none animate-fade-in">
+      <div className="modal-container w-full max-w-md text-center relative overflow-hidden max-h-[92dvh] overflow-y-auto !p-4 sm:!p-8">
         {/* Top Wallet Connect Option */}
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 scale-90 sm:scale-100 origin-top-right">
           <WalletButton compact />
         </div>
 
         {/* Subtle decorative glow */}
-        <div className="absolute -top-12 -right-12 w-32 h-32 bg-amber-300/30 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-emerald-300/30 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -top-12 -right-12 w-32 h-32 bg-brand-orange/20 rounded-full blur-[40px] pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-brand-purple/20 rounded-full blur-[40px] pointer-events-none" />
 
         {/* Title */}
-        <div className="inline-block px-3 py-0.5 sm:px-4 sm:py-1 bg-amber-100 border border-amber-300 rounded-full text-amber-900 text-[10px] sm:text-xs font-black uppercase tracking-wider mb-1 sm:mb-2">
+        <div className="inline-block px-3 py-1 bg-brand-orange/10 border border-brand-orange/30 rounded-full text-brand-orange text-[10px] sm:text-xs font-black uppercase tracking-wider mb-2 sm:mb-3">
           Carrot Bonanza Edition
         </div>
-        <h1 className="text-3xl sm:text-5xl font-black text-pink-500 drop-shadow-[0_3px_0_rgba(255,224,122,1)] sm:drop-shadow-[0_4px_0_rgba(255,224,122,1)] tracking-tight">
+        <h1 className="text-3xl sm:text-5xl font-black text-white drop-shadow-md tracking-tight mb-2">
           🐰 Bunny Hop
         </h1>
-        <p className="text-slate-600 text-xs sm:text-sm font-semibold mt-1 sm:mt-2 mb-2 sm:mb-3 leading-relaxed">
+        <p className="text-white/60 text-xs sm:text-sm font-semibold mt-1 sm:mt-2 mb-3 leading-relaxed">
           Hop across busy highways &amp; log-filled rivers. Harvest delicious carrots along the way!
         </p>
 
         {/* Daily Lives Display Box */}
-        <div className="my-2 sm:my-3 p-2.5 sm:p-3 bg-rose-50/90 border-2 border-rose-200 rounded-2xl flex items-center justify-between shadow-sm">
+        <div className="my-3 p-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2">
-            <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-rose-500 text-rose-500 animate-pulse" />
+            <Heart className="w-5 h-5 fill-rose-500 text-rose-500 animate-pulse" />
             <div className="text-left">
-              <div className="text-[9px] sm:text-[10px] uppercase font-black text-rose-400">Daily Free Lives</div>
-              <div className="text-xs sm:text-sm font-black text-rose-700">
+              <div className="text-[10px] uppercase font-black text-rose-400">Daily Free Lives</div>
+              <div className="text-xs sm:text-sm font-black text-rose-400">
                 {lives} / {MAX_DAILY_LIVES} Remaining Today
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-slate-500">
+          <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold text-rose-400/80 bg-rose-500/10 px-2 py-1 rounded-lg">
             <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             <span>{timeLeft}</span>
           </div>
@@ -89,11 +89,11 @@ export const StartOverlay: React.FC<StartOverlayProps> = ({
 
         {/* Out of Lives Warning & Refill Action */}
         {isOutOfLives ? (
-          <div className="my-2 sm:my-3 p-3 sm:p-4 bg-amber-50 border-2 border-amber-300 rounded-2xl text-left space-y-2">
-            <div className="font-extrabold text-amber-900 text-xs sm:text-sm flex items-center gap-1.5">
+          <div className="my-3 p-4 bg-brand-orange/10 border border-brand-orange/30 rounded-2xl text-left space-y-2">
+            <div className="font-extrabold text-brand-orange text-xs sm:text-sm flex items-center gap-1.5">
               <span>⚠️</span> Out of daily free lives!
             </div>
-            <p className="text-[11px] sm:text-xs text-amber-800 leading-relaxed">
+            <p className="text-[11px] sm:text-xs text-white/70 leading-relaxed">
               Your 5 daily lives reset at midnight, or you can exchange {EXTRA_LIFE_CARROT_COST} 🥕 Carrots for +1 Extra Life now!
             </p>
             <button
@@ -103,10 +103,10 @@ export const StartOverlay: React.FC<StartOverlayProps> = ({
                 onBuyLife();
               }}
               disabled={!canAffordLife}
-              className={`w-full mt-1.5 sm:mt-2 py-2 sm:py-2.5 flex items-center justify-center gap-2 font-black text-xs uppercase tracking-wider rounded-xl transition-all ${
+              className={`w-full mt-2 py-2.5 flex items-center justify-center gap-2 font-black text-xs uppercase tracking-wider rounded-xl transition-all ${
                 canAffordLife
-                  ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md active:scale-95 cursor-pointer'
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  ? 'bg-brand-orange hover:bg-brand-orange-dark text-white cursor-pointer active:scale-95'
+                  : 'bg-white/10 text-white/30 cursor-not-allowed'
               }`}
             >
               <PlusCircle className="w-4 h-4" />
@@ -121,16 +121,16 @@ export const StartOverlay: React.FC<StartOverlayProps> = ({
               triggerHaptic('tap');
               onOpenWardrobe();
             }}
-            className="mx-auto my-2 sm:my-3 p-2 sm:p-2.5 bg-slate-50 hover:bg-slate-100 border-2 border-slate-200 rounded-2xl flex items-center justify-between cursor-pointer transition-all active:scale-95 group max-w-xs"
+            className="mx-auto my-3 p-2.5 bg-brand-surface hover:bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between cursor-pointer transition-all active:scale-95 group max-w-xs"
           >
             <div className="flex items-center gap-2">
               <span className="text-xl sm:text-2xl group-hover:scale-110 transition-transform">🐰</span>
               <div className="text-left">
-                <div className="text-[9px] sm:text-[10px] uppercase font-black text-slate-400">Equipped Skin</div>
-                <div className="text-xs sm:text-sm font-extrabold text-slate-800">{currentSkinObj.name}</div>
+                <div className="text-[9px] sm:text-[10px] uppercase font-black text-white/50">Equipped Skin</div>
+                <div className="text-xs sm:text-sm font-extrabold text-white">{currentSkinObj.name}</div>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-[11px] sm:text-xs font-black text-amber-600 bg-amber-100 px-2 sm:px-2.5 py-1 rounded-xl">
+            <div className="flex items-center gap-1 text-[11px] sm:text-xs font-black text-brand-orange bg-brand-orange/10 px-2.5 py-1 rounded-xl">
               <span>{totalCarrots} 🥕</span>
               <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             </div>
@@ -147,33 +147,33 @@ export const StartOverlay: React.FC<StartOverlayProps> = ({
             }
           }}
           disabled={isOutOfLives}
-          className={`w-full mt-2 sm:mt-3 py-3.5 sm:py-4 font-black text-xl sm:text-2xl tracking-wider uppercase rounded-2xl transition-all flex items-center justify-center gap-2 group min-h-[52px] ${
+          className={`w-full mt-4 py-4 font-black text-xl sm:text-2xl tracking-wider uppercase flex items-center justify-center gap-3 group min-h-[64px] ${
             !isOutOfLives
-              ? 'bg-gradient-to-b from-emerald-400 to-emerald-600 hover:from-emerald-300 hover:to-emerald-500 text-white shadow-[0_5px_0_#2b7a4b] active:translate-y-1 active:shadow-[0_1px_0_#2b7a4b] cursor-pointer'
-              : 'bg-slate-200 text-slate-400 shadow-none cursor-not-allowed'
+              ? 'btn-primary bg-brand-purple hover:bg-brand-purple-dark text-white shadow-[0_6px_0_var(--color-brand-purple-dark)] active:translate-y-1 active:shadow-[0_2px_0_var(--color-brand-purple-dark)]'
+              : 'bg-white/10 text-white/40 cursor-not-allowed rounded-2xl'
           }`}
         >
-          <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-current group-hover:scale-110 transition-transform" />
+          <Play className="w-6 h-6 sm:w-7 sm:h-7 fill-current group-hover:scale-110 transition-transform" />
           <span>{isOutOfLives ? 'NO LIVES LEFT' : 'HOP IN & PLAY'}</span>
         </button>
 
         {/* Quick Instructions tailored for mobile or desktop */}
-        <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-slate-100 text-[11px] sm:text-xs text-slate-400 font-medium space-y-1">
+        <div className="mt-5 pt-4 border-t border-white/10 text-[11px] sm:text-xs text-white/50 font-medium space-y-2">
           {isTouchDevice ? (
-            <div className="flex items-center justify-center gap-1.5 text-slate-600 font-bold">
-              <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+            <div className="flex items-center justify-center gap-2 text-white/70 font-bold">
+              <Smartphone className="w-4 h-4 text-brand-purple" />
               <span>Swipe Screen or Tap D-Pad Buttons to Hop</span>
             </div>
           ) : (
-            <div className="flex items-center justify-center gap-2 text-slate-600 font-bold flex-wrap">
-              <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">WASD</span>
-              <span>or</span>
-              <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">ARROWS</span>
-              <span>or</span>
-              <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">CLICK</span>
+            <div className="flex items-center justify-center gap-2 text-white/70 font-bold flex-wrap">
+              <span className="bg-brand-surface px-2 py-1 rounded border border-white/10">WASD</span>
+              <span className="text-white/40">or</span>
+              <span className="bg-brand-surface px-2 py-1 rounded border border-white/10">ARROWS</span>
+              <span className="text-white/40">or</span>
+              <span className="bg-brand-surface px-2 py-1 rounded border border-white/10">CLICK</span>
             </div>
           )}
-          <p className="text-[10px] sm:text-[11px] text-slate-400">⚡ Speed increases every 5s • Snag 🥕 carrots for extra lives &amp; skins!</p>
+          <p className="text-[10px] sm:text-[11px] text-brand-orange/80">⚡ Speed increases every 5s • Snag 🥕 carrots for extra lives &amp; skins!</p>
         </div>
       </div>
     </div>
@@ -227,102 +227,102 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
   }, [isNewHigh]);
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm select-none animate-fade-in">
-      <div className="bg-white/95 backdrop-blur-xl rounded-3xl border-4 border-amber-300 max-w-md w-full p-4 sm:p-8 shadow-2xl text-center relative overflow-hidden max-h-[92dvh] overflow-y-auto">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md select-none animate-fade-in">
+      <div className="modal-container w-full max-w-md text-center relative overflow-hidden max-h-[92dvh] overflow-y-auto !p-5 sm:!p-8">
         {/* Title */}
-        <div className="text-2xl sm:text-4xl font-black text-rose-500 tracking-tight">
+        <div className="text-3xl sm:text-4xl font-black text-rose-400 tracking-tight">
           Oof! Squished!
         </div>
-        <p className="text-[11px] sm:text-sm text-slate-500 font-medium mt-0.5 mb-2 sm:mb-3">
+        <p className="text-[11px] sm:text-sm text-white/60 font-medium mt-1 mb-3">
           Here is your run harvest breakdown:
         </p>
 
         {/* Score Breakdown Card */}
-        <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-3 sm:p-4 my-1.5 sm:my-2 text-left space-y-1.5 sm:space-y-2">
+        <div className="bg-brand-surface border border-white/10 rounded-2xl p-4 my-2 text-left space-y-3">
           {/* Distance */}
-          <div className="flex justify-between items-center text-xs sm:text-sm font-extrabold text-slate-700">
-            <span className="flex items-center gap-1.5">
+          <div className="flex justify-between items-center text-xs sm:text-sm font-extrabold text-white/80">
+            <span className="flex items-center gap-2">
               <span>🛣️</span> Distance Reached
             </span>
-            <span className="text-sm sm:text-base text-slate-900">{score} pts</span>
+            <span className="text-sm sm:text-base text-white">{score} pts</span>
           </div>
 
           {/* Carrots */}
-          <div className="flex justify-between items-center text-xs sm:text-sm font-extrabold text-slate-700">
-            <span className="flex items-center gap-1.5">
+          <div className="flex justify-between items-center text-xs sm:text-sm font-extrabold text-white/80">
+            <span className="flex items-center gap-2">
               <span>🥕</span> Carrots Gathered ({sessionCarrots}/{maxCarrots})
             </span>
-            <span className="text-sm sm:text-base text-orange-600">+{carrotBonusPoints} pts</span>
+            <span className="text-sm sm:text-base text-brand-orange">+{carrotBonusPoints} pts</span>
           </div>
 
           {/* Reward Tier Banner */}
           {rewardTier === 'guaranteed' && (
-            <div className="flex items-center gap-2 bg-violet-100 border border-violet-300 rounded-xl px-2.5 py-2 mt-1">
-              <span className="text-base">💎</span>
+            <div className="flex items-center gap-3 bg-brand-purple/10 border border-brand-purple/30 rounded-xl px-3 py-2 mt-2">
+              <span className="text-lg">💎</span>
               <div>
-                <div className="text-[11px] font-black text-violet-800">1/100 RARE — GUARANTEED REWARD UNLOCKED!</div>
-                <div className="text-[10px] text-violet-600">9 Carrots collected. You qualify for a guaranteed reward!</div>
+                <div className="text-[11px] font-black text-brand-purple">1/100 RARE — GUARANTEED REWARD UNLOCKED!</div>
+                <div className="text-[10px] text-brand-purple/70 mt-0.5">9 Carrots collected. You qualify for a guaranteed reward!</div>
               </div>
             </div>
           )}
           {rewardTier === 'fcfs' && (
-            <div className="flex items-center gap-2 bg-orange-100 border border-orange-300 rounded-xl px-2.5 py-2 mt-1">
-              <span className="text-base">⚡</span>
+            <div className="flex items-center gap-3 bg-brand-orange/10 border border-brand-orange/30 rounded-xl px-3 py-2 mt-2">
+              <span className="text-lg">⚡</span>
               <div>
-                <div className="text-[11px] font-black text-orange-800">🎉 FCFS Reward Tier Qualified!</div>
-                <div className="text-[10px] text-orange-600">5-8 Carrots collected. First-Come-First-Served reward slot!</div>
+                <div className="text-[11px] font-black text-brand-orange">🎉 FCFS Reward Tier Qualified!</div>
+                <div className="text-[10px] text-brand-orange/70 mt-0.5">5-8 Carrots collected. First-Come-First-Served reward slot!</div>
               </div>
             </div>
           )}
           {rewardTier === 'none' && (
-            <div className="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-2 mt-1">
-              <span className="text-base">🟤</span>
+            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2 mt-2">
+              <span className="text-lg">🟤</span>
               <div>
-                <div className="text-[11px] font-bold text-slate-600">1-4 Carrots: No Reward Tier</div>
-                <div className="text-[10px] text-slate-400">Collect 5+ carrots in a run to earn rewards!</div>
+                <div className="text-[11px] font-bold text-white/50">1-4 Carrots: No Reward Tier</div>
+                <div className="text-[10px] text-white/40 mt-0.5">Collect 5+ carrots in a run to earn rewards!</div>
               </div>
             </div>
           )}
 
           {/* Divider */}
-          <div className="border-t border-slate-200 pt-1.5 sm:pt-2 flex justify-between items-end">
-            <span className="text-[10px] sm:text-xs uppercase font-black tracking-wider text-slate-400">
+          <div className="border-t border-white/10 pt-3 mt-1 flex justify-between items-end">
+            <span className="text-[10px] sm:text-xs uppercase font-black tracking-wider text-white/50">
               Total Run Score
             </span>
-            <span className="text-2xl sm:text-3xl font-black text-emerald-600 leading-none">
+            <span className="text-2xl sm:text-3xl font-black text-emerald-400 leading-none">
               {totalRunScore}
             </span>
           </div>
         </div>
 
         {/* Lives Remaining Bar */}
-        <div className="my-1.5 sm:my-2 px-3 py-1.5 sm:py-2 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-between text-[11px] sm:text-xs font-bold text-rose-800">
-          <div className="flex items-center gap-1.5">
-            <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-rose-500 text-rose-500" />
+        <div className="my-2 px-4 py-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center justify-between text-[11px] sm:text-xs font-bold text-rose-400">
+          <div className="flex items-center gap-2">
+            <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
             <span>Daily Lives: {lives}/{MAX_DAILY_LIVES}</span>
           </div>
           {isOutOfLives && (
-            <span className="text-[9px] sm:text-[10px] font-black uppercase text-rose-600 bg-rose-200 px-1.5 py-0.5 rounded">
+            <span className="text-[10px] font-black uppercase text-rose-200 bg-rose-500 px-2 py-1 rounded">
               0 Left
             </span>
           )}
         </div>
 
         {/* High Score Banner */}
-        <div className="my-1.5 sm:my-2 flex items-center justify-between px-3 py-1 sm:py-1.5 bg-amber-50 border border-amber-200 rounded-xl">
-          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-amber-800">
-            <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
+        <div className="my-2 flex items-center justify-between px-4 py-2 bg-brand-orange/10 border border-brand-orange/20 rounded-xl">
+          <div className="flex items-center gap-2 text-[11px] sm:text-xs font-bold text-brand-orange">
+            <Trophy className="w-4 h-4 text-brand-orange" />
             <span>High Score: {highScore}</span>
           </div>
           {isNewHigh && (
-            <span className="text-[10px] sm:text-[11px] font-black text-white bg-amber-500 px-2 py-0.5 rounded-md uppercase tracking-wider animate-pulse">
+            <span className="text-[10px] font-black text-brand-dark bg-brand-orange px-2 py-1 rounded-md uppercase tracking-wider animate-pulse">
               🎉 New Record!
             </span>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col gap-2 mt-3 sm:mt-4">
+        <div className="flex flex-col gap-3 mt-5">
           {!isOutOfLives ? (
             <button
               onClick={() => {
@@ -330,10 +330,10 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
                 triggerHaptic('hop');
                 onRetry();
               }}
-              className="w-full py-3 sm:py-3.5 bg-gradient-to-b from-emerald-400 to-emerald-600 hover:from-emerald-300 hover:to-emerald-500 text-white font-black text-lg sm:text-xl tracking-wider uppercase rounded-2xl shadow-[0_5px_0_#2b7a4b] active:translate-y-1 active:shadow-[0_1px_0_#2b7a4b] transition-all flex items-center justify-center gap-2 cursor-pointer min-h-[48px]"
+              className="btn-primary w-full py-4 text-xl tracking-wider min-h-[56px]"
             >
               <RotateCcw className="w-5 h-5 stroke-[2.5]" />
-              <span>HOP AGAIN ({lives} ❤️ Left)</span>
+              <span>HOP AGAIN ({lives} ❤️)</span>
             </button>
           ) : (
             <button
@@ -343,14 +343,14 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
                 onBuyLife();
               }}
               disabled={!canAffordLife}
-              className={`w-full py-3 sm:py-3.5 font-black text-base sm:text-lg tracking-wider uppercase rounded-2xl transition-all flex items-center justify-center gap-2 min-h-[48px] ${
+              className={`w-full py-4 font-black text-lg tracking-wider uppercase rounded-2xl transition-all flex items-center justify-center gap-2 min-h-[56px] ${
                 canAffordLife
-                  ? 'bg-gradient-to-b from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-white shadow-[0_5px_0_#b45309] active:translate-y-1 active:shadow-[0_1px_0_#b45309] cursor-pointer'
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                  ? 'bg-brand-orange hover:bg-brand-orange-dark text-white shadow-[0_5px_0_var(--color-brand-orange-dark)] active:translate-y-1 active:shadow-[0_1px_0_var(--color-brand-orange-dark)] cursor-pointer'
+                  : 'bg-white/10 text-white/30 cursor-not-allowed shadow-none'
               }`}
             >
-              <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>Refill +1 Life ({EXTRA_LIFE_CARROT_COST} 🥕)</span>
+              <PlusCircle className="w-5 h-5" />
+              <span>Refill Life ({EXTRA_LIFE_CARROT_COST} 🥕)</span>
             </button>
           )}
 
@@ -360,10 +360,10 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
               triggerHaptic('tap');
               onOpenWardrobe();
             }}
-            className="w-full py-2 sm:py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs sm:text-sm rounded-xl border border-slate-300 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 min-h-[40px]"
+            className="w-full py-3 bg-brand-surface hover:bg-white/5 text-white/80 font-extrabold text-sm rounded-xl border border-white/10 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
           >
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            <span>Bunny Wardrobe ({totalCarrots} 🥕 Bank)</span>
+            <Sparkles className="w-4 h-4 text-brand-orange" />
+            <span>Bunny Wardrobe ({totalCarrots} 🥕)</span>
           </button>
         </div>
       </div>
@@ -383,19 +383,19 @@ export const PauseOverlay: React.FC<PauseOverlayProps> = ({
   onOpenWardrobe,
 }) => {
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm select-none animate-fade-in">
-      <div className="bg-white/95 backdrop-blur-xl rounded-3xl border-4 border-amber-300 max-w-sm w-full p-5 sm:p-6 text-center shadow-2xl max-h-[90dvh] overflow-y-auto">
-        <h2 className="text-2xl sm:text-3xl font-black text-slate-800 mb-1">Game Paused</h2>
-        <p className="text-xs text-slate-500 font-medium mb-4 sm:mb-6">Take a breather, hopper!</p>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md select-none animate-fade-in">
+      <div className="modal-container w-full max-w-sm text-center">
+        <h2 className="text-3xl font-black text-white mb-2">Game Paused</h2>
+        <p className="text-sm text-white/50 font-medium mb-6">Take a breather, hopper!</p>
 
-        <div className="space-y-2.5 sm:space-y-3">
+        <div className="space-y-3">
           <button
             onClick={() => {
               soundEngine.playClick();
               triggerHaptic('tap');
               onResume();
             }}
-            className="w-full py-3 sm:py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base sm:text-lg rounded-2xl shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[48px]"
+            className="btn-primary w-full py-3 text-lg min-h-[52px]"
           >
             <Play className="w-5 h-5 fill-white" />
             <span>Resume</span>
@@ -407,9 +407,9 @@ export const PauseOverlay: React.FC<PauseOverlayProps> = ({
               triggerHaptic('tap');
               onRestart();
             }}
-            className="w-full py-2.5 sm:py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs sm:text-sm rounded-2xl border border-slate-200 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 min-h-[44px]"
+            className="w-full py-3 bg-brand-surface hover:bg-white/5 text-white/90 font-extrabold text-sm rounded-xl border border-white/10 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 min-h-[52px]"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-4 h-4 text-white/50" />
             <span>Restart Run</span>
           </button>
 
@@ -419,9 +419,9 @@ export const PauseOverlay: React.FC<PauseOverlayProps> = ({
               triggerHaptic('tap');
               onOpenWardrobe();
             }}
-            className="w-full py-2.5 sm:py-3 bg-amber-50 hover:bg-amber-100 text-amber-900 font-extrabold text-xs sm:text-sm rounded-2xl border border-amber-200 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 min-h-[44px]"
+            className="w-full py-3 bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange font-extrabold text-sm rounded-xl border border-brand-orange/30 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 min-h-[52px]"
           >
-            <Sparkles className="w-4 h-4 text-amber-500" />
+            <Sparkles className="w-4 h-4" />
             <span>Bunny Wardrobe</span>
           </button>
         </div>

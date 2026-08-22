@@ -34,8 +34,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check if task already completed
-    if (user.completedTasks?.includes(task)) {
+    // Check if task already completed in the tasks collection
+    const existingTask = await db.collection('tasks').findOne({ walletAddress: wallet, taskId: task });
+    if (existingTask) {
       return NextResponse.json({ error: 'Task already completed', alreadyDone: true });
     }
 
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Build update
+    // Build user update
     const update: Record<string, unknown> = {
       updatedAt: new Date(),
     };
@@ -82,6 +83,13 @@ export async function POST(req: NextRequest) {
     if (task === 'refer_friend' && referralCode) {
       update.referredBy = referralCode.toUpperCase();
     }
+
+    // Insert into tasks collection
+    await db.collection('tasks').insertOne({
+      walletAddress: wallet,
+      taskId: task,
+      completedAt: new Date(),
+    });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (db.collection('users').updateOne(
