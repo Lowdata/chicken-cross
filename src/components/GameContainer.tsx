@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useAccount } from 'wagmi';
 import { ThreeGameEngine } from '@/lib/game/threeGameEngine';
 import { soundEngine } from '@/lib/game/soundEngine';
+import { triggerHaptic } from '@/lib/game/haptics';
 import { GameStatus, CarrotFloatingText } from '@/lib/game/types';
 import {
   loadDailyLives,
@@ -11,8 +13,9 @@ import {
   EXTRA_LIFE_CARROT_COST,
 } from '@/lib/game/livesManager';
 import { HUD } from './HUD';
-import { TouchControls } from './TouchControls';
+import { TouchControls, TouchControlMode, DPadPosition } from './TouchControls';
 import { SkinWardrobeModal } from './SkinWardrobeModal';
+import { LeaderboardModal } from './LeaderboardModal';
 import { StartOverlay, GameOverOverlay, PauseOverlay } from './OverlayScreens';
 import { FloatingCarrotFx } from './FloatingCarrotFx';
 
@@ -22,11 +25,14 @@ const STORAGE_KEYS = {
   UNLOCKED_SKINS: 'bunnyhop_unlocked_skins',
   SELECTED_SKIN: 'bunnyhop_selected_skin',
   SOUND_ENABLED: 'bunnyhop_sound_enabled',
+  CONTROL_MODE: 'bunnyhop_control_mode',
+  DPAD_POS: 'bunnyhop_dpad_pos',
 };
 
 export const GameContainer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<ThreeGameEngine | null>(null);
+  const { address } = useAccount();
 
   // Game UI State
   const [gameStatus, setGameStatus] = useState<GameStatus>('idle');
@@ -52,10 +58,15 @@ export const GameContainer: React.FC = () => {
   const [selectedSkin, setSelectedSkin] = useState<string>('classic');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
+  // Mobile Touch Control Preferences
+  const [controlMode, setControlMode] = useState<TouchControlMode>('dpad');
+  const [dpadPosition, setDpadPosition] = useState<DPadPosition>('center');
+
   // Modals
   const [isWardrobeOpen, setIsWardrobeOpen] = useState<boolean>(false);
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState<boolean>(false);
 
-  // Load persistent stats and daily lives on mount
+  // Load persistent stats, preferences, and daily lives on mount
   useEffect(() => {
     try {
       const savedHigh = parseInt(localStorage.getItem(STORAGE_KEYS.HIGH_SCORE) || '0', 10);
@@ -63,12 +74,16 @@ export const GameContainer: React.FC = () => {
       const savedSkins = JSON.parse(localStorage.getItem(STORAGE_KEYS.UNLOCKED_SKINS) || '["classic"]');
       const savedSelected = localStorage.getItem(STORAGE_KEYS.SELECTED_SKIN) || 'classic';
       const savedSound = localStorage.getItem(STORAGE_KEYS.SOUND_ENABLED) !== 'false';
+      const savedMode = (localStorage.getItem(STORAGE_KEYS.CONTROL_MODE) as TouchControlMode) || 'dpad';
+      const savedPos = (localStorage.getItem(STORAGE_KEYS.DPAD_POS) as DPadPosition) || 'center';
 
       setHighScore(savedHigh);
       setTotalCarrots(savedCarrots);
       setUnlockedSkins(savedSkins);
       setSelectedSkin(savedSelected);
       setSoundEnabled(savedSound);
+      setControlMode(savedMode);
+      setDpadPosition(savedPos);
       soundEngine.setEnabled(savedSound);
 
       // Load daily lives
@@ -78,6 +93,24 @@ export const GameContainer: React.FC = () => {
       // Fallback
     }
   }, []);
+
+  // Sync with MongoDB when wallet is connected
+  useEffect(() => {
+    if (!address) return;
+
+    // Push local stats to cloud
+    fetch('/api/player', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        address,
+        highScore,
+        totalCarrots,
+        unlockedSkins,
+        selectedSkin,
+      }),
+    }).catch((err) => console.error('Cloud sync error:', err));
+  }, [address, highScore, totalCarrots, unlockedSkins, selectedSkin]);
 
   // Initialize Three.js Engine
   useEffect(() => {
@@ -97,6 +130,9 @@ export const GameContainer: React.FC = () => {
           setSessionCarrots(currentSessionTotal);
           if (isGolden) {
             setSessionGoldenCarrots((prev) => prev + 1);
+            triggerHaptic('goldCarrot');
+          } else {
+            triggerHaptic('carrot');
           }
 
           // Add floating text badge
@@ -139,6 +175,20 @@ export const GameContainer: React.FC = () => {
             return updated;
           });
 
+          // Submit run score to MongoDB Global Leaderboard
+          fetch('/api/leaderboard', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              address: address || null,
+              name: address ? undefined : `Hopper ${Math.floor(1000 + Math.random() * 9000)}`,
+              score: totalRunPoints,
+              carrots: sessionCarrotsGathered,
+              goldenCarrots: goldenCarrotsGathered,
+              skin: selectedSkin,
+            }),
+          }).catch((err) => console.error('Failed to submit score:', err));
+
           setGameStatus('gameover');
         },
       },
@@ -151,7 +201,7 @@ export const GameContainer: React.FC = () => {
       engine.destroy();
       engineRef.current = null;
     };
-  }, []);
+  }, [address, selectedSkin]);
 
   // Sync Skin Changes
   const handleSelectSkin = useCallback((skinId: string) => {
@@ -205,6 +255,24 @@ export const GameContainer: React.FC = () => {
     });
   }, []);
 
+  // Cycle Mobile Control Mode (dpad -> split -> swipe)
+  const handleCycleControlMode = useCallback(() => {
+    setControlMode((prev) => {
+      const next: TouchControlMode = prev === 'dpad' ? 'split' : prev === 'split' ? 'swipe' : 'dpad';
+      localStorage.setItem(STORAGE_KEYS.CONTROL_MODE, next);
+      return next;
+    });
+  }, []);
+
+  // Cycle D-Pad Position (center -> left -> right)
+  const handleCyclePosition = useCallback(() => {
+    setDpadPosition((prev) => {
+      const next: DPadPosition = prev === 'center' ? 'left' : prev === 'left' ? 'right' : 'center';
+      localStorage.setItem(STORAGE_KEYS.DPAD_POS, next);
+      return next;
+    });
+  }, []);
+
   // Game Control Handlers
   const handleStartGame = useCallback(() => {
     if (!engineRef.current) return;
@@ -252,8 +320,11 @@ export const GameContainer: React.FC = () => {
   // Global Keyboard Listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isWardrobeOpen) {
-        if (e.key === 'Escape') setIsWardrobeOpen(false);
+      if (isWardrobeOpen || isLeaderboardOpen) {
+        if (e.key === 'Escape') {
+          setIsWardrobeOpen(false);
+          setIsLeaderboardOpen(false);
+        }
         return;
       }
 
@@ -314,16 +385,17 @@ export const GameContainer: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameStatus, isWardrobeOpen, handleStartGame, handleMove, handlePause, handleResume]);
+  }, [gameStatus, isWardrobeOpen, isLeaderboardOpen, handleStartGame, handleMove, handlePause, handleResume]);
 
-  // Touch Swipe on Canvas
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  // Touch Swipe & Tap on Canvas Container
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 1) {
       touchStartRef.current = {
         x: e.touches[0].clientX,
         y: e.touches[0].clientY,
+        time: Date.now(),
       };
     }
   };
@@ -332,24 +404,37 @@ export const GameContainer: React.FC = () => {
     if (!touchStartRef.current) return;
     const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
     const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+    const elapsed = Date.now() - touchStartRef.current.time;
+    const startY = touchStartRef.current.y;
     touchStartRef.current = null;
 
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
-    const THRESHOLD = 22;
+    const SWIPE_THRESHOLD = 20;
 
-    if (Math.max(absX, absY) > THRESHOLD && gameStatus === 'playing') {
-      if (absX > absY) {
-        handleMove(dx > 0 ? 'right' : 'left');
-      } else {
-        handleMove(dy > 0 ? 'down' : 'up');
+    if (gameStatus === 'playing') {
+      if (Math.max(absX, absY) > SWIPE_THRESHOLD) {
+        // Swipe detected
+        triggerHaptic('hop');
+        if (absX > absY) {
+          handleMove(dx > 0 ? 'right' : 'left');
+        } else {
+          handleMove(dy > 0 ? 'down' : 'up');
+        }
+      } else if (elapsed < 250 && absX < 12 && absY < 12) {
+        // Quick tap: if tapped on top 65% of screen, hop forward
+        const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+        if (startY < windowHeight * 0.65) {
+          triggerHaptic('hop');
+          handleMove('up');
+        }
       }
     }
   };
 
   return (
     <div
-      className="relative w-full h-full min-h-screen overflow-hidden select-none bg-sky-200"
+      className="relative w-full h-full min-h-[100dvh] overflow-hidden select-none bg-sky-200"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -371,12 +456,23 @@ export const GameContainer: React.FC = () => {
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
         onOpenWardrobe={() => setIsWardrobeOpen(true)}
+        onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
         onPause={handlePause}
         gameStatus={gameStatus}
+        controlMode={controlMode}
+        onToggleControlMode={handleCycleControlMode}
       />
 
-      {/* Mobile Touch D-Pad */}
-      {gameStatus === 'playing' && <TouchControls onMove={handleMove} />}
+      {/* Mobile Touch Controls */}
+      {gameStatus === 'playing' && (
+        <TouchControls
+          onMove={handleMove}
+          mode={controlMode}
+          dpadPosition={dpadPosition}
+          onCyclePosition={handleCyclePosition}
+          onCycleMode={handleCycleControlMode}
+        />
+      )}
 
       {/* Overlay Screens */}
       {gameStatus === 'idle' && (
@@ -422,6 +518,13 @@ export const GameContainer: React.FC = () => {
         selectedSkin={selectedSkin}
         onSelectSkin={handleSelectSkin}
         onUnlockSkin={handleUnlockSkin}
+      />
+
+      {/* MongoDB Global Leaderboard Modal */}
+      <LeaderboardModal
+        isOpen={isLeaderboardOpen}
+        onClose={() => setIsLeaderboardOpen(false)}
+        currentHighScore={highScore}
       />
     </div>
   );

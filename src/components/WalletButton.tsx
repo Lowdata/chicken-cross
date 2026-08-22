@@ -4,6 +4,7 @@ import React from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Wallet, AlertCircle } from 'lucide-react';
 import { soundEngine } from '@/lib/game/soundEngine';
+import { triggerHaptic } from '@/lib/game/haptics';
 
 interface WalletButtonProps {
   compact?: boolean;
@@ -45,15 +46,21 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                   <button
                     onClick={() => {
                       soundEngine.playClick();
+                      triggerHaptic('tap');
                       openConnectModal();
                     }}
                     type="button"
                     className={`hud-pill bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold shadow-md border-2 border-emerald-300/60 rounded-2xl flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer select-none ${
-                      compact ? 'px-2.5 py-1.5 text-xs' : 'px-3.5 py-2 text-xs sm:text-sm'
+                      compact
+                        ? 'px-2.5 py-1.5 text-xs'
+                        : 'px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm'
                     }`}
                   >
-                    <Wallet className="w-4 h-4" />
-                    <span>{compact ? 'Wallet' : 'Connect Wallet'}</span>
+                    <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className={compact ? 'inline' : 'hidden xs:inline'}>
+                      {compact ? 'Wallet' : 'Connect Wallet'}
+                    </span>
+                    <span className={compact ? 'hidden' : 'xs:hidden'}>Wallet</span>
                   </button>
                 );
               }
@@ -63,28 +70,30 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                   <button
                     onClick={() => {
                       soundEngine.playClick();
+                      triggerHaptic('tap');
                       openChainModal();
                     }}
                     type="button"
-                    className="hud-pill bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-xs shadow-md border-2 border-rose-300 rounded-2xl px-3 py-1.5 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                    className="hud-pill bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-xs shadow-md border-2 border-rose-300 rounded-2xl px-2.5 py-1.5 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
                   >
-                    <AlertCircle className="w-4 h-4" />
-                    <span>Wrong Network</span>
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    <span>Wrong Net</span>
                   </button>
                 );
               }
 
               return (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1 sm:gap-1.5">
                   {/* Chain Switcher Button */}
                   <button
                     onClick={() => {
                       soundEngine.playClick();
+                      triggerHaptic('tap');
                       openChainModal();
                     }}
                     type="button"
                     title={chain.name ?? 'Chain'}
-                    className="hud-pill bg-white/90 hover:bg-white backdrop-blur-md border-2 border-white/80 rounded-2xl px-2.5 py-1.5 shadow-md flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                    className="hud-pill bg-white/90 hover:bg-white backdrop-blur-md border-2 border-white/80 rounded-2xl px-2 py-1.5 sm:px-2.5 sm:py-1.5 shadow-md flex items-center gap-1 cursor-pointer transition-all active:scale-95"
                   >
                     {chain.hasIcon && (
                       <div
@@ -100,7 +109,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                         )}
                       </div>
                     )}
-                    <span className="text-xs font-bold text-slate-700 hidden sm:inline">
+                    <span className="text-xs font-bold text-slate-700 hidden md:inline">
                       {chain.name}
                     </span>
                   </button>
@@ -109,10 +118,11 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                   <button
                     onClick={() => {
                       soundEngine.playClick();
+                      triggerHaptic('tap');
                       openAccountModal();
                     }}
                     type="button"
-                    className="hud-pill bg-white/90 hover:bg-white backdrop-blur-md border-2 border-white/80 rounded-2xl px-3 py-1.5 shadow-md flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+                    className="hud-pill bg-white/90 hover:bg-white backdrop-blur-md border-2 border-white/80 rounded-2xl px-2.5 sm:px-3 py-1.5 shadow-md flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
                   >
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-xs sm:text-sm font-extrabold text-slate-800">

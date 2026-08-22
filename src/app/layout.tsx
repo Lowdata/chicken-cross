@@ -8,6 +8,11 @@ export const metadata: Metadata = {
   description: 'Hop across busy roads & rivers, collect tasty carrots, and unlock awesome bunny skins in this fast-paced 3D arcade game with Web3 wallet support!',
   keywords: ['bunny hop', 'crossy road', 'three.js game', 'web game', 'next.js game', 'rabbit game', 'carrot collector', 'web3 game', 'rainbowkit', 'metamask'],
   authors: [{ name: 'Bunny Hop Game' }],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Bunny Hop',
+  },
   openGraph: {
     title: '🐰 Bunny Hop - 3D Web Game',
     description: 'Hop across roads and rivers, gather carrots, and unlock legendary bunny skins!',
@@ -20,6 +25,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
   themeColor: '#a0e7e5',
 };
 

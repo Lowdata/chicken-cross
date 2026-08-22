@@ -141,14 +141,22 @@ export class ThreeGameEngine {
     this.scene.background = new THREE.Color(0xa0e7e5);
     this.scene.fog = new THREE.Fog(0xa0e7e5, 26, 48);
 
-    const aspect = this.container.clientWidth / (this.container.clientHeight || 1);
-    this.camera = new THREE.PerspectiveCamera(38, aspect, 0.1, 100);
+    const width = this.container.clientWidth;
+    const height = this.container.clientHeight || 1;
+    const aspect = width / height;
+
+    // Adaptive FOV for mobile portrait vs landscape screens
+    const targetFov = aspect < 1.0 
+      ? Math.min(62, Math.max(38, 38 + (1.0 - aspect) * 32))
+      : (aspect < 1.4 ? Math.min(46, Math.max(38, 38 + (1.4 - aspect) * 15)) : 38);
+
+    this.camera = new THREE.PerspectiveCamera(targetFov, aspect, 0.1, 100);
     this.camera.position.copy(this.CAM_OFFSET);
     this.camera.lookAt(0, 0.3, -1.5);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+    this.renderer.setSize(width, height);
     this.renderer.shadowMap.enabled = false;
     this.container.appendChild(this.renderer.domElement);
 
@@ -1064,11 +1072,15 @@ export class ThreeGameEngine {
   private updateCamera() {
     const targetX = this.bunnyGroup.position.x * 0.32;
     const targetZ = this.player.z;
-    const camTargetPos = new THREE.Vector3(
-      targetX + this.CAM_OFFSET.x * 0.55,
-      this.CAM_OFFSET.y,
-      targetZ + this.CAM_OFFSET.z
-    );
+    const aspect = this.camera.aspect || 1;
+    const isPortrait = aspect < 1.0;
+
+    // In portrait mobile view, lift camera slightly and adjust offset for better forward visibility
+    const camY = isPortrait ? this.CAM_OFFSET.y * 1.06 : this.CAM_OFFSET.y;
+    const camZ = isPortrait ? this.CAM_OFFSET.z * 1.04 : this.CAM_OFFSET.z;
+    const camX = targetX + this.CAM_OFFSET.x * (isPortrait ? 0.48 : 0.55);
+
+    const camTargetPos = new THREE.Vector3(camX, camY, targetZ + camZ);
     this.camera.position.lerp(camTargetPos, 0.12);
     this.camera.lookAt(targetX, 0.3, targetZ - 1.5);
   }
@@ -1117,7 +1129,15 @@ export class ThreeGameEngine {
       if (!this.container || !this.renderer || !this.camera) return;
       const width = this.container.clientWidth;
       const height = this.container.clientHeight || 1;
-      this.camera.aspect = width / height;
+      const aspect = width / height;
+
+      this.camera.aspect = aspect;
+      // Adjust FOV dynamically on orientation change or screen resize
+      const targetFov = aspect < 1.0 
+        ? Math.min(62, Math.max(38, 38 + (1.0 - aspect) * 32))
+        : (aspect < 1.4 ? Math.min(46, Math.max(38, 38 + (1.4 - aspect) * 15)) : 38);
+      
+      this.camera.fov = targetFov;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(width, height);
     });
