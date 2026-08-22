@@ -1,22 +1,29 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import '@rainbow-me/rainbowkit/styles.css';
 import './globals.css';
 import { Web3Provider } from '@/components/Web3Provider';
 
 export const metadata: Metadata = {
-  title: '🐰 Bunny Hop - 3D Web Game | Carrot Bonanza & Web3',
-  description: 'Hop across busy roads & rivers, collect tasty carrots, and unlock awesome bunny skins in this fast-paced 3D arcade game with Web3 wallet support!',
-  keywords: ['bunny hop', 'crossy road', 'three.js game', 'web game', 'next.js game', 'rabbit game', 'carrot collector', 'web3 game', 'rainbowkit', 'metamask'],
-  authors: [{ name: 'Bunny Hop Game' }],
+  title: '🐰 Bunny Hop — Play, Collect Carrots & Earn Web3 Rewards',
+  description: 'Bunny Hop is a free-to-play pixel arcade game with real Web3 rewards. Hop across roads, collect carrots, complete tasks, and claim prizes. Connect your wallet to start earning today.',
+  keywords: ['bunny hop', 'web3 game', 'play to earn', 'pixel game', 'carrot game', 'crossy road', 'three.js game', 'next.js game', 'rabbit game', 'crypto game', 'nft game', 'rainbowkit', 'metamask'],
+  authors: [{ name: 'Bunny Hop' }],
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Bunny Hop',
   },
   openGraph: {
-    title: '🐰 Bunny Hop - 3D Web Game',
-    description: 'Hop across roads and rivers, gather carrots, and unlock legendary bunny skins!',
+    title: '🐰 Bunny Hop — Play & Earn Web3 Rewards',
+    description: 'Hop across roads, collect carrots, and earn real Web3 rewards. Connect your wallet to start playing!',
     type: 'website',
+    siteName: 'Bunny Hop',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '🐰 Bunny Hop — Play & Earn Web3 Rewards',
+    description: 'Hop across roads, collect carrots, and earn real Web3 rewards!',
   },
 };
 
@@ -29,6 +36,8 @@ export const viewport: Viewport = {
   themeColor: '#a0e7e5',
 };
 
+const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
 export default function RootLayout({
   children,
 }: {
@@ -39,8 +48,28 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Google Analytics 4 */}
+        {GA_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_ID}', {
+                  page_path: window.location.pathname,
+                  anonymize_ip: true,
+                });
+              `}
+            </Script>
+          </>
+        )}
       </head>
-      <body className="antialiased select-none overflow-hidden">
+      <body className="antialiased">
         <Web3Provider>{children}</Web3Provider>
       </body>
     </html>
