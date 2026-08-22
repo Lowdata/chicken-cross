@@ -183,7 +183,8 @@ export const StartOverlay: React.FC<StartOverlayProps> = ({
 interface GameOverOverlayProps {
   score: number;
   sessionCarrots: number;
-  goldenCarrots: number;
+  maxCarrots: number;
+  rewardTier: 'none' | 'fcfs' | 'guaranteed';
   totalCarrots: number;
   highScore: number;
   isNewHigh: boolean;
@@ -196,7 +197,8 @@ interface GameOverOverlayProps {
 export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
   score,
   sessionCarrots,
-  goldenCarrots,
+  maxCarrots,
+  rewardTier,
   totalCarrots,
   highScore,
   isNewHigh,
@@ -248,16 +250,37 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
           {/* Carrots */}
           <div className="flex justify-between items-center text-xs sm:text-sm font-extrabold text-slate-700">
             <span className="flex items-center gap-1.5">
-              <span>🥕</span> Carrots Gathered ({sessionCarrots})
+              <span>🥕</span> Carrots Gathered ({sessionCarrots}/{maxCarrots})
             </span>
             <span className="text-sm sm:text-base text-orange-600">+{carrotBonusPoints} pts</span>
           </div>
 
-          {/* Golden Carrots Badge */}
-          {goldenCarrots > 0 && (
-            <div className="flex justify-between items-center text-[10px] sm:text-xs font-black text-amber-700 bg-amber-100/80 px-2 py-1 rounded-lg">
-              <span>✨ Golden Carrots Snagged</span>
-              <span>{goldenCarrots}x Rare!</span>
+          {/* Reward Tier Banner */}
+          {rewardTier === 'guaranteed' && (
+            <div className="flex items-center gap-2 bg-violet-100 border border-violet-300 rounded-xl px-2.5 py-2 mt-1">
+              <span className="text-base">💎</span>
+              <div>
+                <div className="text-[11px] font-black text-violet-800">1/100 RARE — GUARANTEED REWARD UNLOCKED!</div>
+                <div className="text-[10px] text-violet-600">9 Carrots collected. You qualify for a guaranteed reward!</div>
+              </div>
+            </div>
+          )}
+          {rewardTier === 'fcfs' && (
+            <div className="flex items-center gap-2 bg-orange-100 border border-orange-300 rounded-xl px-2.5 py-2 mt-1">
+              <span className="text-base">⚡</span>
+              <div>
+                <div className="text-[11px] font-black text-orange-800">🎉 FCFS Reward Tier Qualified!</div>
+                <div className="text-[10px] text-orange-600">5-8 Carrots collected. First-Come-First-Served reward slot!</div>
+              </div>
+            </div>
+          )}
+          {rewardTier === 'none' && (
+            <div className="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-2 mt-1">
+              <span className="text-base">🟤</span>
+              <div>
+                <div className="text-[11px] font-bold text-slate-600">1-4 Carrots: No Reward Tier</div>
+                <div className="text-[10px] text-slate-400">Collect 5+ carrots in a run to earn rewards!</div>
+              </div>
             </div>
           )}
 

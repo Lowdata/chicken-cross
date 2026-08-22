@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Volume2, VolumeX, Sparkles, Pause, Trophy, Heart, Zap, Gamepad2 } from 'lucide-react';
+import { Volume2, VolumeX, Sparkles, Pause, Heart, Zap, Gamepad2, Gift } from 'lucide-react';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
 import { MAX_DAILY_LIVES } from '@/lib/game/livesManager';
@@ -11,6 +11,7 @@ import { TouchControlMode } from './TouchControls';
 interface HUDProps {
   score: number;
   sessionCarrots: number;
+  maxCarrots: number;
   totalCarrots: number;
   highScore: number;
   lives: number;
@@ -19,7 +20,7 @@ interface HUDProps {
   soundEnabled: boolean;
   onToggleSound: () => void;
   onOpenWardrobe: () => void;
-  onOpenLeaderboard?: () => void;
+  onOpenTasks?: () => void;
   onPause: () => void;
   gameStatus: 'idle' | 'playing' | 'paused' | 'gameover';
   controlMode?: TouchControlMode;
@@ -29,6 +30,7 @@ interface HUDProps {
 export const HUD: React.FC<HUDProps> = ({
   score,
   sessionCarrots,
+  maxCarrots,
   totalCarrots,
   highScore,
   lives,
@@ -37,7 +39,7 @@ export const HUD: React.FC<HUDProps> = ({
   soundEnabled,
   onToggleSound,
   onOpenWardrobe,
-  onOpenLeaderboard,
+  onOpenTasks,
   onPause,
   gameStatus,
   controlMode = 'dpad',
@@ -55,10 +57,10 @@ export const HUD: React.FC<HUDProps> = ({
           </span>
         </div>
 
-        {/* Live session carrots collected */}
+        {/* Live session carrots collected - shows X/maxCarrots */}
         <div className="hud-pill bg-gradient-to-r from-orange-500/90 to-amber-500/90 text-white backdrop-blur-md border-2 border-orange-200/50 rounded-2xl px-2.5 sm:px-3.5 py-1 sm:py-1.5 shadow-md flex items-center gap-1.5 sm:gap-2 animate-bounce-subtle">
           <span className="text-base sm:text-lg">🥕</span>
-          <span className="font-extrabold text-sm sm:text-xl tracking-wide">+{sessionCarrots}</span>
+          <span className="font-extrabold text-sm sm:text-xl tracking-wide">{sessionCarrots}/{maxCarrots}</span>
         </div>
 
         {/* Speed / Difficulty boost badge (shows when multiplier > 1.0) */}
@@ -117,21 +119,20 @@ export const HUD: React.FC<HUDProps> = ({
             <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-500 ml-0.5" />
           </button>
 
-          {/* High Score Pill (Click to open Leaderboard) */}
+          {/* Tasks & Rewards Button */}
           <button
             onClick={() => {
-              if (onOpenLeaderboard) {
+              if (onOpenTasks) {
                 soundEngine.playClick();
                 triggerHaptic('tap');
-                onOpenLeaderboard();
+                onOpenTasks();
               }
             }}
-            title="Global Leaderboard"
-            className="hud-pill bg-white/90 hover:bg-white backdrop-blur-md border-2 border-white/80 rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-md flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all active:scale-95 group"
+            title="Tasks & Rewards"
+            className="hud-pill bg-gradient-to-r from-amber-400/90 to-orange-400/90 hover:from-amber-300 hover:to-orange-300 text-white backdrop-blur-md border-2 border-amber-300/60 rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-md flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all active:scale-95 group"
           >
-            <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 group-hover:scale-110 transition-transform" />
-            <span className="text-[10px] sm:text-xs uppercase font-extrabold text-slate-400 hidden xs:inline">BEST</span>
-            <span className="text-xs sm:text-base font-black text-amber-600">{highScore}</span>
+            <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" />
+            <span className="text-[10px] sm:text-xs font-black hidden xs:inline">EARN</span>
           </button>
         </div>
 

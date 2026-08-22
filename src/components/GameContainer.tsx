@@ -2,6 +2,16 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useAccount } from 'wagmi';
+// Cloudflare Turnstile global type
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (el: HTMLElement | string, opts: Record<string, unknown>) => string;
+      remove: (id: string) => void;
+      reset: (id: string) => void;
+    };
+  }
+}
 import { ThreeGameEngine } from '@/lib/game/threeGameEngine';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
@@ -15,7 +25,7 @@ import {
 import { HUD } from './HUD';
 import { TouchControls, TouchControlMode, DPadPosition } from './TouchControls';
 import { SkinWardrobeModal } from './SkinWardrobeModal';
-import { LeaderboardModal } from './LeaderboardModal';
+import { TasksRewardsModal } from './TasksRewardsModal';
 import { StartOverlay, GameOverOverlay, PauseOverlay } from './OverlayScreens';
 import { FloatingCarrotFx } from './FloatingCarrotFx';
 
@@ -62,9 +72,68 @@ export const GameContainer: React.FC = () => {
   const [controlMode, setControlMode] = useState<TouchControlMode>('dpad');
   const [dpadPosition, setDpadPosition] = useState<DPadPosition>('center');
 
+  // Cloudflare Turnstile CAPTCHA
+  const turnstileWidgetRef = useRef<HTMLDivElement>(null);
+  const turnstileWidgetId = useRef<string | null>(null);
+  const [cfTurnstileToken, setCfTurnstileToken] = useState<string | null>(null);
+
   // Modals
   const [isWardrobeOpen, setIsWardrobeOpen] = useState<boolean>(false);
-  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState<boolean>(false);
+  const [isTasksOpen, setIsTasksOpen] = useState<boolean>(false);
+
+  // Session token & carrot cap from server
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [maxCarrots, setMaxCarrots] = useState<number>(8);
+
+  // Reward tier for current run
+  const [rewardTier, setRewardTier] = useState<'none' | 'fcfs' | 'guaranteed'>('none');
+
+  // Load Cloudflare Turnstile script and render hidden widget
+  useEffect(() => {
+    const siteKey = process.env.NEXT_PUBLIC_CF_TURNSTILE_SITE_KEY;
+    if (!siteKey || !turnstileWidgetRef.current) return;
+
+    const loadWidget = () => {
+      if (!window.turnstile || !turnstileWidgetRef.current) return;
+      if (turnstileWidgetId.current) {
+        window.turnstile.remove(turnstileWidgetId.current);
+      }
+      turnstileWidgetId.current = window.turnstile.render(turnstileWidgetRef.current, {
+        sitekey: siteKey,
+        theme: 'light',
+        size: 'invisible',
+        callback: (token: string) => {
+          setCfTurnstileToken(token);
+        },
+        'expired-callback': () => {
+          setCfTurnstileToken(null);
+          // Auto-reset to get a fresh token
+          if (turnstileWidgetId.current && window.turnstile) {
+            window.turnstile.reset(turnstileWidgetId.current);
+          }
+        },
+        'error-callback': () => setCfTurnstileToken(null),
+      });
+    };
+
+    if (window.turnstile) {
+      loadWidget();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+      script.async = true;
+      script.defer = true;
+      script.onload = loadWidget;
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      if (turnstileWidgetId.current && window.turnstile) {
+        window.turnstile.remove(turnstileWidgetId.current);
+        turnstileWidgetId.current = null;
+      }
+    };
+  }, []);
 
   // Load persistent stats, preferences, and daily lives on mount
   useEffect(() => {
@@ -97,20 +166,13 @@ export const GameContainer: React.FC = () => {
   // Sync with MongoDB when wallet is connected
   useEffect(() => {
     if (!address) return;
-
-    // Push local stats to cloud
-    fetch('/api/player', {
+    // Ensure user is created in DB
+    fetch('/api/user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        address,
-        highScore,
-        totalCarrots,
-        unlockedSkins,
-        selectedSkin,
-      }),
-    }).catch((err) => console.error('Cloud sync error:', err));
-  }, [address, highScore, totalCarrots, unlockedSkins, selectedSkin]);
+      body: JSON.stringify({ address }),
+    }).catch((err) => console.error('User sync error:', err));
+  }, [address]);
 
   // Initialize Three.js Engine
   useEffect(() => {
@@ -152,7 +214,7 @@ export const GameContainer: React.FC = () => {
             setFloatingTexts((prev) => prev.filter((item) => item.id !== newId));
           }, 900);
         },
-        onGameOver: (finalScore, sessionCarrotsGathered, goldenCarrotsGathered) => {
+        onGameOver: async (finalScore, sessionCarrotsGathered) => {
           const runBonus = sessionCarrotsGathered * 5;
           const totalRunPoints = finalScore + runBonus;
 
@@ -168,26 +230,36 @@ export const GameContainer: React.FC = () => {
           });
           setIsNewHigh(newRecord);
 
-          // Bank Carrots
+          // Bank Carrots locally
           setTotalCarrots((prev) => {
             const updated = prev + sessionCarrotsGathered;
             localStorage.setItem(STORAGE_KEYS.TOTAL_CARROTS, String(updated));
             return updated;
           });
 
-          // Submit run score to MongoDB Global Leaderboard
-          fetch('/api/leaderboard', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              address: address || null,
-              name: address ? undefined : `Hopper ${Math.floor(1000 + Math.random() * 9000)}`,
-              score: totalRunPoints,
-              carrots: sessionCarrotsGathered,
-              goldenCarrots: goldenCarrotsGathered,
-              skin: selectedSkin,
-            }),
-          }).catch((err) => console.error('Failed to submit score:', err));
+          // Submit to /api/game/finish for reward tier
+          try {
+            const token = sessionToken;
+            const res = await fetch('/api/game/finish', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sessionToken: token,
+                score: totalRunPoints,
+                carrots: sessionCarrotsGathered,
+                address: address || null,
+              }),
+            });
+            const data = await res.json();
+            if (data.success) {
+              setRewardTier(data.rewardTier || 'none');
+            } else {
+              setRewardTier(sessionCarrotsGathered >= 9 ? 'guaranteed' : sessionCarrotsGathered >= 5 ? 'fcfs' : 'none');
+            }
+          } catch {
+            // Fallback: compute locally
+            setRewardTier(sessionCarrotsGathered >= 9 ? 'guaranteed' : sessionCarrotsGathered >= 5 ? 'fcfs' : 'none');
+          }
 
           setGameStatus('gameover');
         },
@@ -274,7 +346,7 @@ export const GameContainer: React.FC = () => {
   }, []);
 
   // Game Control Handlers
-  const handleStartGame = useCallback(() => {
+  const handleStartGame = useCallback(async () => {
     if (!engineRef.current) return;
 
     // Check lives
@@ -282,6 +354,45 @@ export const GameContainer: React.FC = () => {
     if (currentLivesState.lives <= 0) {
       setLives(0);
       return;
+    }
+
+    // Call /api/game/start to get session token & maxCarrots (9th carrot 1/100 roll)
+    let sessionMaxCarrots = 8;
+    let token: string | null = null;
+    try {
+      const res = await fetch('/api/game/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: address || null,
+          cfTurnstileToken: cfTurnstileToken || 'dev-bypass',
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        token = data.sessionToken;
+        sessionMaxCarrots = data.maxCarrots || 8;
+      } else if (data.error?.includes('CAPTCHA')) {
+        // Turnstile token was invalid — reset widget and ask user to try again
+        if (turnstileWidgetId.current && window.turnstile) {
+          window.turnstile.reset(turnstileWidgetId.current);
+        }
+        setCfTurnstileToken(null);
+        console.warn('CAPTCHA failed, resetting...');
+        sessionMaxCarrots = Math.random() < 0.01 ? 9 : 8; // Fallback local
+      }
+    } catch {
+      // Offline: random local roll
+      sessionMaxCarrots = Math.random() < 0.01 ? 9 : 8;
+    }
+    setSessionToken(token);
+    setMaxCarrots(sessionMaxCarrots);
+    setRewardTier('none');
+
+    // Reset turnstile token (each token is single-use)
+    setCfTurnstileToken(null);
+    if (turnstileWidgetId.current && window.turnstile) {
+      window.turnstile.reset(turnstileWidgetId.current);
     }
 
     // Deduct 1 life for this run
@@ -298,7 +409,7 @@ export const GameContainer: React.FC = () => {
     engineRef.current.resetWorld();
     engineRef.current.start();
     setGameStatus('playing');
-  }, []);
+  }, [address, cfTurnstileToken]);
 
   const handlePause = useCallback(() => {
     if (!engineRef.current) return;
@@ -320,10 +431,10 @@ export const GameContainer: React.FC = () => {
   // Global Keyboard Listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isWardrobeOpen || isLeaderboardOpen) {
+      if (isWardrobeOpen || isTasksOpen) {
         if (e.key === 'Escape') {
           setIsWardrobeOpen(false);
-          setIsLeaderboardOpen(false);
+          setIsTasksOpen(false);
         }
         return;
       }
@@ -385,7 +496,7 @@ export const GameContainer: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameStatus, isWardrobeOpen, isLeaderboardOpen, handleStartGame, handleMove, handlePause, handleResume]);
+  }, [gameStatus, isWardrobeOpen, isTasksOpen, handleStartGame, handleMove, handlePause, handleResume]);
 
   // Touch Swipe & Tap on Canvas Container
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
@@ -448,6 +559,7 @@ export const GameContainer: React.FC = () => {
       <HUD
         score={score}
         sessionCarrots={sessionCarrots}
+        maxCarrots={maxCarrots}
         totalCarrots={totalCarrots}
         highScore={highScore}
         lives={lives}
@@ -456,7 +568,7 @@ export const GameContainer: React.FC = () => {
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
         onOpenWardrobe={() => setIsWardrobeOpen(true)}
-        onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
+        onOpenTasks={() => setIsTasksOpen(true)}
         onPause={handlePause}
         gameStatus={gameStatus}
         controlMode={controlMode}
@@ -490,7 +602,8 @@ export const GameContainer: React.FC = () => {
         <GameOverOverlay
           score={score}
           sessionCarrots={sessionCarrots}
-          goldenCarrots={sessionGoldenCarrots}
+          maxCarrots={maxCarrots}
+          rewardTier={rewardTier}
           totalCarrots={totalCarrots}
           highScore={highScore}
           isNewHigh={isNewHigh}
@@ -520,11 +633,19 @@ export const GameContainer: React.FC = () => {
         onUnlockSkin={handleUnlockSkin}
       />
 
-      {/* MongoDB Global Leaderboard Modal */}
-      <LeaderboardModal
-        isOpen={isLeaderboardOpen}
-        onClose={() => setIsLeaderboardOpen(false)}
-        currentHighScore={highScore}
+      {/* Tasks & Rewards Modal */}
+      <TasksRewardsModal
+        isOpen={isTasksOpen}
+        onClose={() => setIsTasksOpen(false)}
+        address={address || null}
+      />
+
+      {/* Cloudflare Turnstile invisible CAPTCHA widget */}
+      {/* Rendered off-screen; Turnstile fires silently in background for real users */}
+      <div
+        ref={turnstileWidgetRef}
+        className="absolute -top-[9999px] left-0 pointer-events-none opacity-0 w-0 h-0 overflow-hidden"
+        aria-hidden="true"
       />
     </div>
   );
