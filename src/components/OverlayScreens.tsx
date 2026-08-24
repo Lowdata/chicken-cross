@@ -1,8 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
-import { Play, RotateCcw, Sparkles, Trophy, Heart, Clock, PlusCircle, Smartphone, Keyboard } from 'lucide-react';
+import {
+  Play, RotateCcw, Sparkles, Trophy, Heart, Clock, PlusCircle,
+  Smartphone, Keyboard, MapPin, Carrot, Diamond, Zap, CircleDot,
+  Home, ArrowLeft,
+} from 'lucide-react';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
 import { BUNNY_SKINS } from '@/lib/game/types';
@@ -12,6 +17,14 @@ import {
   getRemainingTimeUntilMidnight,
 } from '@/lib/game/livesManager';
 import { WalletButton } from './WalletButton';
+
+/* ── Inline Carrot SVG icon (replaces emoji) ── */
+const CarrotIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+    <path d="M16.5 2.5L14 5l3 3 2.5-2.5M12 8l-8.5 8.5a2.12 2.12 0 003 3L15 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9 11.5l1.5 1.5M11 9.5l1.5 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
 
 interface StartOverlayProps {
   onStart: () => void;
@@ -30,6 +43,7 @@ export const StartOverlay: React.FC<StartOverlayProps> = ({
   lives,
   onBuyLife,
 }) => {
+  const router = useRouter();
   const currentSkinObj = BUNNY_SKINS[selectedSkin] || BUNNY_SKINS.classic;
   const [timeLeft, setTimeLeft] = useState<string>('');
   const [isTouchDevice, setIsTouchDevice] = useState<boolean>(false);
@@ -59,121 +73,104 @@ export const StartOverlay: React.FC<StartOverlayProps> = ({
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-brand-orange/20 rounded-full blur-[40px] pointer-events-none" />
         <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-brand-purple/20 rounded-full blur-[40px] pointer-events-none" />
 
-        {/* Title */}
-        <div className="inline-block px-3 py-1 bg-brand-orange/10 border border-brand-orange/30 rounded-full text-brand-orange text-[10px] sm:text-xs font-black uppercase tracking-wider mb-2 sm:mb-3">
-          Carrot Bonanza Edition
-        </div>
-        <h1 className="text-3xl sm:text-5xl font-black text-white drop-shadow-md tracking-tight mb-2">
-          🐰 Bunny Hop
-        </h1>
-        <p className="text-white/60 text-xs sm:text-sm font-semibold mt-1 sm:mt-2 mb-3 leading-relaxed">
-          Hop across busy highways &amp; log-filled rivers. Harvest delicious carrots along the way!
-        </p>
-
-        {/* Daily Lives Display Box */}
-        <div className="my-3 p-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-2">
-            <Heart className="w-5 h-5 fill-rose-500 text-rose-500 animate-pulse" />
-            <div className="text-left">
-              <div className="text-[10px] uppercase font-black text-rose-400">Daily Free Lives</div>
-              <div className="text-xs sm:text-sm font-black text-rose-400">
-                {lives} / {MAX_DAILY_LIVES} Remaining Today
-              </div>
-            </div>
+        {/* Skin Preview Pill */}
+        <div className="flex items-center gap-3 mb-5 mt-2 sm:mt-0">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl bg-brand-surface border border-white/10 shadow-md"
+            style={{ backgroundColor: `#${currentSkinObj.colors.body.toString(16).padStart(6, '0')}22` }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8" stroke={`#${currentSkinObj.colors.body.toString(16).padStart(6, '0')}`} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M13 16a3 3 0 0 1 2.24 5" />
+              <path d="M18 12h.01" />
+              <path d="M18 21h-8a4 4 0 0 1-4-4 7 7 0 0 1 7-7h.2L9.6 6.4a1 1 0 1 1 2.8-2.8L15.8 7h.2c3.3 0 6 2.7 6 6v1a2 2 0 0 1-2 2h-1a3 3 0 0 0-3 3" />
+              <path d="M20 8.54V4a2 2 0 1 0-4 0v3" />
+              <path d="M7.612 12.524a3 3 0 1 0-1.6 4.3" />
+            </svg>
           </div>
-          <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold text-rose-400/80 bg-rose-500/10 px-2 py-1 rounded-lg">
-            <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-            <span>{timeLeft}</span>
-          </div>
-        </div>
-
-        {/* Out of Lives Warning & Refill Action */}
-        {isOutOfLives ? (
-          <div className="my-3 p-4 bg-brand-orange/10 border border-brand-orange/30 rounded-2xl text-left space-y-2">
-            <div className="font-extrabold text-brand-orange text-xs sm:text-sm flex items-center gap-1.5">
-              <span>⚠️</span> Out of daily free lives!
-            </div>
-            <p className="text-[11px] sm:text-xs text-white/70 leading-relaxed">
-              Your 5 daily lives reset at midnight, or you can exchange {EXTRA_LIFE_CARROT_COST} 🥕 Carrots for +1 Extra Life now!
-            </p>
+          <div className="text-left">
+            <div className="font-black text-sm sm:text-base text-white leading-none">{currentSkinObj.name}</div>
             <button
-              onClick={() => {
-                soundEngine.playClick();
-                triggerHaptic('carrot');
-                onBuyLife();
-              }}
-              disabled={!canAffordLife}
-              className={`w-full mt-2 py-2.5 flex items-center justify-center gap-2 font-black text-xs uppercase tracking-wider rounded-xl transition-all ${
-                canAffordLife
-                  ? 'bg-brand-orange hover:bg-brand-orange-dark text-white cursor-pointer active:scale-95'
-                  : 'bg-white/10 text-white/30 cursor-not-allowed'
-              }`}
+              onClick={() => { soundEngine.playClick(); triggerHaptic('tap'); onOpenWardrobe(); }}
+              className="text-brand-orange text-[11px] font-bold hover:underline mt-1"
             >
-              <PlusCircle className="w-4 h-4" />
-              <span>Buy +1 Life ({EXTRA_LIFE_CARROT_COST} 🥕)</span>
+              Change Skin
             </button>
           </div>
-        ) : (
-          /* Equipped Bunny Preview Pill */
-          <div
-            onClick={() => {
-              soundEngine.playClick();
-              triggerHaptic('tap');
-              onOpenWardrobe();
-            }}
-            className="mx-auto my-3 p-2.5 bg-brand-surface hover:bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between cursor-pointer transition-all active:scale-95 group max-w-xs"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-xl sm:text-2xl group-hover:scale-110 transition-transform">🐰</span>
-              <div className="text-left">
-                <div className="text-[9px] sm:text-[10px] uppercase font-black text-white/50">Equipped Skin</div>
-                <div className="text-xs sm:text-sm font-extrabold text-white">{currentSkinObj.name}</div>
-              </div>
+        </div>
+
+        {/* Lives Status */}
+        <div className="bg-brand-surface border border-white/10 rounded-2xl p-3 sm:p-4 mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-white/60">
+              <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+              <span>Daily Lives</span>
             </div>
-            <div className="flex items-center gap-1 text-[11px] sm:text-xs font-black text-brand-orange bg-brand-orange/10 px-2.5 py-1 rounded-xl">
-              <span>{totalCarrots} 🥕</span>
-              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <div className="flex items-center gap-1">
+              <Clock className="w-3 h-3 text-white/30" />
+              <span className="text-[10px] text-white/30 font-medium">Resets in {timeLeft}</span>
             </div>
           </div>
-        )}
+          <div className="flex items-center gap-1.5">
+            {Array.from({ length: MAX_DAILY_LIVES }).map((_, i) => (
+              <Heart key={i} className={`w-5 h-5 transition-all ${i < lives ? 'fill-rose-500 text-rose-500 scale-100' : 'text-white/10 scale-90'}`} />
+            ))}
+          </div>
+        </div>
 
-        {/* Play Button (disabled if 0 lives) */}
-        <button
-          onClick={() => {
-            if (!isOutOfLives) {
+        {/* Main CTA or Buy Life */}
+        {!isOutOfLives ? (
+          <button
+            onClick={() => {
               soundEngine.playClick();
               triggerHaptic('hop');
               onStart();
-            }
-          }}
-          disabled={isOutOfLives}
-          className={`w-full mt-4 py-4 font-black text-xl sm:text-2xl tracking-wider uppercase flex items-center justify-center gap-3 group min-h-[64px] ${
-            !isOutOfLives
-              ? 'btn-primary bg-brand-purple hover:bg-brand-purple-dark text-white shadow-[0_6px_0_var(--color-brand-purple-dark)] active:translate-y-1 active:shadow-[0_2px_0_var(--color-brand-purple-dark)]'
-              : 'bg-white/10 text-white/40 cursor-not-allowed rounded-2xl'
-          }`}
+            }}
+            className="btn-primary w-full py-4 text-xl tracking-wider min-h-[56px]"
+          >
+            <Play className="w-6 h-6 fill-white" />
+            <span>HOP ({lives} lives left)</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              soundEngine.playClick();
+              triggerHaptic('carrot');
+              onBuyLife();
+            }}
+            disabled={!canAffordLife}
+            className={`w-full py-4 font-black text-lg tracking-wider uppercase rounded-2xl transition-all flex items-center justify-center gap-2 min-h-[56px] ${
+              canAffordLife
+                ? 'bg-brand-orange hover:bg-brand-orange-dark text-white shadow-[0_5px_0_var(--color-brand-orange-dark)] active:translate-y-1 active:shadow-[0_1px_0_var(--color-brand-orange-dark)] cursor-pointer'
+                : 'bg-white/10 text-white/30 cursor-not-allowed shadow-none'
+            }`}
+          >
+            <PlusCircle className="w-5 h-5" />
+            <span>Refill Life ({EXTRA_LIFE_CARROT_COST} carrots)</span>
+          </button>
+        )}
+
+        {/* Back to Home */}
+        <button
+          onClick={() => router.push('/')}
+          className="w-full mt-3 py-2.5 bg-brand-surface hover:bg-white/5 text-white/50 hover:text-white/80 font-bold text-xs rounded-xl border border-white/10 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
         >
-          <Play className="w-6 h-6 sm:w-7 sm:h-7 fill-current group-hover:scale-110 transition-transform" />
-          <span>{isOutOfLives ? 'NO LIVES LEFT' : 'HOP IN & PLAY'}</span>
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Home</span>
         </button>
 
-        {/* Quick Instructions tailored for mobile or desktop */}
-        <div className="mt-5 pt-4 border-t border-white/10 text-[11px] sm:text-xs text-white/50 font-medium space-y-2">
+        {/* Controls Tip */}
+        <div className="mt-3 bg-brand-surface/50 rounded-xl border border-white/5 p-2.5 text-center">
           {isTouchDevice ? (
-            <div className="flex items-center justify-center gap-2 text-white/70 font-bold">
-              <Smartphone className="w-4 h-4 text-brand-purple" />
-              <span>Swipe Screen or Tap D-Pad Buttons to Hop</span>
-            </div>
+            <p className="text-[10px] sm:text-[11px] text-white/40 flex items-center justify-center gap-1.5">
+              <Smartphone className="w-3 h-3" /> Swipe or use D-Pad to hop
+            </p>
           ) : (
-            <div className="flex items-center justify-center gap-2 text-white/70 font-bold flex-wrap">
-              <span className="bg-brand-surface px-2 py-1 rounded border border-white/10">WASD</span>
-              <span className="text-white/40">or</span>
-              <span className="bg-brand-surface px-2 py-1 rounded border border-white/10">ARROWS</span>
-              <span className="text-white/40">or</span>
-              <span className="bg-brand-surface px-2 py-1 rounded border border-white/10">CLICK</span>
-            </div>
+            <p className="text-[10px] sm:text-[11px] text-white/40 flex items-center justify-center gap-1.5">
+              <Keyboard className="w-3 h-3" /> Arrow keys or WASD to hop
+            </p>
           )}
-          <p className="text-[10px] sm:text-[11px] text-brand-orange/80">⚡ Speed increases every 5s • Snag 🥕 carrots for extra lives &amp; skins!</p>
+          <p className="text-[10px] sm:text-[11px] text-brand-orange/80 mt-1 flex items-center justify-center gap-1.5">
+            <Zap className="w-3 h-3" /> Speed increases every 5s &mdash; snag carrots for extra lives &amp; skins!
+          </p>
         </div>
       </div>
     </div>
@@ -183,7 +180,6 @@ export const StartOverlay: React.FC<StartOverlayProps> = ({
 interface GameOverOverlayProps {
   score: number;
   sessionCarrots: number;
-  maxCarrots: number;
   rewardTier: 'none' | 'fcfs' | 'guaranteed';
   totalCarrots: number;
   highScore: number;
@@ -197,7 +193,6 @@ interface GameOverOverlayProps {
 export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
   score,
   sessionCarrots,
-  maxCarrots,
   rewardTier,
   totalCarrots,
   highScore,
@@ -207,6 +202,7 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
   onOpenWardrobe,
   onBuyLife,
 }) => {
+  const router = useRouter();
   const carrotBonusPoints = sessionCarrots * 5;
   const totalRunScore = score + carrotBonusPoints;
   const isOutOfLives = lives <= 0;
@@ -242,7 +238,7 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
           {/* Distance */}
           <div className="flex justify-between items-center text-xs sm:text-sm font-extrabold text-white/80">
             <span className="flex items-center gap-2">
-              <span>🛣️</span> Distance Reached
+              <MapPin className="w-4 h-4 text-white/50" /> Distance Reached
             </span>
             <span className="text-sm sm:text-base text-white">{score} pts</span>
           </div>
@@ -250,7 +246,7 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
           {/* Carrots */}
           <div className="flex justify-between items-center text-xs sm:text-sm font-extrabold text-white/80">
             <span className="flex items-center gap-2">
-              <span>🥕</span> Carrots Gathered ({sessionCarrots}/{maxCarrots})
+              <Carrot className="w-4 h-4 text-brand-orange" /> Carrots Gathered ({sessionCarrots})
             </span>
             <span className="text-sm sm:text-base text-brand-orange">+{carrotBonusPoints} pts</span>
           </div>
@@ -258,7 +254,7 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
           {/* Reward Tier Banner */}
           {rewardTier === 'guaranteed' && (
             <div className="flex items-center gap-3 bg-brand-purple/10 border border-brand-purple/30 rounded-xl px-3 py-2 mt-2">
-              <span className="text-lg">💎</span>
+              <Diamond className="w-5 h-5 text-brand-purple flex-shrink-0" />
               <div>
                 <div className="text-[11px] font-black text-brand-purple">1/100 RARE — GUARANTEED REWARD UNLOCKED!</div>
                 <div className="text-[10px] text-brand-purple/70 mt-0.5">9 Carrots collected. You qualify for a guaranteed reward!</div>
@@ -267,16 +263,16 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
           )}
           {rewardTier === 'fcfs' && (
             <div className="flex items-center gap-3 bg-brand-orange/10 border border-brand-orange/30 rounded-xl px-3 py-2 mt-2">
-              <span className="text-lg">⚡</span>
+              <Zap className="w-5 h-5 text-brand-orange flex-shrink-0" />
               <div>
-                <div className="text-[11px] font-black text-brand-orange">🎉 FCFS Reward Tier Qualified!</div>
+                <div className="text-[11px] font-black text-brand-orange">FCFS Reward Tier Qualified!</div>
                 <div className="text-[10px] text-brand-orange/70 mt-0.5">5-8 Carrots collected. First-Come-First-Served reward slot!</div>
               </div>
             </div>
           )}
           {rewardTier === 'none' && (
             <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2 mt-2">
-              <span className="text-lg">🟤</span>
+              <CircleDot className="w-5 h-5 text-white/30 flex-shrink-0" />
               <div>
                 <div className="text-[11px] font-bold text-white/50">1-4 Carrots: No Reward Tier</div>
                 <div className="text-[10px] text-white/40 mt-0.5">Collect 5+ carrots in a run to earn rewards!</div>
@@ -316,7 +312,7 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
           </div>
           {isNewHigh && (
             <span className="text-[10px] font-black text-brand-dark bg-brand-orange px-2 py-1 rounded-md uppercase tracking-wider animate-pulse">
-              🎉 New Record!
+              New Record!
             </span>
           )}
         </div>
@@ -333,7 +329,7 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
               className="btn-primary w-full py-4 text-xl tracking-wider min-h-[56px]"
             >
               <RotateCcw className="w-5 h-5 stroke-[2.5]" />
-              <span>HOP AGAIN ({lives} ❤️)</span>
+              <span>HOP AGAIN ({lives} left)</span>
             </button>
           ) : (
             <button
@@ -350,7 +346,7 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
               }`}
             >
               <PlusCircle className="w-5 h-5" />
-              <span>Refill Life ({EXTRA_LIFE_CARROT_COST} 🥕)</span>
+              <span>Refill Life ({EXTRA_LIFE_CARROT_COST} carrots)</span>
             </button>
           )}
 
@@ -363,7 +359,16 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
             className="w-full py-3 bg-brand-surface hover:bg-white/5 text-white/80 font-extrabold text-sm rounded-xl border border-white/10 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
           >
             <Sparkles className="w-4 h-4 text-brand-orange" />
-            <span>Bunny Wardrobe ({totalCarrots} 🥕)</span>
+            <span>Bunny Wardrobe ({totalCarrots} carrots)</span>
+          </button>
+
+          {/* Quit to Home */}
+          <button
+            onClick={() => router.push('/')}
+            className="w-full py-2.5 text-white/40 hover:text-white/70 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <Home className="w-3.5 h-3.5" />
+            <span>Quit to Home</span>
           </button>
         </div>
       </div>
@@ -382,6 +387,8 @@ export const PauseOverlay: React.FC<PauseOverlayProps> = ({
   onRestart,
   onOpenWardrobe,
 }) => {
+  const router = useRouter();
+
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md select-none animate-fade-in">
       <div className="modal-container w-full max-w-sm text-center">
@@ -423,6 +430,15 @@ export const PauseOverlay: React.FC<PauseOverlayProps> = ({
           >
             <Sparkles className="w-4 h-4" />
             <span>Bunny Wardrobe</span>
+          </button>
+
+          {/* Quit to Home */}
+          <button
+            onClick={() => router.push('/')}
+            className="w-full py-2.5 text-white/40 hover:text-white/70 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <Home className="w-3.5 h-3.5" />
+            <span>Quit to Home</span>
           </button>
         </div>
       </div>

@@ -4,8 +4,8 @@ import { soundEngine } from './soundEngine';
 
 export interface GameEngineCallbacks {
   onScoreUpdate: (score: number) => void;
-  onCarrotCollected: (isGolden: boolean, totalSession: number, screenPos: { x: number; y: number }) => void;
-  onGameOver: (finalScore: number, sessionCarrots: number, goldenCarrots: number) => void;
+  onCarrotCollected: (totalSession: number, screenPos: { x: number; y: number }) => void;
+  onGameOver: (finalScore: number, sessionCarrots: number) => void;
   onDifficultyUpdate?: (level: number, multiplier: number) => void;
   onGameStart?: () => void;
 }
@@ -13,7 +13,6 @@ export interface GameEngineCallbacks {
 interface RowCarrot {
   mesh: THREE.Group;
   col: number;
-  isGolden: boolean;
   baseY: number;
   rotSpeed: number;
   floatOffset: number;
@@ -82,7 +81,6 @@ export class ThreeGameEngine {
     shadow: 0x000000,
     carrotOrange: 0xff6b00,
     carrotGreen: 0x38b000,
-    goldenCarrot: 0xffd000,
   };
 
   private readonly CAR_COLORS = [
@@ -104,7 +102,17 @@ export class ThreeGameEngine {
 
   private score = 0;
   private sessionCarrots = 0;
-  private sessionGoldenCarrots = 0;
+
+  // New Mechanics
+  private deathRow = -2;
+  private deathZoneMesh!: THREE.Mesh;
+  
+  private eagleGroup!: THREE.Group;
+  private eagleActive = false;
+  private eagleRow = 0;
+  private eagleDir = 1;
+  private eagleSpeed = 12;
+  private canSpawnEagle = false;
 
   // Time-based Difficulty Scaling (every 5 seconds)
   private playDuration = 0; // in seconds
@@ -140,6 +148,19 @@ export class ThreeGameEngine {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xa0e7e5);
     this.scene.fog = new THREE.Fog(0xa0e7e5, 26, 48);
+
+    // Death Zone (Cropping Wall)
+    const deathGeo = new THREE.PlaneGeometry(100, 100);
+    const deathMat = new THREE.MeshBasicMaterial({ color: 0x8b0000, transparent: true, opacity: 0.6 });
+    this.deathZoneMesh = new THREE.Mesh(deathGeo, deathMat);
+    this.deathZoneMesh.rotation.x = -Math.PI / 2;
+    this.deathZoneMesh.position.y = 0.05;
+    this.scene.add(this.deathZoneMesh);
+
+    // Eagle setup
+    this.eagleGroup = this.buildEagle();
+    this.eagleGroup.visible = false;
+    this.scene.add(this.eagleGroup);
 
     const width = this.container.clientWidth;
     const height = this.container.clientHeight || 1;
@@ -306,19 +327,66 @@ export class ThreeGameEngine {
     this.scene.add(this.bunnyGroup);
   }
 
-  /** Build 3D Collectible Carrot */
-  private buildCarrot(isGolden: boolean = false): THREE.Group {
+  /** Build 3D Eagle */
+  private buildEagle(): THREE.Group {
     const group = new THREE.Group();
+    
+    // Body
+    const bodyGeo = new THREE.BoxGeometry(0.5, 0.4, 0.8);
+    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x5c4033, flatShading: true }); // dark brown
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 1.0;
+    group.add(body);
 
-    const bodyColor = isGolden ? this.COLORS.goldenCarrot : this.COLORS.carrotOrange;
-    const leafColor = isGolden ? 0x00f5d4 : this.COLORS.carrotGreen;
+    // Head
+    const headGeo = new THREE.BoxGeometry(0.3, 0.3, 0.4);
+    const headMat = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true }); // white head
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.set(0, 1.2, 0.5);
+    group.add(head);
+
+    // Beak
+    const beakGeo = new THREE.ConeGeometry(0.1, 0.3, 4);
+    const beakMat = new THREE.MeshLambertMaterial({ color: 0xffd700, flatShading: true }); // gold
+    const beak = new THREE.Mesh(beakGeo, beakMat);
+    beak.rotation.x = Math.PI / 2;
+    beak.position.set(0, 1.15, 0.8);
+    group.add(beak);
+
+    // Wings
+    const wingGeo = new THREE.BoxGeometry(1.4, 0.1, 0.4);
+    const wingMat = new THREE.MeshLambertMaterial({ color: 0x8b4513, flatShading: true }); // saddle brown
+    const wingL = new THREE.Mesh(wingGeo, wingMat);
+    wingL.position.set(-0.9, 1.1, 0);
+    const wingR = new THREE.Mesh(wingGeo, wingMat);
+    wingR.position.set(0.9, 1.1, 0);
+    
+    // Animate wings later by tracking them, or just let them be static for a simpler approach.
+    // For simplicity, we'll give the whole group a bobbing motion.
+    group.add(wingL);
+    group.add(wingR);
+
+    // Shadow
+    const shadowGeo = new THREE.PlaneGeometry(1.2, 1.2);
+    const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 });
+    const shadow = new THREE.Mesh(shadowGeo, shadowMat);
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.position.y = 0.02;
+    group.add(shadow);
+
+    return group;
+  }
+
+  /** Build 3D Collectible Carrot */
+  private buildCarrot(): THREE.Group {
+    const group = new THREE.Group();
 
     // Carrot Root (Cone tapering downwards)
     const coneGeo = new THREE.ConeGeometry(0.14, 0.42, 7);
     const coneMat = new THREE.MeshLambertMaterial({
-      color: bodyColor,
+      color: this.COLORS.carrotOrange,
       flatShading: true,
-      emissive: isGolden ? 0x554400 : 0x221100,
+      emissive: 0x221100,
     });
     const coneMesh = new THREE.Mesh(coneGeo, coneMat);
     coneMesh.rotation.x = Math.PI; // Point down
@@ -329,7 +397,7 @@ export class ThreeGameEngine {
     for (let i = 0; i < 3; i++) {
       const angle = (i * Math.PI * 2) / 3;
       const leafGeo = new THREE.BoxGeometry(0.04, 0.16, 0.04);
-      const leafMat = new THREE.MeshLambertMaterial({ color: leafColor, flatShading: true });
+      const leafMat = new THREE.MeshLambertMaterial({ color: this.COLORS.carrotGreen, flatShading: true });
       const leaf = new THREE.Mesh(leafGeo, leafMat);
       leaf.position.set(Math.cos(angle) * 0.04, 0.48, Math.sin(angle) * 0.04);
       leaf.rotation.z = (Math.cos(angle) * Math.PI) / 8;
@@ -340,7 +408,7 @@ export class ThreeGameEngine {
     // Floating Ground Halo
     const haloGeo = new THREE.RingGeometry(0.18, 0.26, 12);
     const haloMat = new THREE.MeshBasicMaterial({
-      color: isGolden ? 0xffea00 : 0xff9100,
+      color: 0xff9100,
       side: THREE.DoubleSide,
       transparent: true,
       opacity: 0.35,
@@ -352,6 +420,13 @@ export class ThreeGameEngine {
 
     group.scale.set(1.1, 1.1, 1.1);
     return group;
+  }
+
+  /** Get carrot spawn chance based on how many the player has already collected */
+  private getCarrotSpawnChance(baseChance: number): number {
+    if (this.sessionCarrots >= 8) return baseChance * 0.15; // ultra-rare for 9th
+    if (this.sessionCarrots >= 5) return baseChance * 0.5;  // halved after 5
+    return baseChance;
   }
 
   /** Build 3D Car */
@@ -547,21 +622,20 @@ export class ThreeGameEngine {
         group.add(tree);
       }
 
-      // Spawn Carrots on Grass (38% chance per row if not start tile)
-      if (index > 0 && Math.random() < 0.38) {
+      // Spawn Carrots on Grass (difficulty-scaled chance per row if not start tile)
+      const grassSpawnChance = this.getCarrotSpawnChance(0.38);
+      if (index > 0 && Math.random() < grassSpawnChance) {
         const carrotCol = Math.floor(-this.HALF_WIDTH + Math.random() * (this.HALF_WIDTH * 2 + 1));
         if (!rowData.blocked.has(carrotCol)) {
-          const isGolden = Math.random() < 0.12;
-          const carrotMesh = this.buildCarrot(isGolden);
+          const carrotMesh = this.buildCarrot();
           carrotMesh.position.set(carrotCol * this.TILE, 0.05, 0);
           group.add(carrotMesh);
 
           rowData.carrots.push({
             mesh: carrotMesh,
             col: carrotCol,
-            isGolden,
             baseY: 0.05,
-            rotSpeed: isGolden ? 3.5 : 2.0,
+            rotSpeed: 2.0,
             floatOffset: Math.random() * Math.PI * 2,
           });
         }
@@ -608,17 +682,16 @@ export class ThreeGameEngine {
         group.add(log);
         rowData.logs.push({ mesh: log, halfLen: logLen / 2 });
 
-        // Rare carrot floating on top of a log
-        if (Math.random() < 0.2) {
-          const isGolden = Math.random() < 0.18;
-          const carrotMesh = this.buildCarrot(isGolden);
+        // Rare carrot floating on top of a log (difficulty-scaled)
+        const logSpawnChance = this.getCarrotSpawnChance(0.2);
+        if (Math.random() < logSpawnChance) {
+          const carrotMesh = this.buildCarrot();
           carrotMesh.position.set(0, 0.24, 0);
           log.add(carrotMesh);
 
           rowData.carrots.push({
             mesh: carrotMesh,
             col: 0,
-            isGolden,
             baseY: 0.24,
             rotSpeed: 2.5,
             floatOffset: Math.random() * Math.PI * 2,
@@ -677,7 +750,12 @@ export class ThreeGameEngine {
 
     this.score = 0;
     this.sessionCarrots = 0;
-    this.sessionGoldenCarrots = 0;
+    this.deathRow = -2;
+    this.deathZoneMesh.position.z = -this.deathRow * this.TILE + 50;
+    this.eagleActive = false;
+    this.canSpawnEagle = false;
+    this.eagleGroup.visible = false;
+    
     this.callbacks.onScoreUpdate(0);
     if (this.callbacks.onDifficultyUpdate) {
       this.callbacks.onDifficultyUpdate(1, 1.0);
@@ -822,24 +900,19 @@ export class ThreeGameEngine {
       }
 
       if (match) {
-        const isGolden = carrot.isGolden;
-        if (isGolden) {
-          this.sessionGoldenCarrots += 1;
-          this.sessionCarrots += 5;
-          soundEngine.playGoldenCarrot();
-          this.spawnParticleBurst(playerX, 0.4, -rowIndex * this.TILE, 0xffd700, 18);
-        } else {
-          this.sessionCarrots += 1;
-          soundEngine.playCarrot();
-          this.spawnParticleBurst(playerX, 0.4, -rowIndex * this.TILE, 0xff7a00, 12);
-        }
+        this.sessionCarrots += 1;
+        soundEngine.playCarrot();
+        this.spawnParticleBurst(playerX, 0.4, -rowIndex * this.TILE, 0xff7a00, 12);
 
         const carrotWorldPos = new THREE.Vector3(playerX, 0.5, -rowIndex * this.TILE);
         carrotWorldPos.project(this.camera);
         const screenX = ((carrotWorldPos.x + 1) * this.container.clientWidth) / 2;
         const screenY = ((-carrotWorldPos.y + 1) * this.container.clientHeight) / 2;
+        this.callbacks.onCarrotCollected(this.sessionCarrots, { x: screenX, y: screenY });
 
-        this.callbacks.onCarrotCollected(isGolden, this.sessionCarrots, { x: screenX, y: screenY });
+        if (this.sessionCarrots >= 5) {
+          this.canSpawnEagle = true;
+        }
 
         if (carrot.attachedToLog) {
           carrot.attachedToLog.remove(carrot.mesh);
@@ -950,7 +1023,7 @@ export class ThreeGameEngine {
     }
 
     setTimeout(() => {
-      this.callbacks.onGameOver(this.score, this.sessionCarrots, this.sessionGoldenCarrots);
+      this.callbacks.onGameOver(this.score, this.sessionCarrots);
     }, 600);
   }
 
@@ -962,6 +1035,9 @@ export class ThreeGameEngine {
     // Every 5 seconds, difficulty level increases and multiplier goes up +8%
     const newLevel = 1 + Math.floor(this.playDuration / 5);
     const newMultiplier = 1.0 + (newLevel - 1) * 0.08;
+
+    this.deathRow += 1.8 * this.difficultyMultiplier * dt;
+    this.deathZoneMesh.position.z = -this.deathRow * this.TILE + 50;
 
     if (newLevel !== this.currentDifficultyLevel) {
       this.currentDifficultyLevel = newLevel;
@@ -1054,6 +1130,35 @@ export class ThreeGameEngine {
         }
       }
     });
+
+    // Eagle Logic
+    if (this.canSpawnEagle && !this.eagleActive && Math.random() < 0.005) {
+      this.eagleActive = true;
+      this.eagleRow = this.player.row;
+      this.eagleDir = Math.random() > 0.5 ? 1 : -1;
+      this.eagleGroup.position.set(-this.eagleDir * 14, 0, -this.eagleRow * this.TILE);
+      this.eagleGroup.rotation.y = this.eagleDir === 1 ? Math.PI / 2 : -Math.PI / 2;
+      this.eagleGroup.visible = true;
+      soundEngine.playHop(); // small warning flap
+    }
+
+    if (this.eagleActive) {
+      this.eagleGroup.position.x += this.eagleDir * this.eagleSpeed * dt;
+      this.eagleGroup.position.y = Math.sin(now * 0.02) * 0.3; // flapping bob
+
+      if (this.alive && !this.hopping && this.player.row === this.eagleRow) {
+        if (Math.abs(this.eagleGroup.position.x - this.player.x) < 0.8) {
+          soundEngine.playSquish();
+          this.die();
+        }
+      }
+
+      if ((this.eagleDir === 1 && this.eagleGroup.position.x > 14) ||
+          (this.eagleDir === -1 && this.eagleGroup.position.x < -14)) {
+        this.eagleActive = false;
+        this.eagleGroup.visible = false;
+      }
+    }
   }
 
   private updateSplash(now: number) {
@@ -1105,6 +1210,10 @@ export class ThreeGameEngine {
           this.updateHop(now);
           this.idleAnim(dt);
           this.updateRows(dt, now);
+          
+          if (this.player.row <= Math.floor(this.deathRow)) {
+            this.die();
+          }
         } else if (this.splashing) {
           this.updateSplash(now);
           this.updateRows(dt * 0.3, now);

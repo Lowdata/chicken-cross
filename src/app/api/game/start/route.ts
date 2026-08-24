@@ -109,11 +109,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: ipResult.reason }, { status, headers });
     }
 
-    // ── WALLET BAN CHECK ──
+    let completedTasks: string[] = [];
     if (address) {
       const user = await db.collection('users').findOne({ walletAddress: address.toLowerCase() });
       if (user?.isBanned) {
         return NextResponse.json({ error: 'Account is banned.' }, { status: 403 });
+      }
+      if (user?.completedTasks) {
+        completedTasks = user.completedTasks;
       }
     }
 
@@ -145,8 +148,7 @@ export async function POST(req: NextRequest) {
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('2h')
       .sign(JWT_SECRET);
-
-    return NextResponse.json({ success: true, sessionToken: token, maxCarrots, country });
+    return NextResponse.json({ success: true, sessionToken: token, maxCarrots, country, completedTasks });
   } catch (err) {
     console.error('POST /api/game/start error:', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

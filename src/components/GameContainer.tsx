@@ -48,8 +48,13 @@ export const GameContainer: React.FC = () => {
   const [gameStatus, setGameStatus] = useState<GameStatus>('idle');
   const [score, setScore] = useState<number>(0);
   const [sessionCarrots, setSessionCarrots] = useState<number>(0);
-  const [sessionGoldenCarrots, setSessionGoldenCarrots] = useState<number>(0);
   const [isNewHigh, setIsNewHigh] = useState<boolean>(false);
+  const [completedTasks, setCompletedTasks] = useState<string[]>([]);
+  const completedTasksRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    completedTasksRef.current = completedTasks;
+  }, [completedTasks]);
 
   // Difficulty scaling (every 5 seconds)
   const [difficultyLevel, setDifficultyLevel] = useState<number>(1);
@@ -189,14 +194,9 @@ export const GameContainer: React.FC = () => {
           setDifficultyLevel(level);
           setDifficultyMultiplier(multiplier);
         },
-        onCarrotCollected: (isGolden, currentSessionTotal, screenPos) => {
+        onCarrotCollected: (currentSessionTotal, screenPos) => {
           setSessionCarrots(currentSessionTotal);
-          if (isGolden) {
-            setSessionGoldenCarrots((prev) => prev + 1);
-            triggerHaptic('goldCarrot');
-          } else {
-            triggerHaptic('carrot');
-          }
+          triggerHaptic('carrot');
 
           // Add floating text badge
           const newId = Date.now() + Math.random();
@@ -206,14 +206,27 @@ export const GameContainer: React.FC = () => {
               id: newId,
               x: screenPos.x,
               y: screenPos.y,
-              text: isGolden ? '+5' : '+1',
-              isGolden,
+              text: '+1',
+              isGolden: false,
             },
           ]);
 
           setTimeout(() => {
             setFloatingTexts((prev) => prev.filter((item) => item.id !== newId));
           }, 900);
+
+          // Check if we hit a task milestone: 3, 5, 7, 9...
+          const isMilestone = currentSessionTotal === 3 || (currentSessionTotal > 3 && (currentSessionTotal - 3) % 2 === 0);
+          if (isMilestone) {
+            // Check if core tasks are incomplete
+            const coreTasks = ['link_twitter', 'like_post', 'retweet_post'];
+            const allCoreDone = coreTasks.every(t => completedTasksRef.current.includes(t));
+            if (!allCoreDone) {
+              if (engineRef.current) engineRef.current.pause();
+              setGameStatus('paused');
+              setIsTasksOpen(true);
+            }
+          }
         },
         onGameOver: async (finalScore, sessionCarrotsGathered) => {
           const runBonus = sessionCarrotsGathered * 5;
@@ -360,6 +373,7 @@ export const GameContainer: React.FC = () => {
     // Call /api/game/start to get session token & maxCarrots (9th carrot 1/100 roll)
     let sessionMaxCarrots = 8;
     let token: string | null = null;
+    let fetchedTasks: string[] = [];
     try {
       const res = await fetch('/api/game/start', {
         method: 'POST',
@@ -373,6 +387,7 @@ export const GameContainer: React.FC = () => {
       if (data.success) {
         token = data.sessionToken;
         sessionMaxCarrots = data.maxCarrots || 8;
+        fetchedTasks = data.completedTasks || [];
       } else if (data.error?.includes('CAPTCHA')) {
         // Turnstile token was invalid — reset widget and ask user to try again
         if (turnstileWidgetId.current && window.turnstile) {
@@ -389,6 +404,7 @@ export const GameContainer: React.FC = () => {
     setSessionToken(token);
     setMaxCarrots(sessionMaxCarrots);
     setRewardTier('none');
+    setCompletedTasks(fetchedTasks);
 
     // Reset turnstile token (each token is single-use)
     setCfTurnstileToken(null);
@@ -402,7 +418,6 @@ export const GameContainer: React.FC = () => {
 
     setScore(0);
     setSessionCarrots(0);
-    setSessionGoldenCarrots(0);
     setIsNewHigh(false);
     setDifficultyLevel(1);
     setDifficultyMultiplier(1.0);
@@ -560,7 +575,6 @@ export const GameContainer: React.FC = () => {
       <HUD
         score={score}
         sessionCarrots={sessionCarrots}
-        maxCarrots={maxCarrots}
         totalCarrots={totalCarrots}
         highScore={highScore}
         lives={lives}
@@ -603,14 +617,13 @@ export const GameContainer: React.FC = () => {
         <GameOverOverlay
           score={score}
           sessionCarrots={sessionCarrots}
-          maxCarrots={maxCarrots}
           rewardTier={rewardTier}
           totalCarrots={totalCarrots}
           highScore={highScore}
           isNewHigh={isNewHigh}
           lives={lives}
           onRetry={handleStartGame}
-          onOpenWardrobe={() => setIsWardrobeOpen(true)}
+          onOpenWardrobe={() => { setGameStatus('idle'); setIsWardrobeOpen(true); }}
           onBuyLife={handleBuyLife}
         />
       )}

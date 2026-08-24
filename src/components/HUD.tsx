@@ -11,7 +11,6 @@ import { TouchControlMode } from './TouchControls';
 interface HUDProps {
   score: number;
   sessionCarrots: number;
-  maxCarrots: number;
   totalCarrots: number;
   highScore: number;
   lives: number;
@@ -30,7 +29,6 @@ interface HUDProps {
 export const HUD: React.FC<HUDProps> = ({
   score,
   sessionCarrots,
-  maxCarrots,
   totalCarrots,
   highScore,
   lives,
@@ -60,7 +58,7 @@ export const HUD: React.FC<HUDProps> = ({
         {/* Live session carrots collected - shows X/maxCarrots */}
         <div className="hud-pill bg-brand-orange/20 text-brand-orange backdrop-blur-md border border-brand-orange/40 rounded-2xl px-2.5 sm:px-3.5 py-1 sm:py-1.5 shadow-[0_0_15px_rgba(245,158,11,0.2)] flex items-center gap-1.5 sm:gap-2 animate-bounce-subtle">
           <span className="text-base sm:text-lg">🥕</span>
-          <span className="font-extrabold text-sm sm:text-xl tracking-wide text-white">{sessionCarrots}/{maxCarrots}</span>
+          <span className="font-extrabold text-sm sm:text-xl tracking-wide text-white">{sessionCarrots}</span>
         </div>
 
         {/* Speed / Difficulty boost badge (shows when multiplier > 1.0) */}

@@ -2,6 +2,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { OnboardingModal } from '@/components/OnboardingModal';
+import {
+  Gamepad2, Carrot, Gift, Zap, Diamond, CircleDot,
+  Heart, Repeat2, Users, Shield, Smartphone,
+  Globe, ChevronDown, Play,
+} from 'lucide-react';
+
+const TwitterIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+  </svg>
+);
 
 /* ──────────────────────────────────────────────
    CSS Pixel Art Bunny — built with inline SVG
@@ -118,16 +138,35 @@ const CARROT_POSITIONS = [
 ];
 
 /* ──────────────────────────────────────────────
-   Reward Tier Badge
+   Icon wrapper for step / feature cards
 ────────────────────────────────────────────── */
-const TierBadge = ({
-  icon, label, description, highlightClass
-}: { icon: string; label: string; description: string; highlightClass?: string }) => (
-  <div className={`card-surface text-left ${highlightClass || ''}`}>
-    <div className="text-2xl mb-2">{icon}</div>
-    <div className="font-black text-sm mb-1">{label}</div>
-    <div className="text-[11px] opacity-75 leading-relaxed">{description}</div>
+const IconCircle = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${className}`}>
+    {children}
   </div>
+);
+
+/* ──────────────────────────────────────────────
+   SVG Carrot icon for nav logo
+────────────────────────────────────────────── */
+const BunnyLogo = () => (
+  <svg viewBox="0 0 24 28" className="w-6 h-7" style={{ imageRendering: 'pixelated', shapeRendering: 'crispEdges' }} aria-hidden>
+    {/* Left ear */}
+    <rect x="3" y="0" width="4" height="10" fill="#f0f0f0" />
+    <rect x="4" y="1" width="2" height="7" fill="#ffb3c6" />
+    {/* Right ear */}
+    <rect x="17" y="0" width="4" height="10" fill="#f0f0f0" />
+    <rect x="18" y="1" width="2" height="7" fill="#ffb3c6" />
+    {/* Head */}
+    <rect x="2" y="8" width="20" height="12" fill="#f5f5f0" />
+    {/* Eyes */}
+    <rect x="6" y="12" width="3" height="3" fill="#1a1a2e" />
+    <rect x="15" y="12" width="3" height="3" fill="#1a1a2e" />
+    {/* Nose */}
+    <rect x="11" y="16" width="2" height="2" fill="#ffb3c6" />
+    {/* Body */}
+    <rect x="4" y="20" width="16" height="8" fill="#f5f5f0" />
+  </svg>
 );
 
 /* ──────────────────────────────────────────────
@@ -203,7 +242,7 @@ export default function LandingPage() {
           style={{ background: scrollY > 40 ? 'rgba(10,10,25,0.85)' : 'transparent', backdropFilter: scrollY > 40 ? 'blur(16px)' : 'none', borderBottom: scrollY > 40 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}
         >
           <div className="flex items-center gap-2.5">
-            <span className="text-2xl" style={{ imageRendering: 'pixelated' }}>🐰</span>
+            <BunnyLogo />
             <span className="font-black text-white text-lg tracking-tight" style={{ fontFamily: 'var(--font-fredoka, Fredoka, sans-serif)' }}>
               BUNNY HOP
             </span>
@@ -215,7 +254,8 @@ export default function LandingPage() {
               onClick={() => setIsModalOpen(true)}
               className="btn-primary py-2 px-4 text-xs sm:text-sm"
             >
-              Play Now 🎮
+              <Play className="w-3.5 h-3.5 fill-white" />
+              <span>Play Now</span>
             </button>
           </div>
         </nav>
@@ -259,7 +299,7 @@ export default function LandingPage() {
             The <span className="text-amber-400 font-black">pixel-perfect</span> arcade game where every hop earns real Web3 rewards.
           </p>
           <p className="text-white/40 text-xs sm:text-sm mb-8 fade-up fade-up-2">
-            Dodge traffic • Collect carrots • Claim rewards
+            Dodge traffic &bull; Collect carrots &bull; Claim rewards
           </p>
 
           {/* CTA */}
@@ -268,23 +308,25 @@ export default function LandingPage() {
               onClick={() => setIsModalOpen(true)}
               className="btn-primary pixel-pulse text-base sm:text-lg"
             >
-              🎮 Play Now &amp; Earn Carrots
+              <Gamepad2 className="w-5 h-5" />
+              <span>Play Now &amp; Earn Carrots</span>
             </button>
-            <a href="#how" className="btn-secondary text-sm">
-              Learn More ↓
+            <a href="#how" className="btn-secondary text-sm flex items-center gap-1.5">
+              <span>Learn More</span>
+              <ChevronDown className="w-4 h-4" />
             </a>
           </div>
 
           {/* Social proof pills */}
           <div className="mt-10 flex flex-wrap gap-2 justify-center fade-up fade-up-4">
             {[
-              { emoji: '🔒', text: 'Web3 Secured' },
-              { emoji: '⚡', text: 'Instant Rewards' },
-              { emoji: '📱', text: 'Mobile Ready' },
-              { emoji: '🌍', text: 'Play Anywhere' },
+              { icon: <Shield className="w-3.5 h-3.5" />, text: 'Web3 Secured' },
+              { icon: <Zap className="w-3.5 h-3.5" />, text: 'Instant Rewards' },
+              { icon: <Smartphone className="w-3.5 h-3.5" />, text: 'Mobile Ready' },
+              { icon: <Globe className="w-3.5 h-3.5" />, text: 'Play Anywhere' },
             ].map((p) => (
               <span key={p.text} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-xs font-semibold">
-                {p.emoji} {p.text}
+                {p.icon} {p.text}
               </span>
             ))}
           </div>
@@ -307,21 +349,30 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
               {
-                step: '01', emoji: '🎮', title: 'Hop Across',
+                step: '01',
+                icon: <Gamepad2 className="w-6 h-6 text-brand-orange" />,
+                iconBg: 'bg-brand-orange/10',
+                title: 'Hop Across',
                 desc: 'Guide your pixel bunny across busy roads and rivers. Each hop forward scores points. Avoid cars — they hurt!'
               },
               {
-                step: '02', emoji: '🥕', title: 'Collect Carrots',
+                step: '02',
+                icon: <Carrot className="w-6 h-6 text-orange-400" />,
+                iconBg: 'bg-orange-400/10',
+                title: 'Collect Carrots',
                 desc: 'Gather carrots scattered across the map. Hit 5+ in one run to qualify for FCFS rewards. Hit all 9 for guaranteed rare rewards.'
               },
               {
-                step: '03', emoji: '💎', title: 'Claim Rewards',
+                step: '03',
+                icon: <Gift className="w-6 h-6 text-brand-purple" />,
+                iconBg: 'bg-brand-purple/10',
+                title: 'Claim Rewards',
                 desc: 'Connect your wallet, complete tasks, and claim your Web3 rewards. Refer friends for bonus carrots and exclusive perks.'
               },
             ].map((s) => (
               <div key={s.step} className="card-surface relative group">
                 <div className="absolute -top-3 left-5 px-2 py-0.5 rounded-md bg-brand-orange text-white text-[10px] font-black tracking-widest">{s.step}</div>
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{s.emoji}</div>
+                <IconCircle className={s.iconBg}>{s.icon}</IconCircle>
                 <h3 className="text-white font-black text-lg mb-2">{s.title}</h3>
                 <p className="text-white/50 text-sm leading-relaxed">{s.desc}</p>
               </div>
@@ -339,21 +390,30 @@ export default function LandingPage() {
             <p className="text-white/40 text-sm mt-2">Every run can earn you a reward — if you hop fast enough.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <TierBadge
-              icon="🟤" label="1–4 Carrots: No Reward"
-              description="You're warming up! Keep hopping and grab more carrots next run."
-              highlightClass="opacity-75"
-            />
-            <TierBadge
-              icon="⚡" label="5–8 Carrots: FCFS Tier"
-              description="First-Come-First-Served! Submit your score early to claim from the reward pool."
-              highlightClass="border-brand-orange/50 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
-            />
-            <TierBadge
-              icon="💎" label="9 Carrots: GUARANTEED"
-              description="The 9th carrot has 1-in-100 spawn odds. Hit it and a guaranteed reward is yours — no racing needed."
-              highlightClass="border-brand-purple/50 shadow-[0_0_20px_rgba(139,92,246,0.15)] bg-brand-purple/5 hover:bg-brand-purple/10"
-            />
+            {/* Tier 1 */}
+            <div className="card-surface text-left opacity-75">
+              <IconCircle className="bg-white/5">
+                <CircleDot className="w-6 h-6 text-white/40" />
+              </IconCircle>
+              <div className="font-black text-sm mb-1">1–4 Carrots: No Reward</div>
+              <div className="text-[11px] opacity-75 leading-relaxed">You&apos;re warming up! Keep hopping and grab more carrots next run.</div>
+            </div>
+            {/* Tier 2 */}
+            <div className="card-surface text-left border-brand-orange/50 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+              <IconCircle className="bg-brand-orange/10">
+                <Zap className="w-6 h-6 text-brand-orange" />
+              </IconCircle>
+              <div className="font-black text-sm mb-1">5–8 Carrots: FCFS Tier</div>
+              <div className="text-[11px] opacity-75 leading-relaxed">First-Come-First-Served! Submit your score early to claim from the reward pool.</div>
+            </div>
+            {/* Tier 3 */}
+            <div className="card-surface text-left border-brand-purple/50 shadow-[0_0_20px_rgba(139,92,246,0.15)] bg-brand-purple/5 hover:bg-brand-purple/10">
+              <IconCircle className="bg-brand-purple/10">
+                <Diamond className="w-6 h-6 text-brand-purple" />
+              </IconCircle>
+              <div className="font-black text-sm mb-1">9 Carrots: GUARANTEED</div>
+              <div className="text-[11px] opacity-75 leading-relaxed">The 9th carrot has 1-in-100 spawn odds. Hit it and a guaranteed reward is yours — no racing needed.</div>
+            </div>
           </div>
         </section>
 
@@ -362,7 +422,9 @@ export default function LandingPage() {
           <div className="card-surface p-8 sm:p-10 border-brand-purple/20 bg-gradient-to-br from-brand-orange/5 to-brand-purple/10">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 md:gap-12">
               <div>
-                <span className="text-3xl mb-3 block">🎁</span>
+                <IconCircle className="bg-brand-purple/10">
+                  <Gift className="w-6 h-6 text-brand-purple" />
+                </IconCircle>
                 <h2 className="text-2xl sm:text-3xl font-black text-white mb-2" style={{ fontFamily: 'var(--font-fredoka, Fredoka, sans-serif)' }}>
                   Earn More With Tasks
                 </h2>
@@ -372,15 +434,17 @@ export default function LandingPage() {
               </div>
               <div className="grid grid-cols-2 gap-3 min-w-[200px]">
                 {[
-                  { icon: '🐦', task: 'Link Twitter', bonus: '+10 🥕' },
-                  { icon: '❤️', task: 'Like Post', bonus: '+5 🥕' },
-                  { icon: '🔁', task: 'Retweet', bonus: '+5 🥕' },
-                  { icon: '👥', task: 'Refer Friend', bonus: '+20 🥕' },
+                  { icon: <TwitterIcon className="w-5 h-5 text-sky-400" />, task: 'Link Twitter', bonus: '+10' },
+                  { icon: <Heart className="w-5 h-5 text-rose-400" />, task: 'Like Post', bonus: '+5' },
+                  { icon: <Repeat2 className="w-5 h-5 text-emerald-400" />, task: 'Retweet', bonus: '+5' },
+                  { icon: <Users className="w-5 h-5 text-violet-400" />, task: 'Refer Friend', bonus: '+20' },
                 ].map((t) => (
-                  <div key={t.task} className="bg-white/5 rounded-xl p-2.5 text-center border border-white/10">
-                    <div className="text-lg">{t.icon}</div>
+                  <div key={t.task} className="bg-white/5 rounded-xl p-2.5 text-center border border-white/10 hover:bg-white/10 transition-colors">
+                    <div className="flex justify-center mb-1">{t.icon}</div>
                     <div className="text-white/60 text-[10px] font-semibold mt-0.5">{t.task}</div>
-                    <div className="text-orange-400 text-[11px] font-black">{t.bonus}</div>
+                    <div className="text-orange-400 text-[11px] font-black flex items-center justify-center gap-0.5">
+                      {t.bonus} <Carrot className="w-3 h-3" />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -390,7 +454,7 @@ export default function LandingPage() {
 
         {/* ── FINAL CTA ── */}
         <section className="py-20 px-5 text-center">
-          <div className="mb-6">
+          <div className="mb-6 flex justify-center">
             <BunnyPixelArt animate={false} />
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white mb-4" style={{ fontFamily: 'var(--font-fredoka, Fredoka, sans-serif)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
@@ -403,14 +467,15 @@ export default function LandingPage() {
             onClick={() => setIsModalOpen(true)}
             className="btn-primary mx-auto text-lg"
           >
-            🐰 Start Playing Now
+            <Play className="w-5 h-5 fill-white" />
+            <span>Start Playing Now</span>
           </button>
         </section>
 
         {/* ── FOOTER ── */}
         <footer className="border-t border-white/5 py-8 px-5 text-center">
           <div className="text-white/20 text-xs">
-            © 2024 Bunny Hop · Built on Web3 · <span className="text-orange-500/60">Earn while you play</span>
+            &copy; 2024 Bunny Hop &middot; Built on Web3 &middot; <span className="text-orange-500/60">Earn while you play</span>
           </div>
         </footer>
       </div>

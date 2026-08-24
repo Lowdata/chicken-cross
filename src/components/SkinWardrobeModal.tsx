@@ -62,7 +62,7 @@ export const SkinWardrobeModal: React.FC<SkinWardrobeModalProps> = ({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in select-none">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in select-none">
       <div className="bg-white/95 backdrop-blur-xl rounded-3xl border-4 border-amber-300 max-w-xl w-full p-4 sm:p-7 shadow-2xl relative max-h-[88dvh] overflow-hidden flex flex-col">
         {/* Sticky Header */}
         <div className="flex justify-between items-center pb-3 border-b border-slate-100 flex-shrink-0">
