@@ -180,9 +180,13 @@ export const GameContainer: React.FC = () => {
     }).catch((err) => console.error('User sync error:', err));
   }, [address]);
 
-  // Initialize Three.js Engine
+  // Initialize Three.js Engine — only re-init if the wallet address changes.
+  // Skin changes are handled via engine.setSkin() to avoid full re-initialization.
   useEffect(() => {
     if (!containerRef.current) return;
+
+    // Read current skin from localStorage to avoid stale closure
+    const initialSkin = localStorage.getItem(STORAGE_KEYS.SELECTED_SKIN) || 'classic';
 
     const engine = new ThreeGameEngine(
       containerRef.current,
@@ -278,7 +282,7 @@ export const GameContainer: React.FC = () => {
           setGameStatus('gameover');
         },
       },
-      selectedSkin
+      initialSkin
     );
 
     engineRef.current = engine;
@@ -287,7 +291,7 @@ export const GameContainer: React.FC = () => {
       engine.destroy();
       engineRef.current = null;
     };
-  }, [address, selectedSkin]);
+  }, [address]); // ✅ selectedSkin removed — skin changes go through engine.setSkin()
 
   // Sync Skin Changes
   const handleSelectSkin = useCallback((skinId: string) => {

@@ -63,7 +63,8 @@ export class ThreeGameEngine {
   private readonly ROW_LOOKAHEAD = 28;
   private readonly ROW_KEEP_BEHIND = 7;
   private readonly HOP_DURATION = 135; // ms
-  private readonly CAM_OFFSET = new THREE.Vector3(-8.5, 11.2, 12.8);
+  // Street-level front-facing camera offset (Subway Surfers style)
+  private readonly CAM_OFFSET = new THREE.Vector3(0, 3.5, 8.0);
 
   // Colors
   private readonly COLORS = {
@@ -104,7 +105,7 @@ export class ThreeGameEngine {
   private sessionCarrots = 0;
 
   // New Mechanics
-  private deathRow = -2;
+  private deathRow = -1;
   private deathZoneMesh!: THREE.Mesh;
   
   private eagleGroup!: THREE.Group;
@@ -130,6 +131,8 @@ export class ThreeGameEngine {
   private earFlapTimer = 0;
   private splashing = false;
   private splashStart = 0;
+  // Cached Vector3 for camera update — avoids per-frame heap allocation
+  private readonly _camTarget = new THREE.Vector3();
 
   constructor(container: HTMLElement, callbacks: GameEngineCallbacks, initialSkinId: string = 'classic') {
     this.container = container;
@@ -147,15 +150,40 @@ export class ThreeGameEngine {
   private initScene() {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xa0e7e5);
-    this.scene.fog = new THREE.Fog(0xa0e7e5, 26, 48);
+    // Tighter fog for front-facing view — rows fade out naturally at a distance
+    this.scene.fog = new THREE.Fog(0xa0e7e5, 18, 40);
 
-    // Death Zone (Cropping Wall)
-    const deathGeo = new THREE.PlaneGeometry(100, 100);
-    const deathMat = new THREE.MeshBasicMaterial({ color: 0x8b0000, transparent: true, opacity: 0.6 });
+    // Death Zone — tall dark upright wall that creeps in from behind the player
+    // Replaces the old flat brown slab on the ground
+    const deathGeo = new THREE.PlaneGeometry(60, 20);
+    const deathMat = new THREE.MeshBasicMaterial({
+      color: 0x050508,
+      transparent: true,
+      opacity: 0.88,
+      side: THREE.DoubleSide,
+    });
     this.deathZoneMesh = new THREE.Mesh(deathGeo, deathMat);
-    this.deathZoneMesh.rotation.x = -Math.PI / 2;
-    this.deathZoneMesh.position.y = 0.05;
+    // Stand upright, facing forward
+    this.deathZoneMesh.rotation.x = 0;
+    this.deathZoneMesh.position.y = 10; // center of the wall is 10 units high
     this.scene.add(this.deathZoneMesh);
+
+    // Ground fog strip — gradient in front of the wall for a smooth transition
+    const fogStripGeo = new THREE.PlaneGeometry(60, 5);
+    const fogStripMat = new THREE.MeshBasicMaterial({
+      color: 0x080810,
+      transparent: true,
+      opacity: 0.65,
+      depthWrite: false,
+    });
+    const fogStrip = new THREE.Mesh(fogStripGeo, fogStripMat);
+    fogStrip.rotation.x = -Math.PI / 2;
+    fogStrip.position.y = 0.06;
+    // Attach the ground fog to the wall so they move together
+    this.deathZoneMesh.add(fogStrip);
+    // Position the fog strip in the wall's local space: below center, in front
+    fogStrip.position.set(0, -10, 0); // on the ground plane relative to wall
+    fogStrip.rotation.set(-Math.PI / 2, 0, 0);
 
     // Eagle setup
     this.eagleGroup = this.buildEagle();
@@ -166,14 +194,12 @@ export class ThreeGameEngine {
     const height = this.container.clientHeight || 1;
     const aspect = width / height;
 
-    // Adaptive FOV for mobile portrait vs landscape screens
-    const targetFov = aspect < 1.0 
-      ? Math.min(62, Math.max(38, 38 + (1.0 - aspect) * 32))
-      : (aspect < 1.4 ? Math.min(46, Math.max(38, 38 + (1.4 - aspect) * 15)) : 38);
+    // Fixed 55° FOV — cinematic, forward-looking front view
+    const targetFov = 55;
 
     this.camera = new THREE.PerspectiveCamera(targetFov, aspect, 0.1, 100);
     this.camera.position.copy(this.CAM_OFFSET);
-    this.camera.lookAt(0, 0.3, -1.5);
+    this.camera.lookAt(0, 1.0, -8);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -750,8 +776,10 @@ export class ThreeGameEngine {
 
     this.score = 0;
     this.sessionCarrots = 0;
-    this.deathRow = -2;
-    this.deathZoneMesh.position.z = -this.deathRow * this.TILE + 50;
+    // Start death zone just 1 row behind the player — urgency from frame 1
+    this.deathRow = -1;
+    // Position the wall behind the player in world space (positive Z = behind camera)
+    this.deathZoneMesh.position.z = -this.deathRow * this.TILE;
     this.eagleActive = false;
     this.canSpawnEagle = false;
     this.eagleGroup.visible = false;
@@ -960,6 +988,12 @@ export class ThreeGameEngine {
       if (p.life >= p.maxLife) {
         this.particleGroup.remove(p.mesh);
         p.mesh.geometry.dispose();
+        // ✅ Dispose material to prevent accumulation of MeshBasicMaterial objects
+        if (p.mesh.material) {
+          const mat = p.mesh.material as THREE.Material | THREE.Material[];
+          if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+          else mat.dispose();
+        }
         this.particles.splice(i, 1);
         continue;
       }
@@ -1037,7 +1071,8 @@ export class ThreeGameEngine {
     const newMultiplier = 1.0 + (newLevel - 1) * 0.08;
 
     this.deathRow += 1.8 * this.difficultyMultiplier * dt;
-    this.deathZoneMesh.position.z = -this.deathRow * this.TILE + 50;
+    // Wall sits at the death row position in world Z (rows go in -Z direction)
+    this.deathZoneMesh.position.z = -this.deathRow * this.TILE;
 
     if (newLevel !== this.currentDifficultyLevel) {
       this.currentDifficultyLevel = newLevel;
@@ -1096,7 +1131,8 @@ export class ThreeGameEngine {
       if (rd.type === 'road' && rd.cars) {
         rd.cars.forEach((car) => {
           car.position.x += (rd.speed || 1) * effectiveDt;
-          const bound = this.HALF_WIDTH + 1.6;
+          // Tightened bounds — side wrapping hidden by front-facing camera
+          const bound = this.HALF_WIDTH + 1.2;
           if ((rd.speed || 1) > 0 && car.position.x > bound) car.position.x = -bound;
           if ((rd.speed || 1) < 0 && car.position.x < -bound) car.position.x = bound;
         });
@@ -1107,7 +1143,8 @@ export class ThreeGameEngine {
       } else if (rd.type === 'river' && rd.logs) {
         rd.logs.forEach((l) => {
           l.mesh.position.x += (rd.speed || 1) * effectiveDt;
-          const bound = this.HALF_WIDTH + 2.5;
+          // Tightened bounds — side wrapping hidden by front-facing camera
+          const bound = this.HALF_WIDTH + 2.0;
           if ((rd.speed || 1) > 0 && l.mesh.position.x > bound) l.mesh.position.x = -bound;
           if ((rd.speed || 1) < 0 && l.mesh.position.x < -bound) l.mesh.position.x = bound;
         });
@@ -1175,19 +1212,20 @@ export class ThreeGameEngine {
   }
 
   private updateCamera() {
-    const targetX = this.bunnyGroup.position.x * 0.32;
-    const targetZ = this.player.z;
-    const aspect = this.camera.aspect || 1;
-    const isPortrait = aspect < 1.0;
+    // Street-level front-facing camera — follows player X smoothly, rides behind in Z
+    // Uses cached _camTarget to avoid per-frame Vector3 allocation at 60fps
+    const targetX = this.bunnyGroup.position.x * 0.45; // slight horizontal follow
+    const targetZ = this.player.z; // camera Z tracks player Z
 
-    // In portrait mobile view, lift camera slightly and adjust offset for better forward visibility
-    const camY = isPortrait ? this.CAM_OFFSET.y * 1.06 : this.CAM_OFFSET.y;
-    const camZ = isPortrait ? this.CAM_OFFSET.z * 1.04 : this.CAM_OFFSET.z;
-    const camX = targetX + this.CAM_OFFSET.x * (isPortrait ? 0.48 : 0.55);
+    this._camTarget.set(
+      targetX + this.CAM_OFFSET.x,
+      this.CAM_OFFSET.y,
+      targetZ + this.CAM_OFFSET.z
+    );
 
-    const camTargetPos = new THREE.Vector3(camX, camY, targetZ + camZ);
-    this.camera.position.lerp(camTargetPos, 0.12);
-    this.camera.lookAt(targetX, 0.3, targetZ - 1.5);
+    this.camera.position.lerp(this._camTarget, 0.12);
+    // Look straight forward and slightly up — sees the road ahead rush toward you
+    this.camera.lookAt(targetX, 1.0, targetZ - 10);
   }
 
   private idleAnim(dt: number) {
@@ -1241,12 +1279,8 @@ export class ThreeGameEngine {
       const aspect = width / height;
 
       this.camera.aspect = aspect;
-      // Adjust FOV dynamically on orientation change or screen resize
-      const targetFov = aspect < 1.0 
-        ? Math.min(62, Math.max(38, 38 + (1.0 - aspect) * 32))
-        : (aspect < 1.4 ? Math.min(46, Math.max(38, 38 + (1.4 - aspect) * 15)) : 38);
-      
-      this.camera.fov = targetFov;
+      // Fixed 55° FOV for the front-facing runner view (consistent on all screens)
+      this.camera.fov = 55;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(width, height);
     });
@@ -1256,12 +1290,31 @@ export class ThreeGameEngine {
   public destroy() {
     if (this.animFrameId !== null) {
       cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
     }
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
+      this.resizeObserver = null;
     }
-    if (this.renderer && this.renderer.domElement) {
-      this.container.removeChild(this.renderer.domElement);
+    // Dispose ALL scene geometry and materials to release GPU memory
+    this.scene.traverse((obj) => {
+      if ((obj as THREE.Mesh).geometry) (obj as THREE.Mesh).geometry.dispose();
+      if ((obj as THREE.Mesh).material) {
+        const mat = (obj as THREE.Mesh).material;
+        if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+        else (mat as THREE.Material).dispose();
+      }
+    });
+    this.scene.clear();
+    // Clear remaining game state references
+    this.rows.clear();
+    this.particles = [];
+    // Force WebGL context loss before dispose to ensure GPU memory is freed
+    if (this.renderer) {
+      if (this.renderer.domElement && this.container.contains(this.renderer.domElement)) {
+        this.container.removeChild(this.renderer.domElement);
+      }
+      this.renderer.forceContextLoss();
       this.renderer.dispose();
     }
   }

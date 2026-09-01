@@ -1,487 +1,929 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { OnboardingModal } from '@/components/OnboardingModal';
-import {
-  Gamepad2, Carrot, Gift, Zap, Diamond, CircleDot,
-  Heart, Repeat2, Users, Shield, Smartphone,
-  Globe, ChevronDown, Play,
+import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { 
+  ArrowUpRight, 
+  Sparkles, 
+  Copy, 
+  Check, 
+  RefreshCw, 
+  ChevronRight
 } from 'lucide-react';
 
+/* ── Custom Social Icons ── */
 const TwitterIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
   </svg>
 );
 
-/* ──────────────────────────────────────────────
-   CSS Pixel Art Bunny — built with inline SVG
-   No images needed, purely declarative
-────────────────────────────────────────────── */
-const BunnyPixelArt = ({ animate = true }: { animate?: boolean }) => (
-  <svg
-    viewBox="0 0 80 96"
-    style={{ imageRendering: 'pixelated', shapeRendering: 'crispEdges' }}
-    className={`w-32 h-40 sm:w-40 sm:h-52 drop-shadow-2xl ${animate ? 'bunny-hop' : ''}`}
-    aria-label="Pixel art bunny character"
-  >
-    {/* Left ear outer */}
-    <rect x="14" y="0" width="10" height="28" fill="#f0f0f0" />
-    {/* Left ear inner */}
-    <rect x="16" y="2" width="6" height="22" fill="#ffb3c6" />
-    {/* Right ear outer */}
-    <rect x="56" y="0" width="10" height="28" fill="#f0f0f0" />
-    {/* Right ear inner */}
-    <rect x="58" y="2" width="6" height="22" fill="#ffb3c6" />
-    {/* Ear outlines */}
-    <rect x="14" y="0" width="10" height="2" fill="#2a2a2a" />
-    <rect x="24" y="0" width="2" height="28" fill="#2a2a2a" />
-    <rect x="12" y="0" width="2" height="28" fill="#2a2a2a" />
-    <rect x="56" y="0" width="10" height="2" fill="#2a2a2a" />
-    <rect x="66" y="0" width="2" height="28" fill="#2a2a2a" />
-    <rect x="54" y="0" width="2" height="28" fill="#2a2a2a" />
-    {/* Head */}
-    <rect x="8" y="24" width="64" height="36" fill="#f5f5f0" />
-    {/* Head outline */}
-    <rect x="6" y="24" width="2" height="36" fill="#2a2a2a" />
-    <rect x="72" y="24" width="2" height="36" fill="#2a2a2a" />
-    <rect x="8" y="22" width="64" height="2" fill="#2a2a2a" />
-    <rect x="8" y="60" width="64" height="2" fill="#2a2a2a" />
-    {/* Eye left */}
-    <rect x="18" y="34" width="10" height="10" fill="#1a1a2e" />
-    <rect x="20" y="34" width="4" height="4" fill="white" />
-    {/* Eye right */}
-    <rect x="52" y="34" width="10" height="10" fill="#1a1a2e" />
-    <rect x="54" y="34" width="4" height="4" fill="white" />
-    {/* Blush left */}
-    <rect x="12" y="44" width="10" height="6" fill="#ffc2c9" />
-    {/* Blush right */}
-    <rect x="58" y="44" width="10" height="6" fill="#ffc2c9" />
-    {/* Nose */}
-    <rect x="36" y="48" width="8" height="6" fill="#ffb3c6" />
-    <rect x="36" y="48" width="8" height="2" fill="#ff80a0" />
-    {/* Mouth */}
-    <rect x="34" y="54" width="4" height="2" fill="#2a2a2a" />
-    <rect x="42" y="54" width="4" height="2" fill="#2a2a2a" />
-    <rect x="32" y="52" width="4" height="2" fill="#2a2a2a" />
-    <rect x="44" y="52" width="4" height="2" fill="#2a2a2a" />
-    {/* Body */}
-    <rect x="12" y="62" width="56" height="28" fill="#f5f5f0" />
-    {/* Body outline */}
-    <rect x="10" y="62" width="2" height="28" fill="#2a2a2a" />
-    <rect x="68" y="62" width="2" height="28" fill="#2a2a2a" />
-    <rect x="12" y="90" width="56" height="2" fill="#2a2a2a" />
-    {/* Belly */}
-    <rect x="24" y="66" width="32" height="18" fill="#fffdf8" />
-    {/* Left arm */}
-    <rect x="4" y="64" width="10" height="16" fill="#f5f5f0" />
-    <rect x="2" y="64" width="2" height="16" fill="#2a2a2a" />
-    <rect x="4" y="80" width="10" height="2" fill="#2a2a2a" />
-    {/* Right arm */}
-    <rect x="66" y="64" width="10" height="16" fill="#f5f5f0" />
-    <rect x="76" y="64" width="2" height="16" fill="#2a2a2a" />
-    <rect x="66" y="80" width="10" height="2" fill="#2a2a2a" />
-    {/* Left foot */}
-    <rect x="14" y="90" width="22" height="8" fill="#e8e8e0" />
-    <rect x="12" y="90" width="2" height="8" fill="#2a2a2a" />
-    <rect x="36" y="90" width="2" height="8" fill="#2a2a2a" />
-    <rect x="14" y="98" width="24" height="2" fill="#2a2a2a" />
-    {/* Right foot */}
-    <rect x="44" y="90" width="22" height="8" fill="#e8e8e0" />
-    <rect x="42" y="90" width="2" height="8" fill="#2a2a2a" />
-    <rect x="66" y="90" width="2" height="8" fill="#2a2a2a" />
-    <rect x="44" y="98" width="24" height="2" fill="#2a2a2a" />
-    {/* Tail */}
-    <rect x="68" y="68" width="12" height="12" fill="white" rx={2} />
-    <rect x="68" y="68" width="12" height="2" fill="#2a2a2a" />
-    <rect x="68" y="78" width="12" height="2" fill="#2a2a2a" />
-    <rect x="68" y="68" width="2" height="12" fill="#2a2a2a" />
-    <rect x="78" y="68" width="2" height="12" fill="#2a2a2a" />
-    {/* Carrot in hand */}
-    <rect x="68" y="72" width="14" height="4" fill="#ff7f2a" />
-    <rect x="82" y="70" width="4" height="2" fill="#4caf50" />
-    <rect x="84" y="68" width="2" height="4" fill="#4caf50" />
+const DiscordIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .079.009c.12.098.245.195.372.288a.077.077 0 0 1-.006.128c-.598.344-1.22.64-1.873.891a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
   </svg>
 );
 
-/* ──────────────────────────────────────────────
-   Floating pixel carrots decoration
-────────────────────────────────────────────── */
-const FloatingCarrot = ({ style }: { style: React.CSSProperties }) => (
-  <svg viewBox="0 0 16 24" className="absolute" style={{ imageRendering: 'pixelated', ...style }} aria-hidden>
-    <rect x="6" y="0" width="2" height="4" fill="#4caf50" />
-    <rect x="4" y="2" width="2" height="4" fill="#4caf50" />
-    <rect x="8" y="2" width="2" height="4" fill="#4caf50" />
-    <rect x="4" y="6" width="8" height="2" fill="#ff7f2a" />
-    <rect x="2" y="8" width="12" height="6" fill="#ff7f2a" />
-    <rect x="4" y="14" width="8" height="4" fill="#ff7f2a" />
-    <rect x="6" y="18" width="4" height="4" fill="#ff7f2a" />
-    <rect x="6" y="22" width="2" height="2" fill="#ff7f2a" />
+const TelegramIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
   </svg>
 );
 
-const CARROT_POSITIONS = [
-  { top: '12%', left: '5%', width: 20, opacity: 0.7, animDelay: '0s', animDur: '3.2s' },
-  { top: '30%', right: '8%', width: 16, opacity: 0.5, animDelay: '1.1s', animDur: '4s' },
-  { top: '60%', left: '3%', width: 14, opacity: 0.6, animDelay: '0.7s', animDur: '3.5s' },
-  { top: '75%', right: '5%', width: 18, opacity: 0.4, animDelay: '2s', animDur: '3.8s' },
-  { top: '20%', right: '18%', width: 12, opacity: 0.3, animDelay: '1.5s', animDur: '4.2s' },
+/* ── Trait Builder Options ── */
+const TRAIT_CATEGORIES = [
+  { id: 'head', name: 'HEADWEAR' },
+  { id: 'eyes', name: 'EYES' },
+  { id: 'outfit', name: 'OUTFIT' },
+  { id: 'hand', name: 'HAND ITEM' },
+  { id: 'background', name: 'BACKGROUND' },
 ];
 
-/* ──────────────────────────────────────────────
-   Icon wrapper for step / feature cards
-────────────────────────────────────────────── */
-const IconCircle = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${className}`}>
-    {children}
-  </div>
-);
+const TRAIT_ITEMS = {
+  head: [
+    { id: 'crown', name: 'Golden Crown', rarity: 'Legendary', img: '/images/stk_galaxy.png' },
+    { id: 'beanie', name: 'Propeller Beanie', rarity: 'Rare', img: '/images/stk_boombox.png' },
+    { id: 'cap', name: 'Newsboy Cap', rarity: 'Common', img: '/images/stk_carrot.png' }
+  ],
+  eyes: [
+    { id: 'hypno', name: 'Spiral Hypno', rarity: 'Epic', img: '/images/stk_galaxy.png' },
+    { id: 'sunglasses', name: 'Mirrored Holo', rarity: 'Rare', img: '/images/stk_boombox.png' },
+    { id: 'flat', name: 'Flat Line (-_-)', rarity: 'Common', img: '/images/stk_carrot.png' }
+  ],
+  outfit: [
+    { id: 'suit', name: 'Classy Suit & Tie', rarity: 'Legendary', img: '/images/stk_boombox.png' },
+    { id: 'kilt', name: 'Kilt Wrap', rarity: 'Rare', img: '/images/stk_carrot.png' },
+    { id: 'plush', name: 'Plush Toy Stitching', rarity: 'Common', img: '/images/stk_galaxy.png' }
+  ],
+  hand: [
+    { id: 'carrot_scepter', name: 'Carrot Scepter', rarity: 'Mythic', img: '/images/stk_carrot.png' },
+    { id: 'boombox', name: 'Y2K Boombox', rarity: 'Epic', img: '/images/stk_boombox.png' },
+    { id: 'orb', name: 'Cosmic Orb', rarity: 'Rare', img: '/images/stk_galaxy.png' }
+  ],
+  background: [
+    { id: 'galaxy', name: 'Galaxy Nebula', rarity: 'Legendary', color: 'from-purple-600 to-pink-500' },
+    { id: 'sunset', name: 'Pastel Sunset', rarity: 'Rare', color: 'from-blue-400 to-pink-400' },
+    { id: 'void', name: 'Deep Midnight', rarity: 'Common', color: 'from-slate-900 to-purple-950' }
+  ]
+};
 
-/* ──────────────────────────────────────────────
-   SVG Carrot icon for nav logo
-────────────────────────────────────────────── */
-const BunnyLogo = () => (
-  <svg viewBox="0 0 24 28" className="w-6 h-7" style={{ imageRendering: 'pixelated', shapeRendering: 'crispEdges' }} aria-hidden>
-    {/* Left ear */}
-    <rect x="3" y="0" width="4" height="10" fill="#f0f0f0" />
-    <rect x="4" y="1" width="2" height="7" fill="#ffb3c6" />
-    {/* Right ear */}
-    <rect x="17" y="0" width="4" height="10" fill="#f0f0f0" />
-    <rect x="18" y="1" width="2" height="7" fill="#ffb3c6" />
-    {/* Head */}
-    <rect x="2" y="8" width="20" height="12" fill="#f5f5f0" />
-    {/* Eyes */}
-    <rect x="6" y="12" width="3" height="3" fill="#1a1a2e" />
-    <rect x="15" y="12" width="3" height="3" fill="#1a1a2e" />
-    {/* Nose */}
-    <rect x="11" y="16" width="2" height="2" fill="#ffb3c6" />
-    {/* Body */}
-    <rect x="4" y="20" width="16" height="8" fill="#f5f5f0" />
-  </svg>
-);
+export default function PongPongLanding() {
+  const [activeCategory, setActiveCategory] = useState('head');
+  const [selectedTraits, setSelectedTraits] = useState({
+    head: 'crown',
+    eyes: 'hypno',
+    outfit: 'suit',
+    hand: 'carrot_scepter',
+    background: 'galaxy'
+  });
+  const [copiedContract, setCopiedContract] = useState(false);
+  const [redactedStates, setRedactedStates] = useState<{ [key: number]: boolean }>({
+    1: false,
+    2: false,
+    3: false,
+    4: false
+  });
+  const [emailInput, setEmailInput] = useState('');
+  const [notifySuccess, setNotifySuccess] = useState(false);
 
-/* ──────────────────────────────────────────────
-   Main Landing Page
-────────────────────────────────────────────── */
-export default function LandingPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
+  /* Contract Copy Handler */
+  const handleCopyContract = () => {
+    navigator.clipboard.writeText('0x71C7656EC7ab88b098defB751B7401B5f6d8976F');
+    setCopiedContract(true);
+    setTimeout(() => setCopiedContract(false), 2500);
+  };
 
-  useEffect(() => {
-    const onScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  /* Toggle Redacted Text */
+  const toggleRedacted = (id: number) => {
+    setRedactedStates(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  /* Whitelist Form Submit */
+  const handleNotifySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (emailInput) {
+      setNotifySuccess(true);
+      setTimeout(() => setNotifySuccess(false), 4000);
+      setEmailInput('');
+    }
+  };
+
+  /* Randomize Traits */
+  const randomizeTraits = () => {
+    const getRandom = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)].id;
+    setSelectedTraits({
+      head: getRandom(TRAIT_ITEMS.head),
+      eyes: getRandom(TRAIT_ITEMS.eyes),
+      outfit: getRandom(TRAIT_ITEMS.outfit),
+      hand: getRandom(TRAIT_ITEMS.hand),
+      background: getRandom(TRAIT_ITEMS.background)
+    });
+  };
 
   return (
-    <>
-      <style>{`
-        @keyframes bunnyHop {
-          0%, 100% { transform: translateY(0) scaleX(1); }
-          40% { transform: translateY(-18px) scaleX(0.95); }
-          55% { transform: translateY(-22px) scaleX(0.9); }
-          70% { transform: translateY(-6px) scaleX(1.05); }
-        }
-        .bunny-hop { animation: bunnyHop 1.8s cubic-bezier(0.36, 0, 0.66, -0.56) infinite; }
+    <div className="min-h-screen w-full relative overflow-x-hidden text-[#0F0529] selection:bg-brand-pink selection:text-white font-outfit">
+      
+      {/* ── BACKGROUND FIGMA GRADIENT & TEXTURE OVERLAY ── */}
+      <div 
+        className="fixed inset-0 pointer-events-none -z-10 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
+        style={{
+          backgroundImage: `url('/images/page_bg.png'), linear-gradient(177.68deg, #B5C1FC 0%, #C9B3F7 35%, #E88CD9 70%, #FFB7E2 100%)`,
+          backgroundBlendMode: 'overlay, normal'
+        }}
+      />
 
-        @keyframes carrotFloat {
-          0%, 100% { transform: translateY(0) rotate(-5deg); }
-          50% { transform: translateY(-14px) rotate(5deg); }
-        }
-        .carrot-float { animation: carrotFloat linear infinite; }
-
-        @keyframes shimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
-        .text-shimmer {
-          background: linear-gradient(90deg, #f97316, #fbbf24, #f97316, #fb923c, #fbbf24);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          animation: shimmer 3s linear infinite;
-        }
-
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-up { animation: fadeSlideUp 0.6s ease-out both; }
-        .fade-up-1 { animation-delay: 0.1s; }
-        .fade-up-2 { animation-delay: 0.25s; }
-        .fade-up-3 { animation-delay: 0.4s; }
-        .fade-up-4 { animation-delay: 0.55s; }
-
-        @keyframes pixelPulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.4); }
-          50% { box-shadow: 0 0 0 16px rgba(251,191,36,0); }
-        }
-        .pixel-pulse { animation: pixelPulse 2s ease-in-out infinite; }
-
-        html { scroll-behavior: smooth; overflow-x: hidden; }
-        body { overflow-x: hidden !important; overflow-y: auto !important; position: static !important; }
-      `}</style>
-
-      <div
-        className="min-h-screen w-full overflow-x-hidden"
-        style={{ background: 'linear-gradient(160deg, #0d0d1a 0%, #1a0a2e 30%, #0a1628 60%, #0d1a12 100%)' }}
-      >
-        {/* ── NAV ── */}
-        <nav
-          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 sm:px-10 py-3 transition-all duration-300"
-          style={{ background: scrollY > 40 ? 'rgba(10,10,25,0.85)' : 'transparent', backdropFilter: scrollY > 40 ? 'blur(16px)' : 'none', borderBottom: scrollY > 40 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}
-        >
-          <div className="flex items-center gap-2.5">
-            <BunnyLogo />
-            <span className="font-black text-white text-lg tracking-tight" style={{ fontFamily: 'var(--font-fredoka, Fredoka, sans-serif)' }}>
-              BUNNY HOP
+      {/* ── NAVIGATION HEADER ── */}
+      <header className="fixed top-0 left-0 right-0 z-50 px-4 py-3 md:px-10 md:py-5 transition-all">
+        <nav className="max-w-7xl mx-auto glass-card-light rounded-full px-6 py-3 flex items-center justify-between shadow-2xl backdrop-blur-xl border border-white/90">
+          
+          {/* Brand Logo */}
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-full bg-[#0F0529] flex items-center justify-center text-brand-pink font-bungee text-lg shadow-lg group-hover:scale-105 transition-transform">
+              P
+            </div>
+            <span className="font-bungee text-2xl tracking-tight text-[#0F0529] drop-shadow-sm group-hover:text-purple-800 transition-colors">
+              PONGPONG
             </span>
+          </Link>
+
+          {/* Nav Links */}
+          <div className="hidden md:flex items-center gap-8 font-dm-mono text-xs tracking-widest font-bold text-[#0F0529]">
+            <a href="#about" className="hover:text-purple-900 hover:scale-105 transition-all uppercase">ABOUT</a>
+            <a href="#collection" className="hover:text-purple-900 hover:scale-105 transition-all uppercase">COLLECTION</a>
+            <a href="#bunny-lab" className="hover:text-purple-900 hover:scale-105 transition-all uppercase">BUNNY LAB</a>
+            <a href="#signal" className="hover:text-purple-900 hover:scale-105 transition-all uppercase">SIGNAL</a>
+            <a href="#classified" className="hover:text-purple-900 hover:scale-105 transition-all uppercase">DOCS</a>
           </div>
+
+          {/* Action Button */}
           <div className="flex items-center gap-3">
-            <a href="#how" className="text-white/60 hover:text-white text-xs font-semibold transition-colors hidden sm:block">How it works</a>
-            <a href="#rewards" className="text-white/60 hover:text-white text-xs font-semibold transition-colors hidden sm:block">Rewards</a>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="btn-primary py-2 px-4 text-xs sm:text-sm"
+            <Link 
+              href="/game" 
+              className="bg-[#0F0529] text-white hover:bg-black font-dm-mono text-xs font-bold px-5 py-2.5 rounded-full flex items-center gap-2 shadow-xl hover:scale-105 active:scale-95 transition-all group"
             >
-              <Play className="w-3.5 h-3.5 fill-white" />
-              <span>Play Now</span>
-            </button>
+              <span>PLAY GAME</span>
+              <ArrowUpRight className="w-4 h-4 text-brand-pink group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </Link>
           </div>
         </nav>
+      </header>
 
-        {/* ── HERO ── */}
-        <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-5 pt-20 pb-10 overflow-hidden">
-          {/* Background grid pattern */}
-          <div className="absolute inset-0 opacity-5" style={{
-            backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-            backgroundSize: '32px 32px'
-          }} />
+      {/* ── HERO SECTION ── */}
+      <section id="about" className="relative min-h-screen flex flex-col items-center justify-center pt-28 pb-16 px-4 md:px-8 overflow-hidden">
+        
+        {/* Floating Planet Ornament (Figma ID 16:57443) */}
+        <div className="absolute top-[18%] left-[4%] md:left-[8%] w-32 md:w-48 animate-float opacity-95 z-10 pointer-events-none">
+          <Image 
+            src="/images/planet.png" 
+            alt="Floating Planet" 
+            width={200} 
+            height={170} 
+            className="object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.25)]"
+            priority
+          />
+        </div>
 
-          {/* Floating carrots */}
-          {CARROT_POSITIONS.map((c, i) => (
-            <FloatingCarrot
-              key={i}
-              style={{
-                top: c.top, left: c.left, right: c.right,
-                width: c.width, height: c.width * 1.5,
-                opacity: c.opacity,
-                animation: `carrotFloat ${c.animDur} ease-in-out ${c.animDelay} infinite`
-              }}
-            />
-          ))}
+        {/* Floating Bun Orbit Ornament (Figma ID 16:57417) */}
+        <div className="absolute top-[20%] right-[3%] md:right-[6%] w-48 md:w-80 animate-float-delayed opacity-95 z-10 pointer-events-none">
+          <Image 
+            src="/images/bun_orbit.png" 
+            alt="Bunny Orbit Ring" 
+            width={340} 
+            height={230} 
+            className="object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.25)]"
+            priority
+          />
+        </div>
 
-          {/* Bunny */}
-          <div className="relative mb-6 fade-up fade-up-1">
-            <div className="absolute inset-0 rounded-full blur-3xl opacity-30" style={{ background: 'radial-gradient(circle, #f97316 0%, transparent 70%)' }} />
-            <BunnyPixelArt animate />
+        {/* Hero Central Header */}
+        <div className="z-20 text-center max-w-4xl mx-auto flex flex-col items-center mt-6">
+          
+          {/* Pill Tag */}
+          <div className="inline-flex items-center gap-2 glass-pill-light px-6 py-2 rounded-full mb-6 shadow-sm border border-white/90 animate-pulse-glow">
+            <Sparkles className="w-4 h-4 text-purple-700" />
+            <span className="font-dm-mono text-xs md:text-sm font-bold tracking-widest text-[#0F0529] uppercase">
+              OFF THE CHAIN, ONTO YOUR DESK
+            </span>
           </div>
 
-          {/* Title */}
-          <h1 className="font-black text-5xl sm:text-7xl md:text-8xl text-white leading-none tracking-tight mb-3 fade-up fade-up-2"
-            style={{ fontFamily: 'var(--font-fredoka, Fredoka, sans-serif)', textShadow: '4px 4px 0 rgba(0,0,0,0.4)' }}>
-            BUNNY&nbsp;
-            <span className="text-shimmer">HOP</span>
+          {/* Main Title */}
+          <h1 className="font-bungee text-6xl sm:text-8xl md:text-[11.5rem] leading-[0.85] tracking-tight text-white drop-shadow-[0_12px_28px_rgba(15,5,41,0.4)] select-none">
+            PONG<br/>PONG
           </h1>
 
-          {/* Subtitle */}
-          <p className="text-white/70 text-sm sm:text-base md:text-lg max-w-lg mb-2 fade-up fade-up-2 font-medium leading-relaxed">
-            The <span className="text-amber-400 font-black">pixel-perfect</span> arcade game where every hop earns real Web3 rewards.
-          </p>
-          <p className="text-white/40 text-xs sm:text-sm mb-8 fade-up fade-up-2">
-            Dodge traffic &bull; Collect carrots &bull; Claim rewards
+          {/* Subtitle with High Legibility */}
+          <p className="font-outfit text-2xl sm:text-3xl md:text-4xl font-extrabold mt-6 text-[#0F0529] tracking-tight drop-shadow-sm">
+            A CULT FOR DEGENS &amp; COLLECTORS
           </p>
 
-          {/* CTA */}
-          <div className="fade-up fade-up-3 flex flex-col sm:flex-row gap-3 items-center mt-6">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="btn-primary pixel-pulse text-base sm:text-lg"
+          <p className="font-dm-mono text-sm md:text-base text-[#21094E] mt-3 max-w-lg font-bold">
+            "They bounced across the multiverse to land on one."
+          </p>
+
+          {/* Action CTAs */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
+            <a 
+              href="#bunny-lab" 
+              className="bg-[#0F0529] text-white hover:bg-black font-dm-mono text-sm font-bold px-8 py-4 rounded-full shadow-2xl hover:scale-105 transition-all flex items-center gap-3"
             >
-              <Gamepad2 className="w-5 h-5" />
-              <span>Play Now &amp; Earn Carrots</span>
-            </button>
-            <a href="#how" className="btn-secondary text-sm flex items-center gap-1.5">
-              <span>Learn More</span>
-              <ChevronDown className="w-4 h-4" />
+              <span>ENTER THE LAB</span>
+              <ChevronRight className="w-4 h-4 text-brand-pink" />
+            </a>
+            <a 
+              href="#collection" 
+              className="glass-card-white text-[#0F0529] hover:bg-white font-dm-mono text-sm font-bold px-8 py-4 rounded-full shadow-lg hover:scale-105 transition-all border border-white"
+            >
+              EXPLORE COLLECTION
             </a>
           </div>
+        </div>
 
-          {/* Social proof pills */}
-          <div className="mt-10 flex flex-wrap gap-2 justify-center fade-up fade-up-4">
-            {[
-              { icon: <Shield className="w-3.5 h-3.5" />, text: 'Web3 Secured' },
-              { icon: <Zap className="w-3.5 h-3.5" />, text: 'Instant Rewards' },
-              { icon: <Smartphone className="w-3.5 h-3.5" />, text: 'Mobile Ready' },
-              { icon: <Globe className="w-3.5 h-3.5" />, text: 'Play Anywhere' },
-            ].map((p) => (
-              <span key={p.text} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-xs font-semibold">
-                {p.icon} {p.text}
+        {/* Main 3D Hero Bunny Render (Figma ID 16:56771) */}
+        <div className="w-full max-w-xl md:max-w-2xl mt-12 z-20 relative flex justify-center">
+          <div className="absolute inset-0 bg-white/50 blur-[100px] rounded-full -z-10 animate-pulse-glow"></div>
+          <div className="relative animate-float">
+            <Image 
+              src="/images/hero_bunny.png" 
+              alt="PongPong 3D Voxel Bunny" 
+              width={520} 
+              height={550} 
+              className="object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.3)] hover:scale-105 transition-transform duration-500 cursor-pointer"
+              priority
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ── MARQUEE TICKER 1 (BLACK BAR) ── */}
+      <div className="w-full bg-[#0F0826] py-5 overflow-hidden border-y border-purple-400/30 shadow-2xl relative z-30">
+        <div className="animate-marquee whitespace-nowrap flex items-center">
+          {[...Array(10)].map((_, i) => (
+            <div key={i} className="flex items-center gap-8 mx-4">
+              <span className="font-bungee text-brand-pink text-xl md:text-2xl tracking-wider">
+                BOUNCING BUNNIES ONCHAIN
               </span>
-            ))}
-          </div>
-
-          {/* Scroll indicator */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-40 animate-bounce">
-            <span className="text-white text-[10px] font-semibold uppercase tracking-widest">Scroll</span>
-            <div className="w-px h-6 bg-white/40" />
-          </div>
-        </section>
-
-        {/* ── HOW IT WORKS ── */}
-        <section id="how" className="py-20 px-5 sm:px-10 max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="inline-block px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-black uppercase tracking-widest mb-4">How It Works</span>
-            <h2 className="text-3xl sm:text-4xl font-black text-white" style={{ fontFamily: 'var(--font-fredoka, Fredoka, sans-serif)' }}>
-              Three Hops to Earning
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {[
-              {
-                step: '01',
-                icon: <Gamepad2 className="w-6 h-6 text-brand-orange" />,
-                iconBg: 'bg-brand-orange/10',
-                title: 'Hop Across',
-                desc: 'Guide your pixel bunny across busy roads and rivers. Each hop forward scores points. Avoid cars — they hurt!'
-              },
-              {
-                step: '02',
-                icon: <Carrot className="w-6 h-6 text-orange-400" />,
-                iconBg: 'bg-orange-400/10',
-                title: 'Collect Carrots',
-                desc: 'Gather carrots scattered across the map. Hit 5+ in one run to qualify for FCFS rewards. Hit all 9 for guaranteed rare rewards.'
-              },
-              {
-                step: '03',
-                icon: <Gift className="w-6 h-6 text-brand-purple" />,
-                iconBg: 'bg-brand-purple/10',
-                title: 'Claim Rewards',
-                desc: 'Connect your wallet, complete tasks, and claim your Web3 rewards. Refer friends for bonus carrots and exclusive perks.'
-              },
-            ].map((s) => (
-              <div key={s.step} className="card-surface relative group">
-                <div className="absolute -top-3 left-5 px-2 py-0.5 rounded-md bg-brand-orange text-white text-[10px] font-black tracking-widest">{s.step}</div>
-                <IconCircle className={s.iconBg}>{s.icon}</IconCircle>
-                <h3 className="text-white font-black text-lg mb-2">{s.title}</h3>
-                <p className="text-white/50 text-sm leading-relaxed">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── REWARDS ── */}
-        <section id="rewards" className="py-20 px-5 sm:px-10 max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="inline-block px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-black uppercase tracking-widest mb-4">Reward Tiers</span>
-            <h2 className="text-3xl sm:text-4xl font-black text-white" style={{ fontFamily: 'var(--font-fredoka, Fredoka, sans-serif)' }}>
-              How Many Carrots You Need
-            </h2>
-            <p className="text-white/40 text-sm mt-2">Every run can earn you a reward — if you hop fast enough.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Tier 1 */}
-            <div className="card-surface text-left opacity-75">
-              <IconCircle className="bg-white/5">
-                <CircleDot className="w-6 h-6 text-white/40" />
-              </IconCircle>
-              <div className="font-black text-sm mb-1">1–4 Carrots: No Reward</div>
-              <div className="text-[11px] opacity-75 leading-relaxed">You&apos;re warming up! Keep hopping and grab more carrots next run.</div>
+              <span className="text-white/40 font-bold">•</span>
+              <span className="font-bungee text-brand-blue text-xl md:text-2xl tracking-wider">
+                350+ TRAITS
+              </span>
+              <span className="text-white/40 font-bold">•</span>
+              <span className="font-bungee text-brand-purple text-xl md:text-2xl tracking-wider">
+                LEDGER COVER
+              </span>
+              <span className="text-white/40 font-bold">•</span>
+              <span className="font-bungee text-white text-xl md:text-2xl tracking-wider">
+                PLUSHY KEYCHAIN
+              </span>
+              <span className="text-white/40 font-bold">•</span>
+              <span className="font-bungee text-brand-pink text-xl md:text-2xl tracking-wider">
+                ROBINHOOD CHAIN
+              </span>
+              <span className="text-white/40 font-bold">•</span>
             </div>
-            {/* Tier 2 */}
-            <div className="card-surface text-left border-brand-orange/50 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
-              <IconCircle className="bg-brand-orange/10">
-                <Zap className="w-6 h-6 text-brand-orange" />
-              </IconCircle>
-              <div className="font-black text-sm mb-1">5–8 Carrots: FCFS Tier</div>
-              <div className="text-[11px] opacity-75 leading-relaxed">First-Come-First-Served! Submit your score early to claim from the reward pool.</div>
-            </div>
-            {/* Tier 3 */}
-            <div className="card-surface text-left border-brand-purple/50 shadow-[0_0_20px_rgba(139,92,246,0.15)] bg-brand-purple/5 hover:bg-brand-purple/10">
-              <IconCircle className="bg-brand-purple/10">
-                <Diamond className="w-6 h-6 text-brand-purple" />
-              </IconCircle>
-              <div className="font-black text-sm mb-1">9 Carrots: GUARANTEED</div>
-              <div className="text-[11px] opacity-75 leading-relaxed">The 9th carrot has 1-in-100 spawn odds. Hit it and a guaranteed reward is yours — no racing needed.</div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── TASKS & EARN MORE ── */}
-        <section className="py-20 px-5 sm:px-10 max-w-7xl mx-auto">
-          <div className="card-surface p-8 sm:p-10 border-brand-purple/20 bg-gradient-to-br from-brand-orange/5 to-brand-purple/10">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 md:gap-12">
-              <div>
-                <IconCircle className="bg-brand-purple/10">
-                  <Gift className="w-6 h-6 text-brand-purple" />
-                </IconCircle>
-                <h2 className="text-2xl sm:text-3xl font-black text-white mb-2" style={{ fontFamily: 'var(--font-fredoka, Fredoka, sans-serif)' }}>
-                  Earn More With Tasks
-                </h2>
-                <p className="text-white/50 text-sm leading-relaxed max-w-md">
-                  Beyond the game, complete social tasks to stack bonus carrots. Link your X/Twitter, like our launch post, retweet, and refer friends — each task unlocks extra rewards.
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-3 min-w-[200px]">
-                {[
-                  { icon: <TwitterIcon className="w-5 h-5 text-sky-400" />, task: 'Link Twitter', bonus: '+10' },
-                  { icon: <Heart className="w-5 h-5 text-rose-400" />, task: 'Like Post', bonus: '+5' },
-                  { icon: <Repeat2 className="w-5 h-5 text-emerald-400" />, task: 'Retweet', bonus: '+5' },
-                  { icon: <Users className="w-5 h-5 text-violet-400" />, task: 'Refer Friend', bonus: '+20' },
-                ].map((t) => (
-                  <div key={t.task} className="bg-white/5 rounded-xl p-2.5 text-center border border-white/10 hover:bg-white/10 transition-colors">
-                    <div className="flex justify-center mb-1">{t.icon}</div>
-                    <div className="text-white/60 text-[10px] font-semibold mt-0.5">{t.task}</div>
-                    <div className="text-orange-400 text-[11px] font-black flex items-center justify-center gap-0.5">
-                      {t.bonus} <Carrot className="w-3 h-3" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── FINAL CTA ── */}
-        <section className="py-20 px-5 text-center">
-          <div className="mb-6 flex justify-center">
-            <BunnyPixelArt animate={false} />
-          </div>
-          <h2 className="text-3xl sm:text-5xl font-black text-white mb-4" style={{ fontFamily: 'var(--font-fredoka, Fredoka, sans-serif)', textShadow: '3px 3px 0 rgba(0,0,0,0.5)' }}>
-            Ready to Hop?
-          </h2>
-          <p className="text-white/50 text-sm mb-8 max-w-sm mx-auto">
-            Join thousands of players earning real rewards every run. Connect your wallet and start collecting carrots.
-          </p>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="btn-primary mx-auto text-lg"
-          >
-            <Play className="w-5 h-5 fill-white" />
-            <span>Start Playing Now</span>
-          </button>
-        </section>
-
-        {/* ── FOOTER ── */}
-        <footer className="border-t border-white/5 py-8 px-5 text-center">
-          <div className="text-white/20 text-xs">
-            &copy; 2024 Bunny Hop &middot; Built on Web3 &middot; <span className="text-orange-500/60">Earn while you play</span>
-          </div>
-        </footer>
+          ))}
+        </div>
       </div>
 
-      {/* Onboarding Modal */}
-      <OnboardingModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-    </>
+      {/* ── FEATURED BUNNY HOP SHOWCASE (02 BUNNY HOP) ── */}
+      <section className="py-24 px-4 md:px-10 max-w-7xl mx-auto relative z-20">
+        <div className="glass-card-light rounded-[3rem] p-8 md:p-14 border border-white/95 shadow-2xl grid md:grid-cols-2 gap-12 items-center relative overflow-hidden">
+          
+          {/* Decorative Stickers */}
+          <div className="absolute top-6 right-6 w-24 md:w-32 animate-float pointer-events-none">
+            <Image src="/images/stk_boombox.png" alt="Boombox Sticker" width={140} height={120} />
+          </div>
+
+          <div className="space-y-6">
+            <div className="inline-block glass-pill-light px-4 py-1.5 rounded-full font-dm-mono text-xs font-extrabold tracking-widest text-[#0F0529] uppercase">
+              FEATURED CHARACTER · #001
+            </div>
+
+            <h2 className="font-bungee text-4xl sm:text-6xl text-[#0F0529] leading-none tracking-tight">
+              BUNNY HOP <br/>
+              <span className="text-purple-800">ONCHAIN</span>
+            </h2>
+
+            <p className="font-outfit text-lg md:text-xl font-semibold text-[#1A0A38] max-w-md">
+              Equipped with a custom carrot jetpack, holographic visor, and tactile voxel plush fabric. Built to bounce across smart contracts.
+            </p>
+
+            {/* Trait Chips */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 border border-white shadow-sm">
+                <div className="font-dm-mono text-[10px] font-bold text-slate-600 tracking-wider uppercase">RARITY</div>
+                <div className="font-bungee text-xl text-purple-900 mt-1">MYTHIC (0.1%)</div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 border border-white shadow-sm">
+                <div className="font-dm-mono text-[10px] font-bold text-slate-600 tracking-wider uppercase">ACCESSORY</div>
+                <div className="font-bungee text-xl text-pink-700 mt-1">CARROT ROCKET</div>
+              </div>
+            </div>
+
+            <div className="pt-4 flex gap-4">
+              <Link 
+                href="/game" 
+                className="bg-[#0F0529] text-white hover:bg-black font-dm-mono text-sm font-bold px-7 py-3.5 rounded-full flex items-center gap-2 shadow-xl hover:scale-105 transition-all"
+              >
+                <span>TEST IN GAME</span>
+                <ArrowUpRight className="w-4 h-4 text-brand-pink" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Bunny Hop 3D Character Hero Render (Figma ID 16:57412) */}
+          <div className="relative flex justify-center items-center">
+            <div className="absolute inset-0 bg-brand-pink/30 blur-3xl rounded-full -z-10"></div>
+            <Image 
+              src="/images/bunny_hop_hero.png" 
+              alt="Bunny Hop Character" 
+              width={460} 
+              height={500} 
+              className="object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ── COLLECTION SHOWCASE (01 BOUNCING BUNNIES ONCHAIN) ── */}
+      <section id="collection" className="py-24 px-4 md:px-10 max-w-7xl mx-auto relative z-20">
+        
+        {/* Section Title */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-block glass-pill-light px-5 py-2 rounded-full font-dm-mono text-xs font-extrabold tracking-widest text-[#0F0529] uppercase mb-4">
+            THE 10K COLLECTION
+          </div>
+          <h2 className="font-bungee text-4xl sm:text-6xl text-[#0F0529] leading-tight">
+            BOUNCING BUNNIES <br/> ONCHAIN
+          </h2>
+          <p className="font-outfit text-lg font-bold text-[#21094E] mt-4">
+            Explore unique generative traits crafted in 3D voxel precision. Every digital asset unlocks physical merchandise.
+          </p>
+        </div>
+
+        {/* 4 NFT Collection Cards Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          {/* Card 1: Spirit Edition */}
+          <div className="glass-card-white rounded-[2.5rem] p-5 border border-white hover:scale-105 transition-all duration-300 shadow-xl group cursor-pointer flex flex-col justify-between">
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-purple-950/20 flex items-center justify-center p-4">
+              <Image 
+                src="/images/bunny_spirit.png" 
+                alt="Spirit Bunny" 
+                width={260} 
+                height={260} 
+                className="object-contain group-hover:scale-110 transition-transform duration-500"
+              />
+              <span className="absolute top-3 left-3 bg-[#0F0529] text-white font-dm-mono text-[10px] px-3 py-1 rounded-full font-bold">
+                #001 SPIRIT
+              </span>
+            </div>
+            <div className="mt-4">
+              <h3 className="font-bungee text-xl text-[#0F0529]">SPIRIT BUNNY</h3>
+              <p className="font-dm-mono text-xs text-purple-900 font-bold mt-1">TRAIT: ETHEREAL AURA</p>
+            </div>
+          </div>
+
+          {/* Card 2: Holographic Edition */}
+          <div className="glass-card-white rounded-[2.5rem] p-5 border border-white hover:scale-105 transition-all duration-300 shadow-xl group cursor-pointer flex flex-col justify-between">
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-pink-950/20 flex items-center justify-center p-4">
+              <Image 
+                src="/images/bunny_holographic.png" 
+                alt="Holographic Bunny" 
+                width={260} 
+                height={260} 
+                className="object-contain group-hover:scale-110 transition-transform duration-500"
+              />
+              <span className="absolute top-3 left-3 bg-[#0F0529] text-white font-dm-mono text-[10px] px-3 py-1 rounded-full font-bold">
+                #002 HOLO
+              </span>
+            </div>
+            <div className="mt-4">
+              <h3 className="font-bungee text-xl text-[#0F0529]">HOLO SHEEN</h3>
+              <p className="font-dm-mono text-xs text-pink-900 font-bold mt-1">TRAIT: GLASSMORPHISM</p>
+            </div>
+          </div>
+
+          {/* Card 3: Plush Keychain */}
+          <div className="glass-card-white rounded-[2.5rem] p-5 border border-white hover:scale-105 transition-all duration-300 shadow-xl group cursor-pointer flex flex-col justify-between">
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-blue-950/20 flex items-center justify-center p-4">
+              <Image 
+                src="/images/bunny_plush.png" 
+                alt="Plush Keychain Bunny" 
+                width={260} 
+                height={260} 
+                className="object-contain group-hover:scale-110 transition-transform duration-500"
+              />
+              <span className="absolute top-3 left-3 bg-[#0F0529] text-white font-dm-mono text-[10px] px-3 py-1 rounded-full font-bold">
+                #003 PLUSHY
+              </span>
+            </div>
+            <div className="mt-4">
+              <h3 className="font-bungee text-xl text-[#0F0529]">PLUSH KEYCHAIN</h3>
+              <p className="font-dm-mono text-xs text-blue-900 font-bold mt-1">TRAIT: COTTON STITCHING</p>
+            </div>
+          </div>
+
+          {/* Card 4: Golden Relic */}
+          <div className="glass-card-white rounded-[2.5rem] p-5 border border-white hover:scale-105 transition-all duration-300 shadow-xl group cursor-pointer flex flex-col justify-between">
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-amber-950/20 flex items-center justify-center p-4">
+              <Image 
+                src="/images/bunny_gold.png" 
+                alt="Golden Armor Bunny" 
+                width={260} 
+                height={260} 
+                className="object-contain group-hover:scale-110 transition-transform duration-500"
+              />
+              <span className="absolute top-3 left-3 bg-[#0F0529] text-white font-dm-mono text-[10px] px-3 py-1 rounded-full font-bold">
+                #004 GOLDEN
+              </span>
+            </div>
+            <div className="mt-4">
+              <h3 className="font-bungee text-xl text-[#0F0529]">GOLDEN ARMOR</h3>
+              <p className="font-dm-mono text-xs text-amber-900 font-bold mt-1">TRAIT: 1-OF-1 RELIC</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── THE BOUNCE GOES PHYSICAL (FEATURES GRID) ── */}
+      <section className="py-20 px-4 md:px-10 max-w-7xl mx-auto relative z-20">
+        <div className="text-center mb-14">
+          <h2 className="font-bungee text-4xl sm:text-5xl text-[#0F0529]">
+            THE BOUNCE GOES PHYSICAL
+          </h2>
+          <p className="font-outfit text-lg font-bold text-[#21094E] mt-3">
+            From the blockchain directly to your desk. Real physical collectibles backed 1:1 by your NFT.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-4 gap-6">
+          <div className="glass-card-light p-6 rounded-[2rem] border border-white shadow-lg text-center hover:scale-105 transition-transform">
+            <div className="w-14 h-14 rounded-2xl bg-purple-600/30 flex items-center justify-center mx-auto mb-4 text-purple-950 font-bungee text-2xl">
+              350+
+            </div>
+            <h3 className="font-bungee text-xl text-[#0F0529] mb-2">350+ TRAITS</h3>
+            <p className="font-outfit text-sm font-semibold text-slate-800">Hand-crafted 3D equipment across 8 slots.</p>
+          </div>
+
+          <div className="glass-card-light p-6 rounded-[2rem] border border-white shadow-lg text-center hover:scale-105 transition-transform">
+            <div className="w-14 h-14 rounded-2xl bg-pink-600/30 flex items-center justify-center mx-auto mb-4 text-pink-950 font-bungee text-2xl">
+              10K
+            </div>
+            <h3 className="font-bungee text-xl text-[#0F0529] mb-2">10K COLLECTION</h3>
+            <p className="font-outfit text-sm font-semibold text-slate-800">Generative algorithm stored 100% onchain.</p>
+          </div>
+
+          <div className="glass-card-light p-6 rounded-[2rem] border border-white shadow-lg text-center hover:scale-105 transition-transform">
+            <div className="w-14 h-14 rounded-2xl bg-blue-600/30 flex items-center justify-center mx-auto mb-4 text-blue-950 font-bungee text-2xl">
+              PLUSH
+            </div>
+            <h3 className="font-bungee text-xl text-[#0F0529] mb-2">PLUSH KEYCHAIN</h3>
+            <p className="font-outfit text-sm font-semibold text-slate-800">Claimable physical companion for holders.</p>
+          </div>
+
+          <div className="glass-card-light p-6 rounded-[2rem] border border-white shadow-lg text-center hover:scale-105 transition-transform">
+            <div className="w-14 h-14 rounded-2xl bg-amber-600/30 flex items-center justify-center mx-auto mb-4 text-amber-950 font-bungee text-2xl">
+              COVER
+            </div>
+            <h3 className="font-bungee text-xl text-[#0F0529] mb-2">LEDGER COVER</h3>
+            <p className="font-outfit text-sm font-semibold text-slate-800">Custom engraved metallic shell for hardware wallet.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── INTERACTIVE BUNNY LAB CUSTOMIZER (03 BUILD YOUR BOUNCE) ── */}
+      <section id="bunny-lab" className="py-24 px-4 md:px-10 max-w-7xl mx-auto relative z-20">
+        <div className="glass-card-light rounded-[3rem] p-8 md:p-14 border border-white shadow-2xl relative overflow-hidden">
+          
+          {/* Header */}
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="inline-block glass-pill-light px-5 py-1.5 rounded-full font-dm-mono text-xs font-extrabold tracking-widest text-[#0F0529] uppercase mb-3">
+              INTERACTIVE BUILDER
+            </div>
+            <h2 className="font-bungee text-4xl md:text-5xl text-[#0F0529]">
+              BUNNY LAB
+            </h2>
+            <p className="font-dm-mono text-xs md:text-sm text-purple-950 font-bold tracking-wider mt-2 uppercase">
+              Build your bounce before it's real
+            </p>
+          </div>
+
+          {/* Builder UI Grid */}
+          <div className="grid lg:grid-cols-12 gap-8 items-stretch">
+            
+            {/* Left: Slot Category Tabs */}
+            <div className="lg:col-span-3 space-y-3 flex flex-col justify-center">
+              <div className="font-dm-mono text-xs font-bold text-slate-800 tracking-wider mb-2 px-2 uppercase">
+                1. SELECT SLOT
+              </div>
+              {TRAIT_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`w-full text-left px-5 py-3.5 rounded-2xl font-dm-mono text-xs font-bold transition-all flex items-center justify-between shadow-sm ${
+                    activeCategory === cat.id
+                      ? 'bg-[#0F0529] text-white shadow-lg scale-102'
+                      : 'bg-white/80 text-[#0F0529] hover:bg-white border border-white'
+                  }`}
+                >
+                  <span>{cat.name}</span>
+                  <ChevronRight className={`w-4 h-4 ${activeCategory === cat.id ? 'text-brand-pink' : 'text-slate-400'}`} />
+                </button>
+              ))}
+            </div>
+
+            {/* Middle: Equipment Inventory Grid */}
+            <div className="lg:col-span-5 bg-white/70 backdrop-blur-md rounded-3xl p-6 border border-white flex flex-col justify-between space-y-6">
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-dm-mono text-xs font-bold text-slate-800 tracking-wider uppercase">
+                    2. CHOOSE ITEM ({activeCategory.toUpperCase()})
+                  </span>
+                  <button 
+                    onClick={randomizeTraits}
+                    className="flex items-center gap-1.5 font-dm-mono text-[11px] font-bold text-purple-900 hover:text-black bg-purple-200/80 px-3.5 py-1 rounded-full transition-colors shadow-sm"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>RANDOMIZE</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {(TRAIT_ITEMS as any)[activeCategory]?.map((item: any) => {
+                    const isSelected = (selectedTraits as any)[activeCategory] === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setSelectedTraits(prev => ({ ...prev, [activeCategory]: item.id }))}
+                        className={`p-3 rounded-2xl border flex flex-col items-center justify-between text-center transition-all aspect-square ${
+                          isSelected
+                            ? 'bg-[#0F0529] text-white border-brand-pink ring-2 ring-brand-pink shadow-xl scale-105'
+                            : 'bg-white text-[#0F0529] border-white/90 hover:bg-slate-50 hover:scale-102 shadow-sm'
+                        }`}
+                      >
+                        {item.img ? (
+                          <div className="w-12 h-12 relative flex items-center justify-center my-auto">
+                            <Image src={item.img} alt={item.name} width={48} height={48} className="object-contain" />
+                          </div>
+                        ) : (
+                          <div className={`w-10 h-10 rounded-full bg-gradient-to-tr ${item.color} my-auto shadow-inner`} />
+                        )}
+                        <span className="font-dm-mono text-[10px] font-bold truncate w-full mt-1">
+                          {item.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Trait Specs readout */}
+              <div className="bg-white rounded-2xl p-4 border border-white shadow-sm">
+                <div className="font-dm-mono text-[10px] font-bold text-slate-500 tracking-wider">ACTIVE SELECTION</div>
+                <div className="font-bungee text-base text-[#0F0529] mt-0.5">
+                  {(TRAIT_ITEMS as any)[activeCategory]?.find((i: any) => i.id === (selectedTraits as any)[activeCategory])?.name || 'Standard'}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Live Bunny Preview Render */}
+            <div className="lg:col-span-4 bg-[#0F0826] backdrop-blur-xl rounded-3xl p-6 border border-purple-400/30 text-white flex flex-col items-center justify-between relative overflow-hidden shadow-2xl">
+              <div className="w-full flex justify-between items-center z-10">
+                <span className="font-dm-mono text-[11px] font-bold text-brand-pink tracking-widest uppercase">
+                  LIVE DRAFT
+                </span>
+                <span className="bg-white/10 px-3 py-1 rounded-full font-dm-mono text-[10px] text-white font-bold">
+                  3D PREVIEW
+                </span>
+              </div>
+
+              {/* 3D Preview Image (hero_bunny) */}
+              <div className="my-6 relative w-full aspect-square flex items-center justify-center z-10">
+                <div className="absolute inset-0 bg-brand-pink/20 blur-2xl rounded-full"></div>
+                <Image 
+                  src="/images/hero_bunny.png" 
+                  alt="Bunny Draft Preview" 
+                  width={280} 
+                  height={280} 
+                  className="object-contain animate-float"
+                />
+              </div>
+
+              <Link 
+                href="/game" 
+                className="w-full bg-brand-pink text-[#0F0529] hover:bg-pink-300 font-dm-mono text-xs font-extrabold py-3.5 rounded-2xl text-center shadow-lg transition-all z-10 flex items-center justify-center gap-2"
+              >
+                <span>MINT DRAFT IN GAME</span>
+                <ArrowUpRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ── SIGNAL DETECTED / $PONGPONG CRYPTO WIDGET (04 SIGNAL) ── */}
+      <section id="signal" className="py-24 px-4 md:px-10 max-w-7xl mx-auto relative z-20">
+        <div className="glass-dark-panel rounded-[3rem] p-8 md:p-14 border border-purple-400/40 text-white shadow-2xl relative overflow-hidden grid lg:grid-cols-12 gap-10 items-center">
+          
+          {/* Left Column: Live Token Info & Ticker */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="inline-flex items-center gap-2 bg-purple-950/80 border border-purple-400/50 px-4 py-1.5 rounded-full font-dm-mono text-xs font-bold text-brand-pink tracking-widest">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span>// INCOMING TRANSMISSION //</span>
+            </div>
+
+            <h2 className="font-bungee text-4xl sm:text-6xl text-white leading-none tracking-tight">
+              SIGNAL <br/>
+              <span className="text-brand-pink text-neon-pink">DETECTED</span>
+            </h2>
+
+            <p className="font-outfit text-base md:text-lg text-slate-200 max-w-lg font-medium">
+              $PONGPONG token powers the ecosystem. Stake your bunnies, swap tokens instantly on Robinhood Chain, and earn physical merch allocations.
+            </p>
+
+            {/* Token Metrics Cards */}
+            <div className="grid grid-cols-3 gap-4 pt-2">
+              <div className="bg-white/10 border border-white/20 rounded-2xl p-4 backdrop-blur-md">
+                <div className="font-dm-mono text-[10px] text-slate-300 font-bold tracking-wider">TOKEN SYMBOL</div>
+                <div className="font-bungee text-xl text-brand-pink mt-1">$PONGPONG</div>
+              </div>
+              <div className="bg-white/10 border border-white/20 rounded-2xl p-4 backdrop-blur-md">
+                <div className="font-dm-mono text-[10px] text-slate-300 font-bold tracking-wider">NETWORK</div>
+                <div className="font-bungee text-xl text-brand-blue mt-1">ROBINHOOD</div>
+              </div>
+              <div className="bg-white/10 border border-white/20 rounded-2xl p-4 backdrop-blur-md">
+                <div className="font-dm-mono text-[10px] text-slate-300 font-bold tracking-wider">24H VOLUME</div>
+                <div className="font-bungee text-xl text-emerald-400 mt-1">$1.4M+</div>
+              </div>
+            </div>
+
+            {/* Contract Address Bar */}
+            <div className="pt-2">
+              <div className="font-dm-mono text-xs text-slate-300 font-bold mb-2">OFFICIAL CONTRACT ADDRESS:</div>
+              <div className="bg-black/70 border border-white/30 rounded-2xl px-5 py-3.5 flex items-center justify-between gap-4 font-dm-mono text-xs">
+                <span className="truncate text-brand-pink font-bold">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</span>
+                <button 
+                  onClick={handleCopyContract} 
+                  className="bg-white/15 hover:bg-white/25 text-white px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1.5 shrink-0 font-bold"
+                >
+                  {copiedContract ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedContract ? 'COPIED' : 'COPY'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: 3D Holographic Coin Render (Figma ID 16:56813) */}
+          <div className="lg:col-span-5 flex justify-center items-center relative">
+            <div className="absolute inset-0 bg-brand-purple/40 blur-3xl rounded-full -z-10 animate-pulse-glow"></div>
+            <Image 
+              src="/images/pongpong_coin.png" 
+              alt="3D Holographic PongPong Coin" 
+              width={420} 
+              height={420} 
+              className="object-contain drop-shadow-[0_20px_50px_rgba(255,154,214,0.4)] animate-float"
+            />
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── DOWN THE RABBIT HOLE (CLASSIFIED DOSSIER 05 DOWN THE) ── */}
+      <section id="classified" className="py-24 px-4 md:px-10 max-w-7xl mx-auto relative z-20">
+        <div className="glass-card-light rounded-[3rem] p-8 md:p-14 border border-white shadow-2xl relative overflow-hidden">
+          
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="inline-block glass-pill-light px-5 py-1.5 rounded-full font-dm-mono text-xs font-extrabold tracking-widest text-[#0F0529] uppercase mb-3">
+              SECRET LORE
+            </div>
+            <h2 className="font-bungee text-4xl md:text-5xl text-[#0F0529]">
+              DOWN THE RABBIT HOLE
+            </h2>
+            <p className="font-dm-mono text-xs md:text-sm text-purple-950 font-bold tracking-wider mt-2 uppercase">
+              Click redacted bars to reveal classified files
+            </p>
+          </div>
+
+          {/* Dossier Card Container */}
+          <div className="max-w-4xl mx-auto bg-[#FFFDF5] border-2 border-amber-950/40 rounded-3xl p-6 md:p-10 shadow-2xl font-dm-mono text-xs md:text-sm text-amber-950 space-y-6 relative">
+            
+            {/* Stamp Badge */}
+            <div className="absolute top-6 right-6 border-2 border-red-600 text-red-600 px-4 py-1 rounded font-bungee text-xs tracking-widest rotate-6 select-none bg-red-50">
+              TOP SECRET // CLASSIFIED
+            </div>
+
+            <div className="space-y-1 border-b border-amber-900/30 pb-4">
+              <div><strong className="font-bold">FILE ID:</strong> PP-DOSSIER-001</div>
+              <div><strong className="font-bold">SUBJECT:</strong> THE ORIGIN OF PONGPONG</div>
+              <div><strong className="font-bold">CLEARANCE LEVEL:</strong> OMEGA-5</div>
+            </div>
+
+            <div className="space-y-4 leading-relaxed font-medium">
+              <p>
+                In early 2026, autonomous neural signals detected a wave of 10,000 sentient voxel entities jumping through block headers.{' '}
+                <span 
+                  onClick={() => toggleRedacted(1)}
+                  className={`cursor-pointer px-2 py-0.5 rounded transition-all font-bold ${
+                    redactedStates[1] ? 'bg-amber-200 text-amber-950' : 'bg-black text-black hover:bg-slate-800'
+                  }`}
+                  title="Click to reveal"
+                >
+                  {redactedStates[1] ? 'They originated from Robinhood Chain block #4928102.' : '████████████████████████████████████████'}
+                </span>
+              </p>
+
+              <p>
+                Each entity carries physical metadata matching high-density cotton keychains and laser-etched hardware wallet covers.{' '}
+                <span 
+                  onClick={() => toggleRedacted(2)}
+                  className={`cursor-pointer px-2 py-0.5 rounded transition-all font-bold ${
+                    redactedStates[2] ? 'bg-amber-200 text-amber-950' : 'bg-black text-black hover:bg-slate-800'
+                  }`}
+                  title="Click to reveal"
+                >
+                  {redactedStates[2] ? 'Physical shipments trigger automatically upon onchain burn.' : '████████████████████████████████████████████████'}
+                </span>
+              </p>
+
+              <p>
+                WARNING: Redactions are permanent.{' '}
+                <span 
+                  onClick={() => toggleRedacted(3)}
+                  className={`cursor-pointer px-2 py-0.5 rounded transition-all font-bold ${
+                    redactedStates[3] ? 'bg-amber-200 text-amber-950' : 'bg-black text-black hover:bg-slate-800'
+                  }`}
+                  title="Click to reveal"
+                >
+                  {redactedStates[3] ? 'Holders move first when the sky drops.' : '██████████████████████████████'}
+                </span>
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-amber-900/30 flex justify-between items-center text-[10px] text-amber-950 font-bold">
+              <span>STATUS: ACTIVE DISCOVERY</span>
+              <span>PONGPONG RESEARCH DIVISION</span>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ── MARQUEE TICKER 2 (SOMETHING'S FALLING) ── */}
+      <div className="w-full bg-[#0F0826] py-5 overflow-hidden border-y border-purple-400/30 shadow-2xl relative z-30">
+        <div className="animate-marquee whitespace-nowrap flex items-center">
+          {[...Array(10)].map((_, i) => (
+            <div key={i} className="flex items-center gap-8 mx-4">
+              <span className="font-bungee text-brand-pink text-xl md:text-2xl tracking-wider">
+                HOLD YOUR BUNNY
+              </span>
+              <span className="text-white/40 font-bold">•</span>
+              <span className="font-bungee text-brand-blue text-xl md:text-2xl tracking-wider">
+                HOLD YOUR BREATH
+              </span>
+              <span className="text-white/40 font-bold">•</span>
+              <span className="font-bungee text-brand-purple text-xl md:text-2xl tracking-wider">
+                SOMETHING'S FALLING FROM THE SKY
+              </span>
+              <span className="text-white/40 font-bold">•</span>
+              <span className="font-bungee text-white text-xl md:text-2xl tracking-wider">
+                퐁퐁
+              </span>
+              <span className="text-white/40 font-bold">•</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── SOMETHING'S FALLING TEASER (06 SOMETHING'S FALLING) ── */}
+      <section className="py-24 px-4 md:px-10 max-w-7xl mx-auto relative z-20">
+        <div className="glass-card-light rounded-[3rem] p-8 md:p-14 border border-white shadow-2xl grid md:grid-cols-2 gap-10 items-center">
+          
+          <div className="space-y-6">
+            <div className="inline-block glass-pill-light px-4 py-1.5 rounded-full font-dm-mono text-xs font-extrabold tracking-widest text-[#0F0529] uppercase">
+              UPCOMING AIRDROP EVENT
+            </div>
+
+            <h2 className="font-bungee text-4xl sm:text-6xl text-[#0F0529] leading-none tracking-tight">
+              SOMETHING'S FALLING FROM THE <br/>
+              <span className="text-purple-900">ROBINHOOD SKY</span>
+            </h2>
+
+            <p className="font-outfit text-base md:text-lg font-bold text-[#1A0A38]">
+              When it lands, holders move first. Enter your wallet or email to secure your priority whitelist spot.
+            </p>
+
+            {/* Email Whitelist Form */}
+            <form onSubmit={handleNotifySubmit} className="flex gap-3 pt-2">
+              <input 
+                type="email" 
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                placeholder="Enter wallet address or email"
+                required
+                className="flex-1 bg-white/90 border border-white rounded-full px-6 py-3.5 font-dm-mono text-xs text-[#0F0529] font-bold focus:outline-none focus:ring-2 focus:ring-purple-600 shadow-inner"
+              />
+              <button 
+                type="submit" 
+                className="bg-[#0F0529] text-white hover:bg-black font-dm-mono text-xs font-bold px-6 py-3.5 rounded-full shadow-xl hover:scale-105 transition-all shrink-0"
+              >
+                NOTIFY ME
+              </button>
+            </form>
+
+            {notifySuccess && (
+              <div className="bg-emerald-100 text-emerald-900 border border-emerald-300 font-dm-mono text-xs font-bold px-4 py-2.5 rounded-2xl flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span>You are on the secret transmission whitelist!</span>
+              </div>
+            )}
+          </div>
+
+          {/* Falling Sticker Carrot Render (Figma ID 16:57232) */}
+          <div className="relative flex justify-center items-center">
+            <div className="absolute inset-0 bg-brand-pink/30 blur-3xl rounded-full -z-10"></div>
+            <Image 
+              src="/images/stk_carrot.png" 
+              alt="Falling Carrot Rocket" 
+              width={380} 
+              height={400} 
+              className="object-contain animate-float drop-shadow-2xl"
+            />
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer className="bg-[#0F0826] text-white py-16 px-6 md:px-12 border-t border-purple-400/30 relative z-30">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
+          
+          {/* Col 1: Brand */}
+          <div className="space-y-4 md:col-span-1">
+            <div className="font-bungee text-3xl text-white tracking-wider">
+              PONGPONG
+            </div>
+            <p className="font-outfit text-xs text-slate-300 leading-relaxed font-medium">
+              A cult for degens &amp; collectors. Bouncing bunnies onchain, delivering physical plushies &amp; ledger covers straight to your desk.
+            </p>
+          </div>
+
+          {/* Col 2: Navigation */}
+          <div className="space-y-3 font-dm-mono text-xs">
+            <div className="font-bold text-brand-pink tracking-widest uppercase mb-2">EXPLORE</div>
+            <div><a href="#about" className="text-slate-300 hover:text-white transition-colors">About Story</a></div>
+            <div><a href="#collection" className="text-slate-300 hover:text-white transition-colors">10K Collection</a></div>
+            <div><a href="#bunny-lab" className="text-slate-300 hover:text-white transition-colors">Bunny Lab Customizer</a></div>
+            <div><a href="#signal" className="text-slate-300 hover:text-white transition-colors">Signal &amp; Token</a></div>
+          </div>
+
+          {/* Col 3: Community */}
+          <div className="space-y-3 font-dm-mono text-xs">
+            <div className="font-bold text-brand-blue tracking-widest uppercase mb-2">ELSEWHERE</div>
+            <div>
+              <a href="https://x.com" target="_blank" rel="noreferrer" className="text-slate-300 hover:text-white transition-colors flex items-center gap-2">
+                <TwitterIcon className="w-3.5 h-3.5" />
+                <span>X / Twitter</span>
+              </a>
+            </div>
+            <div>
+              <a href="https://discord.com" target="_blank" rel="noreferrer" className="text-slate-300 hover:text-white transition-colors flex items-center gap-2">
+                <DiscordIcon className="w-3.5 h-3.5" />
+                <span>Discord Community</span>
+              </a>
+            </div>
+            <div>
+              <a href="https://t.me" target="_blank" rel="noreferrer" className="text-slate-300 hover:text-white transition-colors flex items-center gap-2">
+                <TelegramIcon className="w-3.5 h-3.5" />
+                <span>Telegram Signal</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Col 4: Contract Pill */}
+          <div className="space-y-4 font-dm-mono text-xs">
+            <div className="font-bold text-brand-purple tracking-widest uppercase">SMART CONTRACT</div>
+            <div className="bg-white/10 border border-white/20 rounded-2xl p-4">
+              <div className="text-[10px] text-slate-300 font-bold mb-1">ROBINHOOD CHAIN</div>
+              <div className="text-brand-pink truncate font-bold">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between text-xs text-slate-400 font-dm-mono gap-4 font-medium">
+          <div>
+            © {new Date().getFullYear()} PONGPONG. ALL RIGHTS RESERVED.
+          </div>
+          <div className="flex gap-6">
+            <span className="hover:text-white cursor-pointer">PRIVACY POLICY</span>
+            <span className="hover:text-white cursor-pointer">TERMS OF SERVICE</span>
+          </div>
+        </div>
+      </footer>
+
+    </div>
   );
 }

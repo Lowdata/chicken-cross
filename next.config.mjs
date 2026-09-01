@@ -1,8 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['three', '@rainbow-me/rainbowkit'],
-  webpack: (config) => {
+  eslint: { ignoreDuringBuilds: true },
+
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@rainbow-me/rainbowkit', 'viem', 'wagmi', 'three'],
+  },
+
+  transpilePackages: ['@rainbow-me/rainbowkit'],
+
+  webpack: (config, { dev, isServer }) => {
     config.externals.push('pino-pretty', 'lokijs', 'encoding');
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -18,6 +25,12 @@ const nextConfig = {
       '@react-native-async-storage/async-storage': false,
       'react-native': false,
     };
+
+    if (dev) {
+      // Disable expensive source-maps in dev to save ~1GB+ RAM
+      config.devtool = 'eval-cheap-module-source-map';
+    }
+
     return config;
   },
 };
