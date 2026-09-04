@@ -1,0 +1,212 @@
+{
+  "body": [
+    {
+      "id": "Blush Pink.png",
+      "name": "Blush Pink",
+      "file": "Blush_Pink.webp",
+      "url": "/compressed/traits/body/Blush_Pink.webp",
+      "orig_size_kb": 1365.8,
+      "comp_size_kb": 50.8
+    },
+    {
+      "id": "24K Gold Fur.png",
+      "name": "24K Gold Fur",
+      "file": "24K_Gold_Fur.webp",
+      "url": "/compressed/traits/body/24K_Gold_Fur.webp",
+      "orig_size_kb": 1416.9,
+      "comp_size_kb": 63.6
+    },
+    {
+      "id": "Galaxy Speckle Fur.png",
+      "name": "Galaxy Speckle Fur",
+      "file": "Galaxy_Speckle_Fur.webp",
+      "url": "/compressed/traits/body/Galaxy_Speckle_Fur.webp",
+      "orig_size_kb": 1490.4,
+      "comp_size_kb": 67.2
+    },
+    {
+      "id": "Snow White.png",
+      "name": "Snow White",
+      "file": "Snow_White.webp",
+      "url": "/compressed/traits/body/Snow_White.webp",
+      "orig_size_kb": 1204.6,
+      "comp_size_kb": 50.9
+    },
+    {
+      "id": "Pastel Holographic Sheen.png",
+      "name": "Pastel Holographic Sheen",
+      "file": "Pastel_Holographic_Sheen.webp",
+      "url": "/compressed/traits/body/Pastel_Holographic_Sheen.webp",
+      "orig_size_kb": 1253.8,
+      "comp_size_kb": 54.8
+    }
+  ],
+  "face": [
+    {
+      "id": "Blush Cheeks.png",
+      "name": "Blush Cheeks",
+      "file": "Blush_Cheeks.webp",
+      "url": "/compressed/traits/face/Blush_Cheeks.webp",
+      "orig_size_kb": 192.8,
+      "comp_size_kb": 21.1
+    },
+    {
+      "id": "Cute Smile.png",
+      "name": "Cute Smile",
+      "file": "Cute_Smile.webp",
+      "url": "/compressed/traits/face/Cute_Smile.webp",
+      "orig_size_kb": 85.6,
+      "comp_size_kb": 3.9
+    },
+    {
+      "id": "Freckle Spray.png",
+      "name": "Freckle Spray",
+      "file": "Freckle_Spray.webp",
+      "url": "/compressed/traits/face/Freckle_Spray.webp",
+      "orig_size_kb": 83.0,
+      "comp_size_kb": 4.0
+    },
+    {
+      "id": "Confident Smirk.png",
+      "name": "Confident Smirk",
+      "file": "Confident_Smirk.webp",
+      "url": "/compressed/traits/face/Confident_Smirk.webp",
+      "orig_size_kb": 91.3,
+      "comp_size_kb": 4.0
+    },
+    {
+      "id": "Band-Aid Strip.png",
+      "name": "Band-Aid Strip",
+      "file": "Band_Aid_Strip.webp",
+      "url": "/compressed/traits/face/Band_Aid_Strip.webp",
+      "orig_size_kb": 114.6,
+      "comp_size_kb": 4.4
+    }
+  ],
+  "eyes": [
+    {
+      "id": "Default Round.png",
+      "name": "Default Round",
+      "file": "Default_Round.webp",
+      "url": "/compressed/traits/eyes/Default_Round.webp",
+      "orig_size_kb": 149.3,
+      "comp_size_kb": 7.3
+    },
+    {
+      "id": "Dizzy Swirl.png",
+      "name": "Dizzy Swirl",
+      "file": "Dizzy_Swirl.webp",
+      "url": "/compressed/traits/eyes/Dizzy_Swirl.webp",
+      "orig_size_kb": 243.6,
+      "comp_size_kb": 11.2
+    },
+    {
+      "id": "Heart Eyes.png",
+      "name": "Heart Eyes",
+      "file": "Heart_Eyes.webp",
+      "url": "/compressed/traits/eyes/Heart_Eyes.webp",
+      "orig_size_kb": 208.3,
+      "comp_size_kb": 10.0
+    },
+    {
+      "id": "Star Pupils.png",
+      "name": "Star Pupils",
+      "file": "Star_Pupils.webp",
+      "url": "/compressed/traits/eyes/Star_Pupils.webp",
+      "orig_size_kb": 148.9,
+      "comp_size_kb": 6.1
+    },
+    {
+      "id": "Closed Happy (^_^).png",
+      "name": "Closed Happy (^_^)",
+      "file": "Closed_Happy__.webp",
+      "url": "/compressed/traits/eyes/Closed_Happy__.webp",
+      "orig_size_kb": 109.9,
+      "comp_size_kb": 6.2
+    }
+  ],
+  "clothes": [
+    {
+      "id": "Basic Hoodie.png",
+      "name": "Basic Hoodie",
+      "file": "Basic_Hoodie.webp",
+      "url": "/compressed/traits/clothes/Basic_Hoodie.webp",
+      "orig_size_kb": 321.2,
+      "comp_size_kb": 12.1
+    },
+    {
+      "id": "Astronaut Jumpsuit.png",
+      "name": "Astronaut Jumpsuit",
+      "file": "Astronaut_Jumpsuit.webp",
+      "url": "/compressed/traits/clothes/Astronaut_Jumpsuit.webp",
+      "orig_size_kb": 454.5,
+      "comp_size_kb": 17.9
+    },
+    {
+      "id": "Golden Armor Plate.png",
+      "name": "Golden Armor Plate",
+      "file": "Golden_Armor_Plate.webp",
+      "url": "/compressed/traits/clothes/Golden_Armor_Plate.webp",
+      "orig_size_kb": 464.5,
+      "comp_size_kb": 20.9
+    },
+    {
+      "id": "Cosmic Holo Space Suit.png",
+      "name": "Cosmic Holo Space Suit",
+      "file": "Cosmic_Holo_Space_Suit.webp",
+      "url": "/compressed/traits/clothes/Cosmic_Holo_Space_Suit.webp",
+      "orig_size_kb": 463.3,
+      "comp_size_kb": 19.0
+    },
+    {
+      "id": "Lunar New Year Track Jacket.png",
+      "name": "Lunar New Year Track Jacket",
+      "file": "Lunar_New_Year_Track_Jacket.webp",
+      "url": "/compressed/traits/clothes/Lunar_New_Year_Track_Jacket.webp",
+      "orig_size_kb": 380.2,
+      "comp_size_kb": 15.2
+    }
+  ],
+  "item": [
+    {
+      "id": "Carrot.png",
+      "name": "Carrot",
+      "file": "Carrot.webp",
+      "url": "/compressed/traits/item/Carrot.webp",
+      "orig_size_kb": 258.3,
+      "comp_size_kb": 11.3
+    },
+    {
+      "id": "Golden Carrot Scepter.png",
+      "name": "Golden Carrot Scepter",
+      "file": "Golden_Carrot_Scepter.webp",
+      "url": "/compressed/traits/item/Golden_Carrot_Scepter.webp",
+      "orig_size_kb": 218.5,
+      "comp_size_kb": 11.9
+    },
+    {
+      "id": "Cosmic Orb.png",
+      "name": "Cosmic Orb",
+      "file": "Cosmic_Orb.webp",
+      "url": "/compressed/traits/item/Cosmic_Orb.webp",
+      "orig_size_kb": 427.6,
+      "comp_size_kb": 34.0
+    },
+    {
+      "id": "Glowing Katana.png",
+      "name": "Glowing Katana",
+      "file": "Glowing_Katana.webp",
+      "url": "/compressed/traits/item/Glowing_Katana.webp",
+      "orig_size_kb": 224.0,
+      "comp_size_kb": 13.1
+    },
+    {
+      "id": "Victory Trophy.png",
+      "name": "Victory Trophy",
+      "file": "Victory_Trophy.webp",
+      "url": "/compressed/traits/item/Victory_Trophy.webp",
+      "orig_size_kb": 217.8,
+      "comp_size_kb": 13.0
+    }
+  ]
+}

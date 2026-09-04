@@ -8,11 +8,11 @@ export default function PongPongLanding() {
   return (
     <div className="min-h-screen w-full relative overflow-x-hidden text-[#0F0529] selection:bg-brand-pink selection:text-white font-outfit">
       
-      {/* ── FIGMA IMG-CLOUD & ATMOSPHERIC GLOWS BACKGROUND ── */}
+      {/* ── FIGMA OPTIMIZED IMG-CLOUD BACKGROUND ── */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1440px] h-[1900px] pointer-events-none -z-10 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/img-cloud.png"
+          src="/compressed/sections/img-cloud.webp"
           alt="Cloud Atmospheric Background"
           loading="eager"
           className="w-full h-full object-cover object-top opacity-90"
@@ -74,11 +74,11 @@ export default function PongPongLanding() {
         
         <div className="z-20 text-center max-w-5xl mx-auto flex flex-col items-center w-full mt-4 md:mt-2">
           
-          {/* 3D PongPong Hero Logo */}
+          {/* 3D PongPong Hero Logo (Compressed WebP) */}
           <div className="relative w-full max-w-4xl flex justify-center items-center animate-float">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/hero_art_master.png"
+              src="/compressed/sections/hero_art_master.webp"
               alt="PongPong 3D Liquid Chrome Hero Artwork"
               loading="eager" className="object-contain w-full max-w-[370px] sm:max-w-[620px] md:max-w-[860px] drop-shadow-[0_20px_45px_rgba(30,10,60,0.2)]"
             />
@@ -99,10 +99,10 @@ export default function PongPongLanding() {
             </p>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-center gap-3.5 md:gap-5 pt-3">
+            <div className="flex items-center justify-center gap-3.5 md:gap-5 pt-4">
               <a 
                 href="#bunny-lab" 
-                className="figma-btn-hero font-bungee text-xs md:text-sm text-[#200E3B] px-6 md:px-8 py-2.5 md:py-3.5 rounded-full cursor-pointer"
+                className="figma-btn-hero font-bungee text-xs md:text-sm text-[#200E3B] px-7 md:px-9 py-3 md:py-3.5 rounded-full cursor-pointer shadow-[0_8px_24px_rgba(180,150,240,0.4)] hover:shadow-[0_14px_32px_rgba(180,150,240,0.6)]"
               >
                 ENTER THE LAB
               </a>
@@ -111,8 +111,7 @@ export default function PongPongLanding() {
                   const el = document.getElementById('classified');
                   el?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="figma-btn-hero font-bungee text-xs md:text-sm text-[#200E3B] px-6 md:px-8 py-2.5 md:py-3.5 rounded-full cursor-pointer"
-                style={{ background: 'linear-gradient(135deg, #FDC4EC 0%, #D8C0FB 50%, #BFE8FD 100%)' }}
+                className="figma-btn-gibwl font-bungee text-xs md:text-sm text-[#200E3B] px-7 md:px-9 py-3 md:py-3.5 rounded-full cursor-pointer shadow-[0_8px_24px_rgba(253,196,236,0.5)] hover:shadow-[0_14px_32px_rgba(253,196,236,0.7)]"
               >
                 GIB WL?
               </button>
@@ -122,7 +121,7 @@ export default function PongPongLanding() {
       </section>
 
       {/* ── DUAL TILTED MARQUEE RIBBONS ── */}
-      <div className="w-full relative z-30 py-6 overflow-hidden space-y-3">
+      <div className="w-full relative z-30 py-8 overflow-hidden space-y-4 my-6">
         
         {/* Ribbon 1 */}
         <div className="w-full ribbon-banner-1 py-3.5 overflow-hidden">
@@ -163,11 +162,11 @@ export default function PongPongLanding() {
       </div>
 
       {/* ── SECTION 01: THE COLLECTION (BOUNCING BUNNIES ONCHAIN) ── */}
-      <section id="collection" className="scroll-mt-32 py-12 md:py-20 px-4 md:px-8 relative z-20">
+      <section id="collection" className="scroll-mt-32 pt-16 md:pt-24 pb-20 md:pb-28 px-4 md:px-8 relative z-20">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/sec1_header_master.png"
+            src="/compressed/sections/sec1_header_master.webp"
             alt="The Collection - Bouncing Bunnies Onchain - NFT Cards + Departure Board"
             loading="eager" className="w-full object-contain drop-shadow-[0_15px_35px_rgba(30,12,60,0.15)]"
           />
@@ -175,11 +174,11 @@ export default function PongPongLanding() {
       </section>
 
       {/* ── SECTION 02: THE BOUNCE GOES PHYSICAL (MERCH) ── */}
-      <section id="merch" className="scroll-mt-32 py-12 md:py-20 px-4 md:px-8 relative z-20">
+      <section id="merch" className="scroll-mt-32 pt-16 md:pt-24 pb-20 md:pb-28 px-4 md:px-8 relative z-20">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/section-physical.png"
+            src="/compressed/sections/section-physical.webp"
             alt="The Bounce Goes Physical - Phone Covers, Laptop Covers, Ledger Covers, Airpod Covers"
             loading="eager" className="w-full object-contain rounded-[36px] drop-shadow-[0_25px_60px_rgba(25,12,50,0.25)]"
           />
@@ -187,14 +186,14 @@ export default function PongPongLanding() {
       </section>
 
       {/* ── SECTION 03: BUNNY LAB (BUILD YOUR BOUNCE - INTERACTIVE) ── */}
-      <section id="bunny-lab" className="scroll-mt-32 py-12 md:py-20 px-4 md:px-8 relative z-20">
+      <section id="bunny-lab" className="scroll-mt-32 pt-16 md:pt-24 pb-36 md:pb-48 px-4 md:px-8 relative z-20">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* Title Header with 3D text and bunnies */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/sec3_title_master.png"
+            src="/compressed/sections/sec3_title_master.webp"
             alt="Bunny Lab - Build Your Bounce Before It's Real"
-            loading="eager" className="w-full object-contain drop-shadow-[0_15px_35px_rgba(30,12,60,0.15)] mb-4"
+            loading="eager" className="w-full object-contain drop-shadow-[0_15px_35px_rgba(30,12,60,0.15)] mb-8"
           />
 
           {/* Interactive 3-Panel Builder */}
@@ -203,11 +202,11 @@ export default function PongPongLanding() {
       </section>
 
       {/* ── SECTION 04: $PONGPONG / SIGNAL DETECTED ── */}
-      <section id="signal" className="scroll-mt-32 py-12 md:py-20 px-4 md:px-8 relative z-20">
+      <section id="signal" className="scroll-mt-32 pt-32 md:pt-44 pb-28 md:pb-40 px-4 md:px-8 relative z-20">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/sec4_master_container.png"
+            src="/compressed/sections/sec4_master_container.webp"
             alt="Signal Detected $PongPong - Swap ETH on Robinhood Chain"
             loading="eager" className="w-full object-contain rounded-[40px] drop-shadow-[0_30px_70px_rgba(20,10,45,0.35)]"
           />
@@ -215,39 +214,49 @@ export default function PongPongLanding() {
       </section>
 
       {/* ── SECTION 05: DOWN THE RABBIT HOLE (CLASSIFIED) ── */}
-      <section id="classified" className="scroll-mt-32 py-12 md:py-20 px-4 md:px-8 relative z-20">
+      <section id="classified" className="scroll-mt-32 pt-20 md:pt-28 pb-28 md:pb-40 px-4 md:px-8 relative z-20">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/sec5_master_container.png"
+            src="/compressed/sections/sec5_master_container.webp"
             alt="Down The Rabbit Hole - Classified Dossier"
             loading="eager" className="w-full object-contain rounded-[40px] drop-shadow-[0_30px_70px_rgba(25,12,50,0.25)]"
           />
         </div>
       </section>
 
-      {/* ── HOLD YOUR BUNNY MARQUEE BANNER ── */}
-      <div className="w-full overflow-hidden relative z-20 my-6">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/marquee_hold_bunny.png"
-          alt="Hold Your Bunny - Hold Your Breath Marquee"
-          loading="eager" className="w-full object-contain"
-        />
+      {/* ── HOLD YOUR BUNNY ANIMATED MARQUEE RIBBON ── */}
+      <div className="w-full relative z-20 my-28 md:my-44 py-8 overflow-hidden">
+        <div className="w-full ribbon-banner-hold py-4 overflow-hidden">
+          <div className="animate-marquee whitespace-nowrap flex items-center">
+            {[...Array(10)].map((_, i) => (
+              <div key={i} className="flex items-center gap-8 mx-4">
+                <span className="font-bungee text-[#0F0529] text-xl md:text-2xl tracking-wider">HOLD YOUR BUNNY</span>
+                <span className="text-[#0F0529]/40 font-bold">•</span>
+                <span className="font-bungee text-purple-900 text-xl md:text-2xl tracking-wider">HOLD YOUR BREATH</span>
+                <span className="text-[#0F0529]/40 font-bold">•</span>
+                <span className="font-bungee text-pink-900 text-xl md:text-2xl tracking-wider">SOMETHING IS FALLING</span>
+                <span className="text-[#0F0529]/40 font-bold">•</span>
+                <span className="font-bungee text-[#0F0529] text-xl md:text-2xl tracking-wider">FROM THE ROBINHOOD SKY</span>
+                <span className="text-[#0F0529]/40 font-bold">•</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* ── SECTION 06: SOMETHING'S FALLING FROM THE ROBINHOOD SKY ── */}
-      <section id="drop" className="scroll-mt-32 py-12 md:py-20 px-4 md:px-8 relative z-20">
+      <section id="drop" className="scroll-mt-32 mt-16 md:mt-24 pt-20 md:pt-32 pb-28 md:pb-40 px-4 md:px-8 relative z-20">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/sec6_title_master.png"
+            src="/compressed/sections/sec6_title_master.webp"
             alt="Something's Falling From The Robinhood Sky"
             loading="eager" className="w-full max-w-[980px] object-contain drop-shadow-[0_15px_35px_rgba(30,12,60,0.15)] mb-8"
           />
           <a 
             href="#bunny-lab" 
-            className="figma-btn-hero text-[#0F0529] font-bungee text-sm md:text-base px-9 py-4 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all"
+            className="figma-btn-hero text-[#0F0529] font-bungee text-sm md:text-base px-10 py-4 rounded-full shadow-[0_12px_32px_rgba(180,150,240,0.5)] hover:shadow-[0_16px_40px_rgba(180,150,240,0.7)] cursor-pointer"
           >
             ENTER THE LAB
           </a>
@@ -255,11 +264,11 @@ export default function PongPongLanding() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="pb-16 px-4 md:px-8 relative z-30">
+      <footer className="pt-12 pb-28 px-4 md:px-8 relative z-30">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/footer_master_container.png"
+            src="/compressed/sections/footer_master_container.webp"
             alt="PongPong Footer - Explore, Elsewhere, Status"
             loading="eager" className="w-full object-contain rounded-[40px] drop-shadow-[0_25px_60px_rgba(15,8,38,0.4)]"
           />

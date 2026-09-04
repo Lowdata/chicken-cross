@@ -98,13 +98,13 @@
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .figma-btn-hero:hover {
-    transform: translateY(-1px) scale(1.04);
+    transform: translateY(-2px) scale(1.04);
     box-shadow: 
-      0 12px 28px -4px rgba(180, 150, 240, 0.5),
+      0 14px 30px -4px rgba(180, 150, 240, 0.55),
       inset 0 1.5px 2px rgba(255, 255, 255, 1);
   }
   .figma-btn-hero:active {
-    transform: translateY(0px) scale(0.97);
+    transform: translateY(1px) scale(0.96);
   }
   .ribbon-banner-1 {
     background: linear-gradient(90deg, #A8F2FA 0%, #D4CEFB 50%, #FFCCEE 100%);
@@ -119,6 +119,13 @@
     border-bottom: 2px solid #1E0E38;
     box-shadow: 0 8px 24px rgba(30, 14, 56, 0.12);
     transform: rotate(-1.5deg) scaleX(1.05);
+  }
+  .ribbon-banner-hold {
+    background: linear-gradient(90deg, #A8F2FA 0%, #D4CEFB 33%, #FFCCEE 66%, #A8F2FA 100%);
+    border-top: 2px solid #1E0E38;
+    border-bottom: 2px solid #1E0E38;
+    box-shadow: 0 8px 24px rgba(30, 14, 56, 0.15);
+    transform: rotate(-1deg) scaleX(1.05);
   }
 }
 
