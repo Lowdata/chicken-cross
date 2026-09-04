@@ -6,7 +6,6 @@ import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
 import { MAX_DAILY_LIVES } from '@/lib/game/livesManager';
 import { WalletButton } from './WalletButton';
-import { TouchControlMode } from './TouchControls';
 
 interface HUDProps {
   score: number;
@@ -22,8 +21,6 @@ interface HUDProps {
   onOpenTasks?: () => void;
   onPause: () => void;
   gameStatus: 'idle' | 'playing' | 'paused' | 'gameover';
-  controlMode?: TouchControlMode;
-  onToggleControlMode?: () => void;
 }
 
 export const HUD: React.FC<HUDProps> = ({
@@ -40,8 +37,6 @@ export const HUD: React.FC<HUDProps> = ({
   onOpenTasks,
   onPause,
   gameStatus,
-  controlMode = 'dpad',
-  onToggleControlMode,
 }) => {
   return (
     <header className="fixed top-0 left-0 right-0 pt-safe px-2.5 sm:px-5 py-2 flex justify-between items-start pointer-events-none z-30 select-none">
@@ -136,22 +131,6 @@ export const HUD: React.FC<HUDProps> = ({
 
         {/* Action buttons (Audio, Touch Controls Toggle, Pause) */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Mobile Touch Mode Toggle */}
-          {onToggleControlMode && (
-            <button
-              onClick={() => {
-                soundEngine.playClick();
-                triggerHaptic('tap');
-                onToggleControlMode();
-              }}
-              className="hud-btn h-8 sm:h-10 px-2.5 rounded-2xl bg-brand-surface/80 hover:bg-white/10 backdrop-blur-md border border-white/10 shadow-md flex items-center justify-center gap-1 text-white/80 hover:text-white active:scale-90 transition-all cursor-pointer text-[10px] font-black uppercase tracking-wider"
-              title={`Current Controls: ${controlMode.toUpperCase()}`}
-              aria-label="Toggle Control Mode"
-            >
-              <Gamepad2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-purple" />
-              <span className="hidden xs:inline">{controlMode}</span>
-            </button>
-          )}
 
           {/* Sound Toggle */}
           <button

@@ -36,35 +36,37 @@ export default function PongPongLanding() {
 
       {/* ── NAVBAR (00 NAV) ── */}
       <header className="absolute top-6 md:top-8 left-0 right-0 z-50 px-4 flex justify-center pointer-events-none">
-        <nav className="figma-navbar-glass rounded-full px-5 md:px-6 h-[50px] md:h-[54px] flex items-center justify-between w-[92%] max-w-[360px] md:w-[710px] md:max-w-[710px] shadow-2xl pointer-events-auto">
+        <nav className="figma-navbar-glass rounded-full px-4 md:px-6 h-[50px] md:h-[54px] flex items-center justify-between w-[95%] max-w-[370px] md:w-[840px] md:max-w-[840px] shadow-2xl pointer-events-auto">
           
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-1.5 group shrink-0">
-            <span className="font-bungee text-[16px] md:text-[18px] tracking-tight text-[#241444] group-hover:text-purple-900 transition-colors">
+            <span className="font-bungee text-[15px] md:text-[17px] tracking-tight text-[#241444] group-hover:text-purple-900 transition-colors">
               PONGPONG
             </span>
             <span className="font-outfit text-[11px] font-bold text-[#6D5396]">퐁퐁</span>
           </Link>
 
           {/* Nav Links (Desktop) */}
-          <div className="hidden md:flex items-center gap-6 font-dm-mono text-[11px] tracking-[0.08em] font-bold text-[#241444]">
+          <div className="hidden md:flex items-center gap-5 font-dm-mono text-[11px] tracking-[0.08em] font-bold text-[#241444]">
             <a href="#collection" className="hover:text-purple-800 transition-colors uppercase">THE WARREN</a>
-            <a href="#bunny-lab" className="hover:text-purple-800 transition-colors uppercase">THE WARREN LAB</a>
-            <a href="#signal" className="hover:text-purple-800 transition-colors uppercase">$PONGPONG</a>
+            <a href="#bunny-lab" className="hover:text-purple-800 transition-colors uppercase">WARREN LAB</a>
+            <Link href="/dashboard" className="text-purple-900 hover:text-pink-600 font-extrabold transition-colors uppercase flex items-center gap-1">
+              <span>🌸</span> DASHBOARD
+            </Link>
+            <Link href="/game" className="hover:text-purple-800 transition-colors uppercase">
+              GAME
+            </Link>
             <a href="#classified" className="hover:text-purple-800 transition-colors uppercase">DROP</a>
           </div>
 
-          {/* GIB WL? Button */}
-          <div className="flex items-center shrink-0">
-            <button 
-              onClick={() => {
-                const el = document.getElementById('classified');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="figma-btn-gibwl font-bungee text-[11px] tracking-wider text-[#241444] px-4 md:px-5 py-1.5 md:py-2 rounded-full cursor-pointer"
+          {/* Action Button */}
+          <div className="flex items-center gap-2 shrink-0">
+            <Link 
+              href="/dashboard"
+              className="figma-btn-gibwl font-bungee text-[10px] md:text-[11px] tracking-wider text-[#241444] px-3.5 md:px-4 py-1.5 md:py-2 rounded-full cursor-pointer"
             >
-              GIB WL?
-            </button>
+              DASHBOARD
+            </Link>
           </div>
         </nav>
       </header>

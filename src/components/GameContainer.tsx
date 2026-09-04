@@ -23,7 +23,7 @@ import {
   EXTRA_LIFE_CARROT_COST,
 } from '@/lib/game/livesManager';
 import { HUD } from './HUD';
-import { TouchControls, TouchControlMode, DPadPosition } from './TouchControls';
+import { TouchControls } from './TouchControls';
 import { SkinWardrobeModal } from './SkinWardrobeModal';
 import { TasksRewardsModal } from './TasksRewardsModal';
 import { StartOverlay, GameOverOverlay, PauseOverlay } from './OverlayScreens';
@@ -35,8 +35,6 @@ const STORAGE_KEYS = {
   UNLOCKED_SKINS: 'bunnyhop_unlocked_skins',
   SELECTED_SKIN: 'bunnyhop_selected_skin',
   SOUND_ENABLED: 'bunnyhop_sound_enabled',
-  CONTROL_MODE: 'bunnyhop_control_mode',
-  DPAD_POS: 'bunnyhop_dpad_pos',
 };
 
 export const GameContainer: React.FC = () => {
@@ -72,10 +70,6 @@ export const GameContainer: React.FC = () => {
   const [unlockedSkins, setUnlockedSkins] = useState<string[]>(['classic']);
   const [selectedSkin, setSelectedSkin] = useState<string>('classic');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-
-  // Mobile Touch Control Preferences
-  const [controlMode, setControlMode] = useState<TouchControlMode>('dpad');
-  const [dpadPosition, setDpadPosition] = useState<DPadPosition>('center');
 
   // Cloudflare Turnstile CAPTCHA
   const turnstileWidgetRef = useRef<HTMLDivElement>(null);
@@ -149,16 +143,12 @@ export const GameContainer: React.FC = () => {
       const savedSkins = JSON.parse(localStorage.getItem(STORAGE_KEYS.UNLOCKED_SKINS) || '["classic"]');
       const savedSelected = localStorage.getItem(STORAGE_KEYS.SELECTED_SKIN) || 'classic';
       const savedSound = localStorage.getItem(STORAGE_KEYS.SOUND_ENABLED) !== 'false';
-      const savedMode = (localStorage.getItem(STORAGE_KEYS.CONTROL_MODE) as TouchControlMode) || 'dpad';
-      const savedPos = (localStorage.getItem(STORAGE_KEYS.DPAD_POS) as DPadPosition) || 'center';
 
       setHighScore(savedHigh);
       setTotalCarrots(savedCarrots);
       setUnlockedSkins(savedSkins);
       setSelectedSkin(savedSelected);
       setSoundEnabled(savedSound);
-      setControlMode(savedMode);
-      setDpadPosition(savedPos);
       soundEngine.setEnabled(savedSound);
 
       // Load daily lives
@@ -335,6 +325,13 @@ export const GameContainer: React.FC = () => {
     setLives(newState.lives);
   }, [totalCarrots]);
 
+  // Free Refill (player friendly fallback so no one is locked out)
+  const handleFreeRefill = useCallback(() => {
+    soundEngine.playCarrot();
+    localStorage.setItem('bunnyhop_lives_count', '5');
+    setLives(5);
+  }, []);
+
   // Toggle Sound
   const handleToggleSound = useCallback(() => {
     setSoundEnabled((prev) => {
@@ -342,24 +339,6 @@ export const GameContainer: React.FC = () => {
       soundEngine.setEnabled(updated);
       localStorage.setItem(STORAGE_KEYS.SOUND_ENABLED, String(updated));
       return updated;
-    });
-  }, []);
-
-  // Cycle Mobile Control Mode (dpad -> split -> swipe)
-  const handleCycleControlMode = useCallback(() => {
-    setControlMode((prev) => {
-      const next: TouchControlMode = prev === 'dpad' ? 'split' : prev === 'split' ? 'swipe' : 'dpad';
-      localStorage.setItem(STORAGE_KEYS.CONTROL_MODE, next);
-      return next;
-    });
-  }, []);
-
-  // Cycle D-Pad Position (center -> left -> right)
-  const handleCyclePosition = useCallback(() => {
-    setDpadPosition((prev) => {
-      const next: DPadPosition = prev === 'center' ? 'left' : prev === 'left' ? 'right' : 'center';
-      localStorage.setItem(STORAGE_KEYS.DPAD_POS, next);
-      return next;
     });
   }, []);
 
@@ -590,19 +569,11 @@ export const GameContainer: React.FC = () => {
         onOpenTasks={() => setIsTasksOpen(true)}
         onPause={handlePause}
         gameStatus={gameStatus}
-        controlMode={controlMode}
-        onToggleControlMode={handleCycleControlMode}
       />
 
       {/* Mobile Touch Controls */}
       {gameStatus === 'playing' && (
-        <TouchControls
-          onMove={handleMove}
-          mode={controlMode}
-          dpadPosition={dpadPosition}
-          onCyclePosition={handleCyclePosition}
-          onCycleMode={handleCycleControlMode}
-        />
+        <TouchControls onMove={handleMove} />
       )}
 
       {/* Overlay Screens */}
@@ -614,6 +585,7 @@ export const GameContainer: React.FC = () => {
           totalCarrots={totalCarrots}
           lives={lives}
           onBuyLife={handleBuyLife}
+          onFreeRefill={handleFreeRefill}
         />
       )}
 
@@ -629,6 +601,7 @@ export const GameContainer: React.FC = () => {
           onRetry={handleStartGame}
           onOpenWardrobe={() => { setGameStatus('idle'); setIsWardrobeOpen(true); }}
           onBuyLife={handleBuyLife}
+          onFreeRefill={handleFreeRefill}
         />
       )}
 

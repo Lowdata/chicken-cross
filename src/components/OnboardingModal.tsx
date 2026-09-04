@@ -201,10 +201,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
               </p>
               <button
                 onClick={() => openConnectModal?.()}
-                className="btn-primary w-full"
+                className="btn-primary w-full py-3.5 px-6 text-base"
               >
                 <Wallet className="w-5 h-5" />
-                Connect Wallet
+                <span>Connect Wallet</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
               <button
@@ -298,12 +298,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                   <button
                     onClick={handleSetupSubmit}
                     disabled={isLoading}
-                    className="btn-primary w-full disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
+                    className="btn-primary w-full py-3.5 px-6 text-base disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
                   >
                     {isLoading ? (
                       <><span className="animate-spin">🐰</span> Setting up...</>
                     ) : (
-                      <><Sparkles className="w-5 h-5" /> Create My Profile<ArrowRight className="w-5 h-5" /></>
+                      <><Sparkles className="w-5 h-5" /> <span>Create My Profile</span><ArrowRight className="w-5 h-5" /></>
                     )}
                   </button>
                 </>
@@ -385,10 +385,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
               {/* Play CTA */}
               <button
                 onClick={handlePlay}
-                className="btn-primary w-full"
+                className="btn-primary w-full py-3.5 px-6 text-base"
               >
                 <Zap className="w-5 h-5" />
-                Hop In! Let&apos;s Play 🐰
+                <span>Hop In! Let&apos;s Play 🐰</span>
                 <ChevronRight className="w-5 h-5" />
               </button>
 

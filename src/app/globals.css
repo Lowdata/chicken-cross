@@ -2,10 +2,18 @@
 
 @theme {
   --color-brand-pink: #FF9AD6;
+  --color-brand-pink-dark: #E870B5;
   --color-brand-blue: #B3C2FC;
   --color-brand-purple: #DA9DE7;
+  --color-brand-purple-light: #E9BAF5;
+  --color-brand-purple-dark: #6B21A8;
   --color-brand-lavender: #C9B3F7;
   --color-brand-dark: #0F0826;
+  --color-brand-darker: #0B0718;
+  --color-brand-surface: #1B1035;
+  --color-brand-surface-light: #28184C;
+  --color-brand-orange: #F97316;
+  --color-brand-orange-dark: #C2410C;
 
   --font-bungee: var(--font-bungee), sans-serif;
   --font-dm-mono: var(--font-dm-mono), monospace;
@@ -13,6 +21,72 @@
 }
 
 @layer utilities {
+  .modal-container {
+    background: rgba(18, 10, 38, 0.95);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1.5px solid rgba(218, 157, 231, 0.35);
+    border-radius: 28px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(147, 51, 234, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    color: #FFFFFF;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #FF6FB5 0%, #B845ED 50%, #7E22CE 100%);
+    color: #FFFFFF !important;
+    font-family: var(--font-bungee), sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    border-radius: 1rem;
+    border: 1.5px solid rgba(255, 255, 255, 0.45);
+    box-shadow: 0 6px 0 #581C87, 0 12px 25px rgba(184, 69, 237, 0.45);
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #581C87, 0 16px 30px rgba(184, 69, 237, 0.6);
+    filter: brightness(1.08);
+  }
+  .btn-primary:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #581C87, 0 6px 15px rgba(184, 69, 237, 0.3);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    font-weight: 800;
+    border-radius: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #FFFFFF;
+  }
+  .btn-secondary:active {
+    transform: scale(0.97);
+  }
+
+  .hud-pill {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .hud-btn {
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
   .text-glow-white {
     text-shadow: 0 4px 20px rgba(255, 255, 255, 0.9), 0 0 35px rgba(201, 179, 247, 0.8);
   }

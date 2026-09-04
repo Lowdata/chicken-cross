@@ -33,6 +33,7 @@ interface StartOverlayProps {
   totalCarrots: number;
   lives: number;
   onBuyLife: () => void;
+  onFreeRefill?: () => void;
 }
 
 export const StartOverlay: React.FC<StartOverlayProps> = ({
@@ -42,6 +43,7 @@ export const StartOverlay: React.FC<StartOverlayProps> = ({
   totalCarrots,
   lives,
   onBuyLife,
+  onFreeRefill,
 }) => {
   const router = useRouter();
   const currentSkinObj = BUNNY_SKINS[selectedSkin] || BUNNY_SKINS.classic;
@@ -129,47 +131,55 @@ export const StartOverlay: React.FC<StartOverlayProps> = ({
             <Play className="w-6 h-6 fill-white" />
             <span>HOP ({lives} lives left)</span>
           </button>
-        ) : (
+        ) : canAffordLife ? (
           <button
             onClick={() => {
               soundEngine.playClick();
               triggerHaptic('carrot');
               onBuyLife();
             }}
-            disabled={!canAffordLife}
-            className={`w-full py-4 font-black text-lg tracking-wider uppercase rounded-2xl transition-all flex items-center justify-center gap-2 min-h-[56px] ${
-              canAffordLife
-                ? 'bg-brand-orange hover:bg-brand-orange-dark text-white shadow-[0_5px_0_var(--color-brand-orange-dark)] active:translate-y-1 active:shadow-[0_1px_0_var(--color-brand-orange-dark)] cursor-pointer'
-                : 'bg-white/10 text-white/30 cursor-not-allowed shadow-none'
-            }`}
+            className="w-full py-4 font-black text-lg tracking-wider uppercase rounded-2xl transition-all flex items-center justify-center gap-2 min-h-[56px] bg-brand-orange hover:bg-brand-orange-dark text-white shadow-[0_5px_0_var(--color-brand-orange-dark)] active:translate-y-1 active:shadow-[0_1px_0_var(--color-brand-orange-dark)] cursor-pointer"
           >
             <PlusCircle className="w-5 h-5" />
             <span>Refill Life ({EXTRA_LIFE_CARROT_COST} carrots)</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              soundEngine.playClick();
+              triggerHaptic('carrot');
+              if (onFreeRefill) onFreeRefill();
+              else onBuyLife();
+            }}
+            className="w-full py-4 font-black text-lg tracking-wider uppercase rounded-2xl transition-all flex items-center justify-center gap-2 min-h-[56px] bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_5px_0_#059669] active:translate-y-1 active:shadow-[0_1px_0_#059669] cursor-pointer"
+          >
+            <PlusCircle className="w-5 h-5" />
+            <span>Free Refill (+5 Lives)</span>
           </button>
         )}
 
         {/* Back to Home */}
         <button
           onClick={() => router.push('/')}
-          className="w-full mt-3 py-2.5 bg-brand-surface hover:bg-white/5 text-white/50 hover:text-white/80 font-bold text-xs rounded-xl border border-white/10 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+          className="w-full mt-3 py-3 bg-white/10 hover:bg-white/15 active:bg-white/20 text-white font-extrabold text-sm rounded-xl border border-white/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 shadow-sm"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-4 h-4 text-white" />
           <span>Back to Home</span>
         </button>
 
         {/* Controls Tip */}
-        <div className="mt-3 bg-brand-surface/50 rounded-xl border border-white/5 p-2.5 text-center">
+        <div className="mt-3 bg-brand-surface/80 rounded-xl border border-white/10 p-3 text-center">
           {isTouchDevice ? (
-            <p className="text-[10px] sm:text-[11px] text-white/40 flex items-center justify-center gap-1.5">
-              <Smartphone className="w-3 h-3" /> Swipe or use D-Pad to hop
+            <p className="text-[11px] text-white/80 font-bold flex items-center justify-center gap-1.5">
+              <Smartphone className="w-3.5 h-3.5 text-brand-pink" /> Use Split on-screen buttons to hop
             </p>
           ) : (
-            <p className="text-[10px] sm:text-[11px] text-white/40 flex items-center justify-center gap-1.5">
-              <Keyboard className="w-3 h-3" /> Arrow keys or WASD to hop
+            <p className="text-[11px] text-white/80 font-bold flex items-center justify-center gap-1.5">
+              <Keyboard className="w-3.5 h-3.5 text-brand-pink" /> Arrow keys or WASD to hop
             </p>
           )}
-          <p className="text-[10px] sm:text-[11px] text-brand-orange/80 mt-1 flex items-center justify-center gap-1.5">
-            <Zap className="w-3 h-3" /> Speed increases every 5s &mdash; snag carrots for extra lives &amp; skins!
+          <p className="text-[10px] sm:text-[11px] text-brand-orange font-semibold mt-1 flex items-center justify-center gap-1.5">
+            <Zap className="w-3 h-3 text-brand-orange" /> Speed increases every 5s &mdash; snag carrots for extra lives &amp; skins!
           </p>
         </div>
       </div>
@@ -188,6 +198,7 @@ interface GameOverOverlayProps {
   onRetry: () => void;
   onOpenWardrobe: () => void;
   onBuyLife: () => void;
+  onFreeRefill?: () => void;
 }
 
 export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
@@ -201,6 +212,7 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
   onRetry,
   onOpenWardrobe,
   onBuyLife,
+  onFreeRefill,
 }) => {
   const router = useRouter();
   const carrotBonusPoints = sessionCarrots * 5;
@@ -331,22 +343,30 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
               <RotateCcw className="w-5 h-5 stroke-[2.5]" />
               <span>HOP AGAIN ({lives} left)</span>
             </button>
-          ) : (
+          ) : canAffordLife ? (
             <button
               onClick={() => {
                 soundEngine.playClick();
                 triggerHaptic('carrot');
                 onBuyLife();
               }}
-              disabled={!canAffordLife}
-              className={`w-full py-4 font-black text-lg tracking-wider uppercase rounded-2xl transition-all flex items-center justify-center gap-2 min-h-[56px] ${
-                canAffordLife
-                  ? 'bg-brand-orange hover:bg-brand-orange-dark text-white shadow-[0_5px_0_var(--color-brand-orange-dark)] active:translate-y-1 active:shadow-[0_1px_0_var(--color-brand-orange-dark)] cursor-pointer'
-                  : 'bg-white/10 text-white/30 cursor-not-allowed shadow-none'
-              }`}
+              className="w-full py-4 font-black text-lg tracking-wider uppercase rounded-2xl transition-all flex items-center justify-center gap-2 min-h-[56px] bg-brand-orange hover:bg-brand-orange-dark text-white shadow-[0_5px_0_var(--color-brand-orange-dark)] active:translate-y-1 active:shadow-[0_1px_0_var(--color-brand-orange-dark)] cursor-pointer"
             >
               <PlusCircle className="w-5 h-5" />
               <span>Refill Life ({EXTRA_LIFE_CARROT_COST} carrots)</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                soundEngine.playClick();
+                triggerHaptic('carrot');
+                if (onFreeRefill) onFreeRefill();
+                else onBuyLife();
+              }}
+              className="w-full py-4 font-black text-lg tracking-wider uppercase rounded-2xl transition-all flex items-center justify-center gap-2 min-h-[56px] bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_5px_0_#059669] active:translate-y-1 active:shadow-[0_1px_0_#059669] cursor-pointer"
+            >
+              <PlusCircle className="w-5 h-5" />
+              <span>Free Refill (+5 Lives)</span>
             </button>
           )}
 
@@ -356,7 +376,7 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
               triggerHaptic('tap');
               onOpenWardrobe();
             }}
-            className="w-full py-3 bg-brand-surface hover:bg-white/5 text-white/80 font-extrabold text-sm rounded-xl border border-white/10 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            className="w-full py-3.5 bg-white/10 hover:bg-white/15 active:bg-white/20 text-white font-extrabold text-sm rounded-xl border border-white/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 shadow-sm"
           >
             <Sparkles className="w-4 h-4 text-brand-orange" />
             <span>Bunny Wardrobe ({totalCarrots} carrots)</span>
@@ -365,9 +385,9 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
           {/* Quit to Home */}
           <button
             onClick={() => router.push('/')}
-            className="w-full py-2.5 text-white/40 hover:text-white/70 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            className="w-full py-3 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-extrabold text-xs rounded-xl border border-white/10 transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
           >
-            <Home className="w-3.5 h-3.5" />
+            <Home className="w-4 h-4" />
             <span>Quit to Home</span>
           </button>
         </div>
@@ -391,9 +411,9 @@ export const PauseOverlay: React.FC<PauseOverlayProps> = ({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md select-none animate-fade-in">
-      <div className="modal-container w-full max-w-sm text-center">
-        <h2 className="text-3xl font-black text-white mb-2">Game Paused</h2>
-        <p className="text-sm text-white/50 font-medium mb-6">Take a breather, hopper!</p>
+      <div className="modal-container w-full max-w-sm text-center !p-6 sm:!p-8">
+        <h2 className="text-3xl font-black text-white mb-2 font-bungee">Game Paused</h2>
+        <p className="text-sm text-white/60 font-medium mb-6">Take a breather, hopper!</p>
 
         <div className="space-y-3">
           <button
@@ -402,7 +422,7 @@ export const PauseOverlay: React.FC<PauseOverlayProps> = ({
               triggerHaptic('tap');
               onResume();
             }}
-            className="btn-primary w-full py-3 text-lg min-h-[52px]"
+            className="btn-primary w-full py-3.5 text-lg min-h-[52px]"
           >
             <Play className="w-5 h-5 fill-white" />
             <span>Resume</span>
@@ -414,9 +434,9 @@ export const PauseOverlay: React.FC<PauseOverlayProps> = ({
               triggerHaptic('tap');
               onRestart();
             }}
-            className="w-full py-3 bg-brand-surface hover:bg-white/5 text-white/90 font-extrabold text-sm rounded-xl border border-white/10 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 min-h-[52px]"
+            className="w-full py-3 bg-white/10 hover:bg-white/15 text-white font-extrabold text-sm rounded-xl border border-white/20 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 min-h-[52px]"
           >
-            <RotateCcw className="w-4 h-4 text-white/50" />
+            <RotateCcw className="w-4 h-4 text-white/70" />
             <span>Restart Run</span>
           </button>
 
@@ -426,18 +446,18 @@ export const PauseOverlay: React.FC<PauseOverlayProps> = ({
               triggerHaptic('tap');
               onOpenWardrobe();
             }}
-            className="w-full py-3 bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange font-extrabold text-sm rounded-xl border border-brand-orange/30 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 min-h-[52px]"
+            className="w-full py-3 bg-brand-orange/20 hover:bg-brand-orange/30 text-amber-300 font-extrabold text-sm rounded-xl border border-brand-orange/40 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 min-h-[52px]"
           >
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-4 h-4 text-amber-400" />
             <span>Bunny Wardrobe</span>
           </button>
 
           {/* Quit to Home */}
           <button
             onClick={() => router.push('/')}
-            className="w-full py-2.5 text-white/40 hover:text-white/70 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            className="w-full py-3 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-extrabold text-xs rounded-xl border border-white/10 transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
           >
-            <Home className="w-3.5 h-3.5" />
+            <Home className="w-4 h-4" />
             <span>Quit to Home</span>
           </button>
         </div>

@@ -17,7 +17,6 @@ interface RowCarrot {
   rotSpeed: number;
   floatOffset: number;
   attachedToLog?: THREE.Group;
-  logOffset?: number;
 }
 
 interface Particle {
@@ -49,7 +48,7 @@ interface RowData {
 export class ThreeGameEngine {
   private container: HTMLElement;
   private callbacks: GameEngineCallbacks;
-  
+
   // Three.js Core
   private scene!: THREE.Scene;
   private camera!: THREE.PerspectiveCamera;
@@ -57,35 +56,39 @@ export class ThreeGameEngine {
   private animFrameId: number | null = null;
   private resizeObserver: ResizeObserver | null = null;
 
-  // Constants
-  private readonly TILE = 1;
-  private readonly HALF_WIDTH = 7;
-  private readonly ROW_LOOKAHEAD = 28;
-  private readonly ROW_KEEP_BEHIND = 7;
-  private readonly HOP_DURATION = 135; // ms
-  // Street-level front-facing camera offset (Subway Surfers style)
-  private readonly CAM_OFFSET = new THREE.Vector3(0, 3.5, 8.0);
+  // Constants (matching original reference Bunny Hop)
+  private readonly TILE = 1;              // world units per tile
+  private readonly HALF_WIDTH = 7;        // playable columns from -HALF_WIDTH..HALF_WIDTH
+  private readonly ROW_LOOKAHEAD = 28;    // rows generated ahead of player
+  private readonly ROW_KEEP_BEHIND = 8;   // rows kept behind player before cleanup
+  private readonly HOP_DURATION = 140;    // ms
+  // Wide terrain and seamless off-screen boundaries so cars and logs never overhang ground
+  private readonly TERRAIN_WIDTH = 120;
+  private readonly ROAD_BOUND = 28;
+  private readonly RIVER_BOUND = 30;
+  // Centered straight view camera offset (directly behind player along Z axis)
+  private readonly CAM_OFFSET = new THREE.Vector3(0, 9.8, 9.2);
 
   // Colors
   private readonly COLORS = {
     grass1: 0x8fd35a,
     grass2: 0x7fc94e,
-    road: 0x3d3e47,
-    roadStripe: 0xf5e04a,
-    river: 0x48bfe3,
-    riverDeep: 0x0096c7,
-    log: 0x9c6644,
-    logDark: 0x7f4f24,
-    treeTrunk: 0x7f4f24,
-    treeLeaf1: 0x38b000,
-    treeLeaf2: 0x70e000,
+    road: 0x4a4a52,
+    roadLine: 0xf5e04a,
+    river: 0x4fb8e8,
+    riverDeep: 0x3aa0d4,
+    sidewalk: 0xcfcfd4,
+    log: 0x9a6a3c,
+    logDark: 0x7d5230,
+    treeLeaf: 0x4fae4f,
+    treeTrunk: 0x8a5a34,
     shadow: 0x000000,
     carrotOrange: 0xff6b00,
     carrotGreen: 0x38b000,
   };
 
   private readonly CAR_COLORS = [
-    0xff4d6d, 0xffb703, 0x00b4d8, 0x7209b7, 0xf77f00, 0x06d6a0, 0xff006e, 0x4cc9f0
+    0xff6b6b, 0xffd93d, 0x6bcbef, 0x9b7bff, 0xff9f5b, 0x5be0a0, 0xff6fae,
   ];
 
   // Game State
@@ -104,19 +107,8 @@ export class ThreeGameEngine {
   private score = 0;
   private sessionCarrots = 0;
 
-  // New Mechanics
-  private deathRow = -1;
-  private deathZoneMesh!: THREE.Mesh;
-  
-  private eagleGroup!: THREE.Group;
-  private eagleActive = false;
-  private eagleRow = 0;
-  private eagleDir = 1;
-  private eagleSpeed = 12;
-  private canSpawnEagle = false;
-
-  // Time-based Difficulty Scaling (every 5 seconds)
-  private playDuration = 0; // in seconds
+  // Time & Difficulty tracking (for HUD, no sudden deaths)
+  private playDuration = 0;
   private currentDifficultyLevel = 1;
   private difficultyMultiplier = 1.0;
 
@@ -131,8 +123,6 @@ export class ThreeGameEngine {
   private earFlapTimer = 0;
   private splashing = false;
   private splashStart = 0;
-  // Cached Vector3 for camera update — avoids per-frame heap allocation
-  private readonly _camTarget = new THREE.Vector3();
 
   constructor(container: HTMLElement, callbacks: GameEngineCallbacks, initialSkinId: string = 'classic') {
     this.container = container;
@@ -149,74 +139,34 @@ export class ThreeGameEngine {
   /* ============================= INITIALIZATION ============================= */
   private initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xa0e7e5);
-    // Tighter fog for front-facing view — rows fade out naturally at a distance
-    this.scene.fog = new THREE.Fog(0xa0e7e5, 18, 40);
+    this.scene.background = new THREE.Color(0x9fd8f5);
+    this.scene.fog = new THREE.Fog(0x9fd8f5, 30, 52);
 
-    // Death Zone — tall dark upright wall that creeps in from behind the player
-    // Replaces the old flat brown slab on the ground
-    const deathGeo = new THREE.PlaneGeometry(60, 20);
-    const deathMat = new THREE.MeshBasicMaterial({
-      color: 0x050508,
-      transparent: true,
-      opacity: 0.88,
-      side: THREE.DoubleSide,
-    });
-    this.deathZoneMesh = new THREE.Mesh(deathGeo, deathMat);
-    // Stand upright, facing forward
-    this.deathZoneMesh.rotation.x = 0;
-    this.deathZoneMesh.position.y = 10; // center of the wall is 10 units high
-    this.scene.add(this.deathZoneMesh);
+    const width = this.container.clientWidth || window.innerWidth;
+    const height = this.container.clientHeight || window.innerHeight;
+    const aspect = width / Math.max(1, height);
 
-    // Ground fog strip — gradient in front of the wall for a smooth transition
-    const fogStripGeo = new THREE.PlaneGeometry(60, 5);
-    const fogStripMat = new THREE.MeshBasicMaterial({
-      color: 0x080810,
-      transparent: true,
-      opacity: 0.65,
-      depthWrite: false,
-    });
-    const fogStrip = new THREE.Mesh(fogStripGeo, fogStripMat);
-    fogStrip.rotation.x = -Math.PI / 2;
-    fogStrip.position.y = 0.06;
-    // Attach the ground fog to the wall so they move together
-    this.deathZoneMesh.add(fogStrip);
-    // Position the fog strip in the wall's local space: below center, in front
-    fogStrip.position.set(0, -10, 0); // on the ground plane relative to wall
-    fogStrip.rotation.set(-Math.PI / 2, 0, 0);
-
-    // Eagle setup
-    this.eagleGroup = this.buildEagle();
-    this.eagleGroup.visible = false;
-    this.scene.add(this.eagleGroup);
-
-    const width = this.container.clientWidth;
-    const height = this.container.clientHeight || 1;
-    const aspect = width / height;
-
-    // Fixed 55° FOV — cinematic, forward-looking front view
-    const targetFov = 55;
-
-    this.camera = new THREE.PerspectiveCamera(targetFov, aspect, 0.1, 100);
+    // Clean straight view 40° FOV looking directly forward along Z
+    this.camera = new THREE.PerspectiveCamera(40, aspect, 0.1, 120);
     this.camera.position.copy(this.CAM_OFFSET);
-    this.camera.lookAt(0, 1.0, -8);
+    this.camera.lookAt(0, 0.4, -4.5);
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.setSize(width, height);
     this.renderer.shadowMap.enabled = false;
     this.container.appendChild(this.renderer.domElement);
 
-    // Lighting
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x88bb77, 0.95);
-    this.scene.add(hemiLight);
+    // Lighting (from original reference)
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x88aa66, 0.95);
+    this.scene.add(hemi);
 
-    const sunLight = new THREE.DirectionalLight(0xfff8e7, 0.9);
-    sunLight.position.set(-8, 14, 9);
-    this.scene.add(sunLight);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.85);
+    dir.position.set(-6, 12, 8);
+    this.scene.add(dir);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
-    this.scene.add(ambientLight);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.25);
+    this.scene.add(ambient);
   }
 
   private initParticleSystem() {
@@ -227,40 +177,44 @@ export class ThreeGameEngine {
   /* ============================= 3D MODEL BUILDERS ============================= */
   private createBox(w: number, h: number, d: number, color: number): THREE.Mesh {
     const geo = new THREE.BoxGeometry(w, h, d);
-    const mat = new THREE.MeshLambertMaterial({ color, flatShading: true });
+    const mat = new THREE.MeshLambertMaterial({ color });
     return new THREE.Mesh(geo, mat);
   }
 
   private createCylinder(r1: number, r2: number, h: number, color: number, seg: number = 8): THREE.Mesh {
     const geo = new THREE.CylinderGeometry(r1, r2, h, seg);
-    const mat = new THREE.MeshLambertMaterial({ color, flatShading: true });
+    const mat = new THREE.MeshLambertMaterial({ color });
     return new THREE.Mesh(geo, mat);
   }
 
   private createSphere(r: number, color: number, seg: number = 8): THREE.Mesh {
     const geo = new THREE.SphereGeometry(r, seg, Math.max(6, Math.floor(seg * 0.75)));
-    const mat = new THREE.MeshLambertMaterial({ color, flatShading: true });
+    const mat = new THREE.MeshLambertMaterial({ color });
+    return new THREE.Mesh(geo, mat);
+  }
+
+  private createCone(r: number, h: number, color: number, seg: number = 8): THREE.Mesh {
+    const geo = new THREE.ConeGeometry(r, h, seg);
+    const mat = new THREE.MeshLambertMaterial({ color });
     return new THREE.Mesh(geo, mat);
   }
 
   private createShadowBlob(scale: number = 1): THREE.Mesh {
-    const geo = new THREE.CircleGeometry(0.38 * scale, 16);
+    const geo = new THREE.CircleGeometry(0.4 * scale, 16);
     const mat = new THREE.MeshBasicMaterial({
       color: this.COLORS.shadow,
       transparent: true,
       opacity: 0.22,
       depthWrite: false,
     });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.rotation.x = -Math.PI / 2;
-    mesh.position.y = 0.01;
-    return mesh;
+    const m = new THREE.Mesh(geo, mat);
+    m.rotation.x = -Math.PI / 2;
+    m.position.y = 0.01;
+    return m;
   }
 
   /**
-   * Build 3D Bunny with the current skin
-   * IMPORTANT: The bunny's face is oriented towards -Z (forward / towards obstacles ahead)
-   * so rotation.y = 0 points the bunny forward into the obstacle road!
+   * Build 3D Bunny matching original reference geometry & integrating skin colors
    */
   private initBunny() {
     if (this.bunnyGroup) {
@@ -271,57 +225,59 @@ export class ThreeGameEngine {
     const colors = this.currentSkin.colors;
 
     // Body
-    const body = this.createBox(0.52, 0.42, 0.62, colors.body);
+    const body = this.createBox(0.52, 0.4, 0.62, colors.body);
     body.position.y = 0.32;
     g.add(body);
 
-    // Head (facing -Z / forward)
-    const head = this.createBox(0.42, 0.38, 0.42, colors.body);
-    head.position.set(0, 0.64, -0.2);
+    // Head
+    const head = this.createBox(0.4, 0.36, 0.4, colors.body);
+    head.position.set(0, 0.62, -0.2);
     g.add(head);
 
-    // Left Ear (facing -Z)
-    const earL = this.createBox(0.12, 0.48, 0.1, colors.body);
-    earL.position.set(-0.11, 1.02, -0.16);
+    // Left Ear
+    const earL = this.createBox(0.12, 0.46, 0.1, colors.body);
+    earL.position.set(-0.11, 0.98, -0.16);
     earL.rotation.z = 0.12;
     g.add(earL);
 
-    const earLin = this.createBox(0.06, 0.34, 0.02, colors.earInner);
-    earLin.position.set(-0.11, 0.98, -0.21);
+    const earLin = this.createBox(0.06, 0.32, 0.02, colors.earInner);
+    earLin.position.set(-0.11, 0.94, -0.21);
     earLin.rotation.z = 0.12;
     g.add(earLin);
 
-    // Right Ear (facing -Z)
-    const earR = this.createBox(0.12, 0.48, 0.1, colors.body);
-    earR.position.set(0.11, 1.02, -0.16);
+    // Right Ear
+    const earR = this.createBox(0.12, 0.46, 0.1, colors.body);
+    earR.position.set(0.11, 0.98, -0.16);
     earR.rotation.z = -0.12;
     g.add(earR);
 
-    const earRin = this.createBox(0.06, 0.34, 0.02, colors.earInner);
-    earRin.position.set(0.11, 0.98, -0.21);
+    const earRin = this.createBox(0.06, 0.32, 0.02, colors.earInner);
+    earRin.position.set(0.11, 0.94, -0.21);
     earRin.rotation.z = -0.12;
     g.add(earRin);
 
-    // Nose (snout at -Z / forward)
-    const nose = this.createSphere(0.065, colors.nose, 8);
-    nose.position.set(0, 0.6, -0.42);
+    // Nose
+    const nose = this.createSphere(0.06, colors.nose, 8);
+    nose.position.set(0, 0.58, -0.42);
     g.add(nose);
 
-    // Eyes (looking along -Z / forward towards the obstacles)
-    const eyeL = this.createSphere(0.045, colors.eyes, 8);
-    eyeL.position.set(-0.14, 0.68, -0.41);
+    // Cheeks / Eyes
+    const eyeGeo = new THREE.SphereGeometry(0.045, 8, 6);
+    const eyeMat = new THREE.MeshBasicMaterial({ color: colors.eyes || 0x2a2a2a });
+    const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+    eyeL.position.set(-0.13, 0.66, -0.4);
     g.add(eyeL);
 
-    const eyeR = this.createSphere(0.045, colors.eyes, 8);
-    eyeR.position.set(0.14, 0.68, -0.41);
+    const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+    eyeR.position.set(0.13, 0.66, -0.4);
     g.add(eyeR);
 
-    // Tail (fluffy sphere at +Z / rear)
-    const tail = this.createSphere(0.11, colors.tail, 8);
+    // Tail
+    const tail = this.createSphere(0.1, colors.tail, 8);
     tail.position.set(0, 0.36, 0.32);
     g.add(tail);
 
-    // Front Feet (towards -Z / front)
+    // Feet
     const fl = this.createBox(0.16, 0.14, 0.22, colors.feet);
     fl.position.set(-0.16, 0.08, -0.16);
     g.add(fl);
@@ -337,7 +293,7 @@ export class ThreeGameEngine {
         color: this.currentSkin.auraColor,
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.5,
+        opacity: 0.55,
       });
       const aura = new THREE.Mesh(auraGeo, auraMat);
       aura.rotation.x = -Math.PI / 2;
@@ -346,93 +302,43 @@ export class ThreeGameEngine {
     }
 
     // Shadow
-    const shadow = this.createShadowBlob(1.1);
+    const shadow = this.createShadowBlob(1.0);
+    shadow.position.y = 0.01;
     g.add(shadow);
 
     this.bunnyGroup = g;
     this.scene.add(this.bunnyGroup);
   }
 
-  /** Build 3D Eagle */
-  private buildEagle(): THREE.Group {
-    const group = new THREE.Group();
-    
-    // Body
-    const bodyGeo = new THREE.BoxGeometry(0.5, 0.4, 0.8);
-    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x5c4033, flatShading: true }); // dark brown
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.y = 1.0;
-    group.add(body);
-
-    // Head
-    const headGeo = new THREE.BoxGeometry(0.3, 0.3, 0.4);
-    const headMat = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true }); // white head
-    const head = new THREE.Mesh(headGeo, headMat);
-    head.position.set(0, 1.2, 0.5);
-    group.add(head);
-
-    // Beak
-    const beakGeo = new THREE.ConeGeometry(0.1, 0.3, 4);
-    const beakMat = new THREE.MeshLambertMaterial({ color: 0xffd700, flatShading: true }); // gold
-    const beak = new THREE.Mesh(beakGeo, beakMat);
-    beak.rotation.x = Math.PI / 2;
-    beak.position.set(0, 1.15, 0.8);
-    group.add(beak);
-
-    // Wings
-    const wingGeo = new THREE.BoxGeometry(1.4, 0.1, 0.4);
-    const wingMat = new THREE.MeshLambertMaterial({ color: 0x8b4513, flatShading: true }); // saddle brown
-    const wingL = new THREE.Mesh(wingGeo, wingMat);
-    wingL.position.set(-0.9, 1.1, 0);
-    const wingR = new THREE.Mesh(wingGeo, wingMat);
-    wingR.position.set(0.9, 1.1, 0);
-    
-    // Animate wings later by tracking them, or just let them be static for a simpler approach.
-    // For simplicity, we'll give the whole group a bobbing motion.
-    group.add(wingL);
-    group.add(wingR);
-
-    // Shadow
-    const shadowGeo = new THREE.PlaneGeometry(1.2, 1.2);
-    const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 });
-    const shadow = new THREE.Mesh(shadowGeo, shadowMat);
-    shadow.rotation.x = -Math.PI / 2;
-    shadow.position.y = 0.02;
-    group.add(shadow);
-
-    return group;
-  }
-
   /** Build 3D Collectible Carrot */
   private buildCarrot(): THREE.Group {
     const group = new THREE.Group();
 
-    // Carrot Root (Cone tapering downwards)
-    const coneGeo = new THREE.ConeGeometry(0.14, 0.42, 7);
+    // Carrot Root
+    const coneGeo = new THREE.ConeGeometry(0.13, 0.38, 7);
     const coneMat = new THREE.MeshLambertMaterial({
       color: this.COLORS.carrotOrange,
       flatShading: true,
-      emissive: 0x221100,
     });
     const coneMesh = new THREE.Mesh(coneGeo, coneMat);
-    coneMesh.rotation.x = Math.PI; // Point down
+    coneMesh.rotation.x = Math.PI; // point down
     coneMesh.position.y = 0.22;
     group.add(coneMesh);
 
-    // Green Carrot Stems / Leaves on Top
+    // Green carrot leaves on top
     for (let i = 0; i < 3; i++) {
       const angle = (i * Math.PI * 2) / 3;
-      const leafGeo = new THREE.BoxGeometry(0.04, 0.16, 0.04);
+      const leafGeo = new THREE.BoxGeometry(0.04, 0.14, 0.04);
       const leafMat = new THREE.MeshLambertMaterial({ color: this.COLORS.carrotGreen, flatShading: true });
       const leaf = new THREE.Mesh(leafGeo, leafMat);
-      leaf.position.set(Math.cos(angle) * 0.04, 0.48, Math.sin(angle) * 0.04);
+      leaf.position.set(Math.cos(angle) * 0.03, 0.44, Math.sin(angle) * 0.03);
       leaf.rotation.z = (Math.cos(angle) * Math.PI) / 8;
       leaf.rotation.x = (Math.sin(angle) * Math.PI) / 8;
       group.add(leaf);
     }
 
-    // Floating Ground Halo
-    const haloGeo = new THREE.RingGeometry(0.18, 0.26, 12);
+    // Subtle floating halo
+    const haloGeo = new THREE.RingGeometry(0.16, 0.24, 12);
     const haloMat = new THREE.MeshBasicMaterial({
       color: 0xff9100,
       side: THREE.DoubleSide,
@@ -444,93 +350,58 @@ export class ThreeGameEngine {
     halo.position.y = 0.02;
     group.add(halo);
 
-    group.scale.set(1.1, 1.1, 1.1);
+    group.scale.set(1.05, 1.05, 1.05);
     return group;
   }
 
-  /** Get carrot spawn chance based on how many the player has already collected */
-  private getCarrotSpawnChance(baseChance: number): number {
-    if (this.sessionCarrots >= 8) return baseChance * 0.15; // ultra-rare for 9th
-    if (this.sessionCarrots >= 5) return baseChance * 0.5;  // halved after 5
-    return baseChance;
-  }
-
-  /** Build 3D Car */
+  /** Build 3D Car (matching original reference) */
   private buildCar(color: number): THREE.Group {
     const g = new THREE.Group();
-    const isTruck = Math.random() < 0.25;
+    const body = this.createBox(0.9, 0.32, 0.6, color);
+    body.position.y = 0.28;
+    g.add(body);
 
-    if (!isTruck) {
-      // Sporty / Regular Sedan
-      const body = this.createBox(0.92, 0.32, 0.62, color);
-      body.position.y = 0.2;
-      g.add(body);
+    const cabin = this.createBox(0.5, 0.24, 0.56, 0xffffff);
+    cabin.position.set(-0.05, 0.52, 0);
+    g.add(cabin);
 
-      const cabin = this.createBox(0.52, 0.24, 0.56, 0xffffff);
-      cabin.position.set(-0.06, 0.43, 0);
-      g.add(cabin);
-
-      // Headlights
-      const lightGeo = new THREE.BoxGeometry(0.04, 0.08, 0.12);
-      const lightMat = new THREE.MeshBasicMaterial({ color: 0xfffa65 });
-      const hl1 = new THREE.Mesh(lightGeo, lightMat);
-      hl1.position.set(0.46, 0.22, 0.18);
-      g.add(hl1);
-      const hl2 = new THREE.Mesh(lightGeo, lightMat);
-      hl2.position.set(0.46, 0.22, -0.18);
-      g.add(hl2);
-    } else {
-      // Delivery Van / Pickup Truck
-      const body = this.createBox(1.15, 0.38, 0.65, color);
-      body.position.y = 0.24;
-      g.add(body);
-
-      const cargo = this.createBox(0.7, 0.42, 0.62, 0xefefef);
-      cargo.position.set(-0.18, 0.58, 0);
-      g.add(cargo);
-
-      const cabin = this.createBox(0.35, 0.3, 0.58, 0x222222);
-      cabin.position.set(0.32, 0.52, 0);
-      g.add(cabin);
-    }
-
-    // Wheels
+    const wheelMat = 0x2a2a2a;
     const wheelPositions = [
-      [-0.3, 0.08, 0.33],
-      [0.3, 0.08, 0.33],
-      [-0.3, 0.08, -0.33],
-      [0.3, 0.08, -0.33],
+      [-0.28, 0.12, 0.32],
+      [0.28, 0.12, 0.32],
+      [-0.28, 0.12, -0.32],
+      [0.28, 0.12, -0.32],
     ];
     wheelPositions.forEach(([wx, wy, wz]) => {
-      const wheel = this.createCylinder(0.12, 0.12, 0.1, 0x222222, 10);
+      const wheel = this.createCylinder(0.12, 0.12, 0.12, wheelMat, 10);
       wheel.rotation.x = Math.PI / 2;
       wheel.position.set(wx, wy, wz);
       g.add(wheel);
     });
 
-    const sh = this.createShadowBlob(1.5);
+    const sh = this.createShadowBlob(1.4);
+    sh.position.y = 0.005;
     g.add(sh);
 
     return g;
   }
 
-  /** Build 3D Floating Log */
+  /** Build 3D Floating Log (matching original reference) */
   private buildLog(len: number): THREE.Group {
     const g = new THREE.Group();
-    const main = this.createCylinder(0.24, 0.24, len, this.COLORS.log, 10);
+    const main = this.createCylinder(0.22, 0.22, len, this.COLORS.log, 10);
     main.rotation.z = Math.PI / 2;
     g.add(main);
 
-    // Rings on ends
-    const endGeo = new THREE.CircleGeometry(0.24, 10);
+    const endCapGeo = new THREE.CircleGeometry(0.22, 10);
     const endMat = new THREE.MeshLambertMaterial({ color: this.COLORS.logDark });
 
-    const capL = new THREE.Mesh(endGeo, endMat);
+    const capL = new THREE.Mesh(endCapGeo, endMat);
     capL.rotation.y = Math.PI / 2;
     capL.position.x = -len / 2;
     g.add(capL);
 
-    const capR = new THREE.Mesh(endGeo, endMat);
+    const capR = new THREE.Mesh(endCapGeo, endMat);
     capR.rotation.y = -Math.PI / 2;
     capR.position.x = len / 2;
     g.add(capR);
@@ -538,43 +409,40 @@ export class ThreeGameEngine {
     return g;
   }
 
-  /** Build Tree for Grass Lanes */
+  /** Build Tree for Grass Lanes (matching original reference) */
   private buildTree(): THREE.Group {
     const tree = new THREE.Group();
-    const isPine = Math.random() < 0.5;
-
-    const trunk = this.createCylinder(0.09, 0.12, 0.36, this.COLORS.treeTrunk, 6);
-    trunk.position.y = 0.18;
+    const trunk = this.createCylinder(0.08, 0.1, 0.32, this.COLORS.treeTrunk, 6);
+    trunk.position.y = 0.16;
     tree.add(trunk);
 
-    if (isPine) {
-      const coneGeo1 = new THREE.ConeGeometry(0.36, 0.6, 7);
-      const leafMat = new THREE.MeshLambertMaterial({ color: this.COLORS.treeLeaf1, flatShading: true });
-      const leaf1 = new THREE.Mesh(coneGeo1, leafMat);
-      leaf1.position.y = 0.6;
-      tree.add(leaf1);
+    const leaf = this.createCone(0.34, 0.55, this.COLORS.treeLeaf, 8);
+    leaf.position.y = 0.58;
+    tree.add(leaf);
 
-      const coneGeo2 = new THREE.ConeGeometry(0.26, 0.45, 7);
-      const leaf2 = new THREE.Mesh(coneGeo2, leafMat);
-      leaf2.position.y = 0.85;
-      tree.add(leaf2);
-    } else {
-      const top1 = this.createSphere(0.28, this.COLORS.treeLeaf1, 8);
-      top1.position.y = 0.52;
-      tree.add(top1);
-
-      const top2 = this.createSphere(0.22, this.COLORS.treeLeaf2, 8);
-      top2.position.set(0.08, 0.68, 0.05);
-      tree.add(top2);
-    }
+    const leaf2 = this.createSphere(0.22, this.COLORS.treeLeaf, 8);
+    leaf2.position.y = 0.42;
+    tree.add(leaf2);
 
     const sh = this.createShadowBlob(1.1);
+    sh.position.set(0, 0.01, 0);
     tree.add(sh);
 
     return tree;
   }
 
   /* ============================= WORLD GENERATION ============================= */
+  private terrainMeshForRow(type: 'grass' | 'road' | 'river'): THREE.Mesh {
+    const w = this.TERRAIN_WIDTH;
+    let color: number;
+    if (type === 'grass') color = Math.random() < 0.5 ? this.COLORS.grass1 : this.COLORS.grass2;
+    else if (type === 'road') color = this.COLORS.road;
+    else color = this.COLORS.river;
+    const m = this.createBox(w, 0.4, this.TILE * 0.98, color);
+    m.position.y = -0.2;
+    return m;
+  }
+
   private generateRow(index: number) {
     if (this.rows.has(index)) return;
 
@@ -587,10 +455,8 @@ export class ThreeGameEngine {
       type = 'grass';
     } else {
       const r = Math.random();
-      // Difficulty scaling with row distance and time
-      const riverChance = Math.min(0.35, 0.14 + index * 0.0025 + (this.difficultyMultiplier - 1) * 0.05);
-      const roadChance = Math.min(0.45, 0.30 + index * 0.0025 + (this.difficultyMultiplier - 1) * 0.05);
-
+      const riverChance = Math.min(0.32, 0.14 + index * 0.002);
+      const roadChance = Math.min(0.42, 0.30 + index * 0.002);
       if (r < riverChance) type = 'river';
       else if (r < riverChance + roadChance) type = 'road';
       else type = 'grass';
@@ -603,29 +469,8 @@ export class ThreeGameEngine {
       }
     }
 
-    // Terrain ground mesh
-    const w = this.HALF_WIDTH * 2 + 3;
-    let groundColor: number;
-    if (type === 'grass') {
-      groundColor = index % 2 === 0 ? this.COLORS.grass1 : this.COLORS.grass2;
-    } else if (type === 'road') {
-      groundColor = this.COLORS.road;
-    } else {
-      groundColor = this.COLORS.river;
-    }
-
-    const terrain = this.createBox(w, 0.4, this.TILE * 0.98, groundColor);
-    terrain.position.y = -0.2;
+    const terrain = this.terrainMeshForRow(type);
     group.add(terrain);
-
-    // Dashed road stripes
-    if (type === 'road' && index % 2 === 0) {
-      for (let s = -this.HALF_WIDTH; s <= this.HALF_WIDTH; s += 2) {
-        const stripe = this.createBox(0.8, 0.01, 0.08, this.COLORS.roadStripe);
-        stripe.position.set(s, 0.005, 0);
-        group.add(stripe);
-      }
-    }
 
     const rowData: RowData = { index, type, group };
 
@@ -633,8 +478,8 @@ export class ThreeGameEngine {
       rowData.blocked = new Set();
       rowData.carrots = [];
 
-      // Trees
-      const treeCount = Math.random() < 0.6 ? Math.floor(1 + Math.random() * 3) : 0;
+      // Trees in playable corridor
+      const treeCount = Math.random() < 0.55 ? Math.floor(1 + Math.random() * 3) : 0;
       const usedCols = new Set<number>();
 
       for (let i = 0; i < treeCount; i++) {
@@ -648,9 +493,24 @@ export class ThreeGameEngine {
         group.add(tree);
       }
 
-      // Spawn Carrots on Grass (difficulty-scaled chance per row if not start tile)
-      const grassSpawnChance = this.getCarrotSpawnChance(0.38);
-      if (index > 0 && Math.random() < grassSpawnChance) {
+      // Natural forest boundary on sides to frame the track
+      for (let s = -this.ROAD_BOUND; s < -this.HALF_WIDTH; s += 2.5) {
+        if (Math.random() < 0.7) {
+          const tree = this.buildTree();
+          tree.position.set(s * this.TILE, 0, 0);
+          group.add(tree);
+        }
+      }
+      for (let s = this.HALF_WIDTH + 1; s <= this.ROAD_BOUND; s += 2.5) {
+        if (Math.random() < 0.7) {
+          const tree = this.buildTree();
+          tree.position.set(s * this.TILE, 0, 0);
+          group.add(tree);
+        }
+      }
+
+      // Spawn Carrots on Grass (if not start tile and unblocked)
+      if (index > 0 && Math.random() < 0.35) {
         const carrotCol = Math.floor(-this.HALF_WIDTH + Math.random() * (this.HALF_WIDTH * 2 + 1));
         if (!rowData.blocked.has(carrotCol)) {
           const carrotMesh = this.buildCarrot();
@@ -667,50 +527,60 @@ export class ThreeGameEngine {
         }
       }
     } else if (type === 'road') {
+      // Continuous dashed road stripes across the entire width
+      if (index % 2 === 0) {
+        for (let s = -this.ROAD_BOUND - 4; s <= this.ROAD_BOUND + 4; s += 2.5) {
+          const stripe = this.createBox(1.0, 0.01, 0.08, this.COLORS.roadLine);
+          stripe.position.set(s, 0.005, 0);
+          group.add(stripe);
+        }
+      }
+
       const dir = Math.random() < 0.5 ? 1 : -1;
-      const speed = (1.8 + Math.random() * 1.0 + Math.min(index * 0.01, 1.6)) * dir;
-      const gap = Math.max(2.8, (3.5 + Math.random() * 2.0) / Math.max(1, this.difficultyMultiplier * 0.85));
+      const speed = (1.8 + Math.random() * (1.0 + Math.min(index * 0.01, 1.6))) * dir;
+      const gap = 4.4 + Math.random() * 2.0;
 
       rowData.dir = dir;
       rowData.speed = speed;
       rowData.cars = [];
 
-      const count = Math.floor((this.HALF_WIDTH * 2) / gap) + 1;
-      const pos = -this.HALF_WIDTH + Math.random() * 2;
+      const totalSpan = this.ROAD_BOUND * 2;
+      const count = Math.floor(totalSpan / gap);
+      const startOffset = -this.ROAD_BOUND + Math.random() * gap;
       const color = this.CAR_COLORS[Math.floor(Math.random() * this.CAR_COLORS.length)];
 
       for (let i = 0; i < count; i++) {
         const car = this.buildCar(color);
-        const x = ((pos + i * gap) % (this.HALF_WIDTH * 2 + 2)) - this.HALF_WIDTH - 1;
-        car.position.set(x, 0.22, 0);
+        const x = ((startOffset + i * gap + this.ROAD_BOUND) % totalSpan) - this.ROAD_BOUND;
+        car.position.set(x, 0, 0);
         if (dir < 0) car.rotation.y = Math.PI;
         group.add(car);
         rowData.cars.push(car);
       }
     } else if (type === 'river') {
       const dir = Math.random() < 0.5 ? 1 : -1;
-      const speed = (1.2 + Math.random() * 0.8 + Math.min(index * 0.008, 1.0)) * dir;
-      const gap = 2.6 + Math.random() * 1.4;
+      const speed = (1.1 + Math.random() * (0.8 + Math.min(index * 0.008, 1.0))) * dir;
+      const gap = 3.6 + Math.random() * 1.6;
 
       rowData.dir = dir;
       rowData.speed = speed;
       rowData.logs = [];
       rowData.carrots = [];
 
-      const count = Math.floor((this.HALF_WIDTH * 2) / gap) + 2;
-      const pos = -this.HALF_WIDTH + Math.random() * 2;
-      const logLen = 1.8 + Math.random() * 1.0;
+      const totalSpan = this.RIVER_BOUND * 2;
+      const count = Math.floor(totalSpan / gap);
+      const startOffset = -this.RIVER_BOUND + Math.random() * gap;
 
       for (let i = 0; i < count; i++) {
+        const logLen = 1.8 + Math.random() * 1.2;
         const log = this.buildLog(logLen);
-        const x = ((pos + i * gap) % (this.HALF_WIDTH * 2 + 4)) - this.HALF_WIDTH - 2;
+        const x = ((startOffset + i * gap + this.RIVER_BOUND) % totalSpan) - this.RIVER_BOUND;
         log.position.set(x, 0.02, 0);
         group.add(log);
         rowData.logs.push({ mesh: log, halfLen: logLen / 2 });
 
-        // Rare carrot floating on top of a log (difficulty-scaled)
-        const logSpawnChance = this.getCarrotSpawnChance(0.2);
-        if (Math.random() < logSpawnChance) {
+        // Optional carrot floating on log within playable area
+        if (Math.abs(x) <= this.HALF_WIDTH && Math.random() < 0.2) {
           const carrotMesh = this.buildCarrot();
           carrotMesh.position.set(0, 0.24, 0);
           log.add(carrotMesh);
@@ -719,7 +589,7 @@ export class ThreeGameEngine {
             mesh: carrotMesh,
             col: 0,
             baseY: 0.24,
-            rotSpeed: 2.5,
+            rotSpeed: 2.2,
             floatOffset: Math.random() * Math.PI * 2,
             attachedToLog: log,
           });
@@ -759,7 +629,7 @@ export class ThreeGameEngine {
     this.player = { col: 0, row: 0, x: 0, z: 0, facing: 0 };
     if (this.bunnyGroup) {
       this.bunnyGroup.position.set(0, 0, 0);
-      this.bunnyGroup.rotation.y = 0; // facing forward towards -Z / obstacles
+      this.bunnyGroup.rotation.y = 0;
       this.bunnyGroup.scale.set(1, 1, 1);
     }
 
@@ -776,19 +646,13 @@ export class ThreeGameEngine {
 
     this.score = 0;
     this.sessionCarrots = 0;
-    // Start death zone just 1 row behind the player — urgency from frame 1
-    this.deathRow = -1;
-    // Position the wall behind the player in world space (positive Z = behind camera)
-    this.deathZoneMesh.position.z = -this.deathRow * this.TILE;
-    this.eagleActive = false;
-    this.canSpawnEagle = false;
-    this.eagleGroup.visible = false;
-    
+
     this.callbacks.onScoreUpdate(0);
     if (this.callbacks.onDifficultyUpdate) {
       this.callbacks.onDifficultyUpdate(1, 1.0);
     }
 
+    // Pre-generate rows matching original reference
     for (let i = -2; i <= this.ROW_LOOKAHEAD; i++) {
       this.generateRow(i);
     }
@@ -836,14 +700,12 @@ export class ThreeGameEngine {
     let dr = 0;
     let targetFacing = 0;
 
-    /**
-     * Orientation mapping:
-     * Model default (rot=0) faces -Z (forward into obstacles).
-     * UP (forward): targetFacing = 0
-     * DOWN (backward towards player): targetFacing = Math.PI
-     * LEFT (towards -X): targetFacing = Math.PI / 2
-     * RIGHT (towards +X): targetFacing = -Math.PI / 2
-     */
+    // Model default (rot=0) faces forward along -Z (into obstacles / UP).
+    // When moving:
+    // UP (forward): targetFacing = 0
+    // DOWN (backward): targetFacing = Math.PI
+    // LEFT (towards -X): targetFacing = Math.PI / 2
+    // RIGHT (towards +X): targetFacing = -Math.PI / 2
     switch (direction) {
       case 'up':
         dr = 1;
@@ -867,7 +729,7 @@ export class ThreeGameEngine {
     const newCol = baseCol + dc;
     const newRow = this.player.row + dr;
 
-    // Bounds check
+    // Road bounds check
     if (newCol < -this.HALF_WIDTH || newCol > this.HALF_WIDTH) return;
     if (newRow < 0 && dr < 0) return;
 
@@ -900,7 +762,7 @@ export class ThreeGameEngine {
       this.generateRow(this.farthestGenerated + 1);
     }
 
-    // Cleanup old rows behind
+    // Cleanup old rows behind (only upon advancement, no creeping cropping wall)
     const cleanupBefore = newRow - this.ROW_KEEP_BEHIND;
     Array.from(this.rows.keys()).forEach((k) => {
       if (k < cleanupBefore) this.removeRow(k);
@@ -937,10 +799,6 @@ export class ThreeGameEngine {
         const screenX = ((carrotWorldPos.x + 1) * this.container.clientWidth) / 2;
         const screenY = ((-carrotWorldPos.y + 1) * this.container.clientHeight) / 2;
         this.callbacks.onCarrotCollected(this.sessionCarrots, { x: screenX, y: screenY });
-
-        if (this.sessionCarrots >= 5) {
-          this.canSpawnEagle = true;
-        }
 
         if (carrot.attachedToLog) {
           carrot.attachedToLog.remove(carrot.mesh);
@@ -988,7 +846,6 @@ export class ThreeGameEngine {
       if (p.life >= p.maxLife) {
         this.particleGroup.remove(p.mesh);
         p.mesh.geometry.dispose();
-        // ✅ Dispose material to prevent accumulation of MeshBasicMaterial objects
         if (p.mesh.material) {
           const mat = p.mesh.material as THREE.Material | THREE.Material[];
           if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
@@ -1016,7 +873,7 @@ export class ThreeGameEngine {
 
     if (rd.type === 'river') {
       const onLog = rd.logs?.some(
-        (l) => Math.abs(l.mesh.position.x - this.player.col * this.TILE) < l.halfLen - 0.08
+        (l) => Math.abs(l.mesh.position.x - this.player.col * this.TILE) < l.halfLen - 0.1
       );
       if (!onLog) {
         this.startSplash();
@@ -1031,7 +888,7 @@ export class ThreeGameEngine {
     const px = this.player.col * this.TILE;
     for (const car of rd.cars) {
       const dx = Math.abs(car.position.x - px);
-      if (dx < 0.6) {
+      if (dx < 0.55) {
         soundEngine.playSquish();
         this.die();
         return;
@@ -1051,6 +908,7 @@ export class ThreeGameEngine {
     if (this.ended) return;
     this.ended = true;
     this.alive = false;
+    this.started = false;
 
     if (this.bunnyGroup) {
       this.bunnyGroup.scale.set(1.4, 0.15, 1.4);
@@ -1058,21 +916,16 @@ export class ThreeGameEngine {
 
     setTimeout(() => {
       this.callbacks.onGameOver(this.score, this.sessionCarrots);
-    }, 600);
+    }, 550);
   }
 
-  /* ============================= ANIMATION & DIFFICULTY LOOP ============================= */
+  /* ============================= ANIMATION & LOOP ============================= */
   private updateDifficulty(dt: number) {
     if (!this.started || !this.alive || this.paused) return;
 
     this.playDuration += dt;
-    // Every 5 seconds, difficulty level increases and multiplier goes up +8%
-    const newLevel = 1 + Math.floor(this.playDuration / 5);
-    const newMultiplier = 1.0 + (newLevel - 1) * 0.08;
-
-    this.deathRow += 1.8 * this.difficultyMultiplier * dt;
-    // Wall sits at the death row position in world Z (rows go in -Z direction)
-    this.deathZoneMesh.position.z = -this.deathRow * this.TILE;
+    const newLevel = 1 + Math.floor(this.playDuration / 10);
+    const newMultiplier = 1.0 + (newLevel - 1) * 0.05;
 
     if (newLevel !== this.currentDifficultyLevel) {
       this.currentDifficultyLevel = newLevel;
@@ -1086,10 +939,11 @@ export class ThreeGameEngine {
   private updateHop(now: number) {
     if (!this.hopping) return;
     const t = Math.min(1, (now - this.hopStart) / this.HOP_DURATION);
+    const ease = t; // linear horizontal
 
-    const x = this.hopFrom.x + (this.hopTo.x - this.hopFrom.x) * t;
-    const z = this.hopFrom.z + (this.hopTo.z - this.hopFrom.z) * t;
-    const hopHeight = Math.sin(Math.PI * t) * 0.45;
+    const x = this.hopFrom.x + (this.hopTo.x - this.hopFrom.x) * ease;
+    const z = this.hopFrom.z + (this.hopTo.z - this.hopFrom.z) * ease;
+    const hopHeight = Math.sin(Math.PI * t) * 0.42;
 
     this.player.x = x;
     this.player.z = z;
@@ -1101,9 +955,10 @@ export class ThreeGameEngine {
     let diff = targetRot - curRot;
     while (diff > Math.PI) diff -= Math.PI * 2;
     while (diff < -Math.PI) diff += Math.PI * 2;
-    this.bunnyGroup.rotation.y = curRot + diff * 0.55;
+    this.bunnyGroup.rotation.y = curRot + diff * 0.6;
 
-    const squash = 1 - Math.sin(Math.PI * t) * 0.14;
+    // Squash & stretch on ears/body via scale
+    const squash = 1 - Math.sin(Math.PI * t) * 0.12;
     this.bunnyGroup.scale.set(1 / squash, squash, 1 / squash);
 
     if (t >= 1) {
@@ -1116,25 +971,21 @@ export class ThreeGameEngine {
   }
 
   private updateRows(dt: number, now: number) {
-    const effectiveDt = dt * this.difficultyMultiplier;
-
     this.rows.forEach((rd) => {
-      // Rotate and float Carrots
+      // Rotate and float carrots
       if (rd.carrots) {
         rd.carrots.forEach((c) => {
           c.mesh.rotation.y += c.rotSpeed * dt;
-          const floatY = Math.sin(now * 0.004 + c.floatOffset) * 0.08;
+          const floatY = Math.sin(now * 0.004 + c.floatOffset) * 0.06;
           c.mesh.position.y = c.baseY + floatY;
         });
       }
 
       if (rd.type === 'road' && rd.cars) {
         rd.cars.forEach((car) => {
-          car.position.x += (rd.speed || 1) * effectiveDt;
-          // Tightened bounds — side wrapping hidden by front-facing camera
-          const bound = this.HALF_WIDTH + 1.2;
-          if ((rd.speed || 1) > 0 && car.position.x > bound) car.position.x = -bound;
-          if ((rd.speed || 1) < 0 && car.position.x < -bound) car.position.x = bound;
+          car.position.x += (rd.speed || 1) * dt;
+          if ((rd.speed || 1) > 0 && car.position.x > this.ROAD_BOUND) car.position.x = -this.ROAD_BOUND;
+          if ((rd.speed || 1) < 0 && car.position.x < -this.ROAD_BOUND) car.position.x = this.ROAD_BOUND;
         });
 
         if (rd.index === this.player.row && !this.hopping && this.alive) {
@@ -1142,19 +993,17 @@ export class ThreeGameEngine {
         }
       } else if (rd.type === 'river' && rd.logs) {
         rd.logs.forEach((l) => {
-          l.mesh.position.x += (rd.speed || 1) * effectiveDt;
-          // Tightened bounds — side wrapping hidden by front-facing camera
-          const bound = this.HALF_WIDTH + 2.0;
-          if ((rd.speed || 1) > 0 && l.mesh.position.x > bound) l.mesh.position.x = -bound;
-          if ((rd.speed || 1) < 0 && l.mesh.position.x < -bound) l.mesh.position.x = bound;
+          l.mesh.position.x += (rd.speed || 1) * dt;
+          if ((rd.speed || 1) > 0 && l.mesh.position.x > this.RIVER_BOUND) l.mesh.position.x = -this.RIVER_BOUND;
+          if ((rd.speed || 1) < 0 && l.mesh.position.x < -this.RIVER_BOUND) l.mesh.position.x = this.RIVER_BOUND;
         });
 
         if (rd.index === this.player.row && !this.hopping && this.alive) {
           const onLog = rd.logs.find(
-            (l) => Math.abs(l.mesh.position.x - this.player.col * this.TILE) < l.halfLen - 0.08
+            (l) => Math.abs(l.mesh.position.x - this.player.col * this.TILE) < l.halfLen - 0.1
           );
           if (onLog) {
-            this.player.x += (rd.speed || 1) * effectiveDt;
+            this.player.x += (rd.speed || 1) * dt;
             this.bunnyGroup.position.x = this.player.x;
             this.player.col = this.player.x / this.TILE;
 
@@ -1167,44 +1016,15 @@ export class ThreeGameEngine {
         }
       }
     });
-
-    // Eagle Logic
-    if (this.canSpawnEagle && !this.eagleActive && Math.random() < 0.005) {
-      this.eagleActive = true;
-      this.eagleRow = this.player.row;
-      this.eagleDir = Math.random() > 0.5 ? 1 : -1;
-      this.eagleGroup.position.set(-this.eagleDir * 14, 0, -this.eagleRow * this.TILE);
-      this.eagleGroup.rotation.y = this.eagleDir === 1 ? Math.PI / 2 : -Math.PI / 2;
-      this.eagleGroup.visible = true;
-      soundEngine.playHop(); // small warning flap
-    }
-
-    if (this.eagleActive) {
-      this.eagleGroup.position.x += this.eagleDir * this.eagleSpeed * dt;
-      this.eagleGroup.position.y = Math.sin(now * 0.02) * 0.3; // flapping bob
-
-      if (this.alive && !this.hopping && this.player.row === this.eagleRow) {
-        if (Math.abs(this.eagleGroup.position.x - this.player.x) < 0.8) {
-          soundEngine.playSquish();
-          this.die();
-        }
-      }
-
-      if ((this.eagleDir === 1 && this.eagleGroup.position.x > 14) ||
-          (this.eagleDir === -1 && this.eagleGroup.position.x < -14)) {
-        this.eagleActive = false;
-        this.eagleGroup.visible = false;
-      }
-    }
   }
 
   private updateSplash(now: number) {
     if (!this.splashing) return;
-    const t = (now - this.splashStart) / 480;
+    const t = (now - this.splashStart) / 500;
     if (t < 1) {
-      this.bunnyGroup.position.y = -t * 0.7;
-      this.bunnyGroup.scale.set(1 - t * 0.35, 1 - t * 0.5, 1 - t * 0.35);
-      this.bunnyGroup.rotation.x = t * 0.6;
+      this.bunnyGroup.position.y = -t * 0.6;
+      this.bunnyGroup.scale.set(1 - t * 0.3, 1 - t * 0.5, 1 - t * 0.3);
+      this.bunnyGroup.rotation.x = t * 0.5;
     } else {
       this.splashing = false;
       this.die();
@@ -1212,26 +1032,22 @@ export class ThreeGameEngine {
   }
 
   private updateCamera() {
-    // Street-level front-facing camera — follows player X smoothly, rides behind in Z
-    // Uses cached _camTarget to avoid per-frame Vector3 allocation at 60fps
-    const targetX = this.bunnyGroup.position.x * 0.45; // slight horizontal follow
-    const targetZ = this.player.z; // camera Z tracks player Z
-
-    this._camTarget.set(
+    // Straight view camera: tracks player horizontally and looks straight forward along Z
+    const targetX = this.bunnyGroup.position.x * 0.65;
+    const targetZ = this.player.z;
+    const camTargetPos = new THREE.Vector3(
       targetX + this.CAM_OFFSET.x,
       this.CAM_OFFSET.y,
       targetZ + this.CAM_OFFSET.z
     );
-
-    this.camera.position.lerp(this._camTarget, 0.12);
-    // Look straight forward and slightly up — sees the road ahead rush toward you
-    this.camera.lookAt(targetX, 1.0, targetZ - 10);
+    this.camera.position.lerp(camTargetPos, 0.12);
+    this.camera.lookAt(targetX, 0.4, targetZ - 4.5);
   }
 
   private idleAnim(dt: number) {
     this.earFlapTimer += dt;
     if (!this.hopping && !this.splashing && this.alive) {
-      const bob = Math.sin(this.earFlapTimer * 3.5) * 0.02;
+      const bob = Math.sin(this.earFlapTimer * 3) * 0.02;
       this.bunnyGroup.position.y = Math.max(0, bob);
     }
   }
@@ -1246,18 +1062,14 @@ export class ThreeGameEngine {
         if (this.started && this.alive) {
           this.updateDifficulty(dt);
           this.updateHop(now);
-          this.idleAnim(dt);
+          if (!this.hopping) this.idleAnim(dt);
           this.updateRows(dt, now);
-          
-          if (this.player.row <= Math.floor(this.deathRow)) {
-            this.die();
-          }
         } else if (this.splashing) {
           this.updateSplash(now);
           this.updateRows(dt * 0.3, now);
         } else {
           this.idleAnim(dt);
-          this.updateRows(dt * 0.6, now);
+          this.updateRows(dt * 0.6, now); // keep ambient motion on menus
         }
         this.updateParticles(dt);
       }
@@ -1274,13 +1086,11 @@ export class ThreeGameEngine {
   private bindEvents() {
     this.resizeObserver = new ResizeObserver(() => {
       if (!this.container || !this.renderer || !this.camera) return;
-      const width = this.container.clientWidth;
-      const height = this.container.clientHeight || 1;
-      const aspect = width / height;
+      const width = this.container.clientWidth || window.innerWidth;
+      const height = this.container.clientHeight || window.innerHeight;
+      const aspect = width / Math.max(1, height);
 
       this.camera.aspect = aspect;
-      // Fixed 55° FOV for the front-facing runner view (consistent on all screens)
-      this.camera.fov = 55;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(width, height);
     });
@@ -1296,7 +1106,6 @@ export class ThreeGameEngine {
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
     }
-    // Dispose ALL scene geometry and materials to release GPU memory
     this.scene.traverse((obj) => {
       if ((obj as THREE.Mesh).geometry) (obj as THREE.Mesh).geometry.dispose();
       if ((obj as THREE.Mesh).material) {
@@ -1306,10 +1115,8 @@ export class ThreeGameEngine {
       }
     });
     this.scene.clear();
-    // Clear remaining game state references
     this.rows.clear();
     this.particles = [];
-    // Force WebGL context loss before dispose to ensure GPU memory is freed
     if (this.renderer) {
       if (this.renderer.domElement && this.container.contains(this.renderer.domElement)) {
         this.container.removeChild(this.renderer.domElement);
