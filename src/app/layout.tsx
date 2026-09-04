@@ -66,7 +66,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${bungee.variable} ${dmMono.variable} ${outfit.variable}`}>
-      <body className="antialiased overflow-x-hidden font-outfit text-white bg-pong-surface">
+      <body className="antialiased overflow-x-hidden font-outfit text-[#0F0529]">
         <Web3Provider>{children}</Web3Provider>
         {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
       </body>
