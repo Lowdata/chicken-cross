@@ -1,0 +1,732 @@
+{
+  "aura": {
+    "id": "aura",
+    "name": "AURA",
+    "optional": true,
+    "default": "Electric Spark Aura.png",
+    "items": [
+      {
+        "id": "Dust Sparkle Trail.png",
+        "name": "Dust Sparkle Trail",
+        "file": "Dust Sparkle Trail.png",
+        "url": "/pong/Aura - Power Effect /Dust Sparkle Trail.png"
+      },
+      {
+        "id": "Electric Spark Aura.png",
+        "name": "Electric Spark Aura",
+        "file": "Electric Spark Aura.png",
+        "url": "/pong/Aura - Power Effect /Electric Spark Aura.png"
+      },
+      {
+        "id": "Flame Corona.png",
+        "name": "Flame Corona",
+        "file": "Flame Corona.png",
+        "url": "/pong/Aura - Power Effect /Flame Corona.png"
+      },
+      {
+        "id": "Golden Power-Up Burst.png",
+        "name": "Golden Power-Up Burst",
+        "file": "Golden Power-Up Burst.png",
+        "url": "/pong/Aura - Power Effect /Golden Power-Up Burst.png"
+      },
+      {
+        "id": "Ice Mist Aura.png",
+        "name": "Ice Mist Aura",
+        "file": "Ice Mist Aura.png",
+        "url": "/pong/Aura - Power Effect /Ice Mist Aura.png"
+      },
+      {
+        "id": "Rainbow Static Aura.png",
+        "name": "Rainbow Static Aura",
+        "file": "Rainbow Static Aura.png",
+        "url": "/pong/Aura - Power Effect /Rainbow Static Aura.png"
+      },
+      {
+        "id": "Shadow Smoke Aura.png",
+        "name": "Shadow Smoke Aura",
+        "file": "Shadow Smoke Aura.png",
+        "url": "/pong/Aura - Power Effect /Shadow Smoke Aura.png"
+      },
+      {
+        "id": "Soft Glow Outline.png",
+        "name": "Soft Glow Outline",
+        "file": "Soft Glow Outline.png",
+        "url": "/pong/Aura - Power Effect /Soft Glow Outline.png"
+      },
+      {
+        "id": "Speed Lines Blur.png",
+        "name": "Speed Lines Blur",
+        "file": "Speed Lines Blur.png",
+        "url": "/pong/Aura - Power Effect /Speed Lines Blur.png"
+      },
+      {
+        "id": "Void Portal Behind.png",
+        "name": "Void Portal Behind",
+        "file": "Void Portal Behind.png",
+        "url": "/pong/Aura - Power Effect /Void Portal Behind.png"
+      }
+    ]
+  },
+  "body": {
+    "id": "body",
+    "name": "BODY / FUR",
+    "optional": false,
+    "default": "Blush Pink.png",
+    "items": [
+      {
+        "id": "24K Gold Fur.png",
+        "name": "24K Gold Fur",
+        "file": "24K Gold Fur.png",
+        "url": "/pong/Fur - Body/24K Gold Fur.png"
+      },
+      {
+        "id": "Bengal Stripe.png",
+        "name": "Bengal Stripe",
+        "file": "Bengal Stripe.png",
+        "url": "/pong/Fur - Body/Bengal Stripe.png"
+      },
+      {
+        "id": "Blush Pink.png",
+        "name": "Blush Pink",
+        "file": "Blush Pink.png",
+        "url": "/pong/Fur - Body/Blush Pink.png"
+      },
+      {
+        "id": "Brown Patch Pattern.png",
+        "name": "Brown Patch Pattern",
+        "file": "Brown Patch Pattern.png",
+        "url": "/pong/Fur - Body/Brown Patch Pattern.png"
+      },
+      {
+        "id": "Butter Yellow.png",
+        "name": "Butter Yellow",
+        "file": "Butter Yellow.png",
+        "url": "/pong/Fur - Body/Butter Yellow.png"
+      },
+      {
+        "id": "Camo Pattern.png",
+        "name": "Camo Pattern",
+        "file": "Camo Pattern.png",
+        "url": "/pong/Fur - Body/Camo Pattern.png"
+      },
+      {
+        "id": "Checkerboard Pattern.png",
+        "name": "Checkerboard Pattern",
+        "file": "Checkerboard Pattern.png",
+        "url": "/pong/Fur - Body/Checkerboard Pattern.png"
+      },
+      {
+        "id": "Cotton Candy Gradient.png",
+        "name": "Cotton Candy Gradient",
+        "file": "Cotton Candy Gradient.png",
+        "url": "/pong/Fur - Body/Cotton Candy Gradient.png"
+      },
+      {
+        "id": "Cream Beige.png",
+        "name": "Cream Beige",
+        "file": "Cream Beige.png",
+        "url": "/pong/Fur - Body/Cream Beige.png"
+      },
+      {
+        "id": "Crystal Glass Fur.png",
+        "name": "Crystal Glass Fur",
+        "file": "Crystal Glass Fur.png",
+        "url": "/pong/Fur - Body/Crystal Glass Fur.png"
+      },
+      {
+        "id": "Galaxy Speckle Fur.png",
+        "name": "Galaxy Speckle Fur",
+        "file": "Galaxy Speckle Fur.png",
+        "url": "/pong/Fur - Body/Galaxy Speckle Fur.png"
+      },
+      {
+        "id": "Metallic Silver Fur.png",
+        "name": "Metallic Silver Fur",
+        "file": "Metallic Silver Fur.png",
+        "url": "/pong/Fur - Body/Metallic Silver Fur.png"
+      },
+      {
+        "id": "Mint Green.png",
+        "name": "Mint Green",
+        "file": "Mint Green.png",
+        "url": "/pong/Fur - Body/Mint Green.png"
+      },
+      {
+        "id": "Pastel Holographic Sheen.png",
+        "name": "Pastel Holographic Sheen",
+        "file": "Pastel Holographic Sheen.png",
+        "url": "/pong/Fur - Body/Pastel Holographic Sheen.png"
+      },
+      {
+        "id": "Pastel Tie-Dye.png",
+        "name": "Pastel Tie-Dye",
+        "file": "Pastel Tie-Dye.png",
+        "url": "/pong/Fur - Body/Pastel Tie-Dye.png"
+      },
+      {
+        "id": "Peach.png",
+        "name": "Peach",
+        "file": "Peach.png",
+        "url": "/pong/Fur - Body/Peach.png"
+      },
+      {
+        "id": "Powder Blue.png",
+        "name": "Powder Blue",
+        "file": "Powder Blue.png",
+        "url": "/pong/Fur - Body/Powder Blue.png"
+      },
+      {
+        "id": "Rainbow Iridescent Fur.png",
+        "name": "Rainbow Iridescent Fur",
+        "file": "Rainbow Iridescent Fur.png",
+        "url": "/pong/Fur - Body/Rainbow Iridescent Fur.png"
+      },
+      {
+        "id": "Snow White.png",
+        "name": "Snow White",
+        "file": "Snow White.png",
+        "url": "/pong/Fur - Body/Snow White.png"
+      },
+      {
+        "id": "Soft Grey.png",
+        "name": "Soft Grey",
+        "file": "Soft Grey.png",
+        "url": "/pong/Fur - Body/Soft Grey.png"
+      },
+      {
+        "id": "Spotted Patch.png",
+        "name": "Spotted Patch",
+        "file": "Spotted Patch.png",
+        "url": "/pong/Fur - Body/Spotted Patch.png"
+      },
+      {
+        "id": "Tabby Grey Pattern.png",
+        "name": "Tabby Grey Pattern",
+        "file": "Tabby Grey Pattern.png",
+        "url": "/pong/Fur - Body/Tabby Grey Pattern.png"
+      }
+    ]
+  },
+  "hat": {
+    "id": "hat",
+    "name": "HAT / HEADWEAR",
+    "optional": true,
+    "default": "Cowboy Hat.png",
+    "items": [
+      {
+        "id": "Antennae Bopper.png",
+        "name": "Antennae Bopper",
+        "file": "Antennae Bopper.png",
+        "url": "/pong/Headwears/Antennae Bopper.png"
+      },
+      {
+        "id": "Bandana Tied.png",
+        "name": "Bandana Tied",
+        "file": "Bandana Tied.png",
+        "url": "/pong/Headwears/Bandana Tied.png"
+      },
+      {
+        "id": "Battle Headband.png",
+        "name": "Battle Headband",
+        "file": "Battle Headband.png",
+        "url": "/pong/Headwears/Battle Headband.png"
+      },
+      {
+        "id": "Beret.png",
+        "name": "Beret",
+        "file": "Beret.png",
+        "url": "/pong/Headwears/Beret.png"
+      },
+      {
+        "id": "Blocky Pixel Crown.png",
+        "name": "Blocky Pixel Crown",
+        "file": "Blocky Pixel Crown.png",
+        "url": "/pong/Headwears/Blocky Pixel Crown.png"
+      },
+      {
+        "id": "Bow Headband.png",
+        "name": "Bow Headband",
+        "file": "Bow Headband.png",
+        "url": "/pong/Headwears/Bow Headband.png"
+      },
+      {
+        "id": "Bucket Hat.png",
+        "name": "Bucket Hat",
+        "file": "Bucket Hat.png",
+        "url": "/pong/Headwears/Bucket Hat.png"
+      },
+      {
+        "id": "Chef_s Toque.png",
+        "name": "Chef_s Toque",
+        "file": "Chef_s Toque.png",
+        "url": "/pong/Headwears/Chef_s Toque.png"
+      },
+      {
+        "id": "Classic Ball Cap.png",
+        "name": "Classic Ball Cap",
+        "file": "Classic Ball Cap.png",
+        "url": "/pong/Headwears/Classic Ball Cap.png"
+      },
+      {
+        "id": "Cowboy Hat.png",
+        "name": "Cowboy Hat",
+        "file": "Cowboy Hat.png",
+        "url": "/pong/Headwears/Cowboy Hat.png"
+      },
+      {
+        "id": "Fisherman Beanie.png",
+        "name": "Fisherman Beanie",
+        "file": "Fisherman Beanie.png",
+        "url": "/pong/Headwears/Fisherman Beanie.png"
+      },
+      {
+        "id": "Flower Crown.png",
+        "name": "Flower Crown",
+        "file": "Flower Crown.png",
+        "url": "/pong/Headwears/Flower Crown.png"
+      },
+      {
+        "id": "Graduation Cap.png",
+        "name": "Graduation Cap",
+        "file": "Graduation Cap.png",
+        "url": "/pong/Headwears/Graduation Cap.png"
+      },
+      {
+        "id": "Gravity-Defying Spiky Wig.png",
+        "name": "Gravity-Defying Spiky Wig",
+        "file": "Gravity-Defying Spiky Wig.png",
+        "url": "/pong/Headwears/Gravity-Defying Spiky Wig.png"
+      },
+      {
+        "id": "Halo Ring.png",
+        "name": "Halo Ring",
+        "file": "Halo Ring.png",
+        "url": "/pong/Headwears/Halo Ring.png"
+      },
+      {
+        "id": "Newsboy Cap.png",
+        "name": "Newsboy Cap",
+        "file": "Newsboy Cap.png",
+        "url": "/pong/Headwears/Newsboy Cap.png"
+      },
+      {
+        "id": "Ninja Headband.png",
+        "name": "Ninja Headband",
+        "file": "Ninja Headband.png",
+        "url": "/pong/Headwears/Ninja Headband.png"
+      },
+      {
+        "id": "Party Cone Hat.png",
+        "name": "Party Cone Hat",
+        "file": "Party Cone Hat.png",
+        "url": "/pong/Headwears/Party Cone Hat.png"
+      },
+      {
+        "id": "Party Foil Hat.png",
+        "name": "Party Foil Hat",
+        "file": "Party Foil Hat.png",
+        "url": "/pong/Headwears/Party Foil Hat.png"
+      },
+      {
+        "id": "Propeller Beanie.png",
+        "name": "Propeller Beanie",
+        "file": "Propeller Beanie.png",
+        "url": "/pong/Headwears/Propeller Beanie.png"
+      },
+      {
+        "id": "Ribbed Beanie.png",
+        "name": "Ribbed Beanie",
+        "file": "Ribbed Beanie.png",
+        "url": "/pong/Headwears/Ribbed Beanie.png"
+      },
+      {
+        "id": "Royal Crown.png",
+        "name": "Royal Crown",
+        "file": "Royal Crown.png",
+        "url": "/pong/Headwears/Royal Crown.png"
+      },
+      {
+        "id": "Sailor Cap.png",
+        "name": "Sailor Cap",
+        "file": "Sailor Cap.png",
+        "url": "/pong/Headwears/Sailor Cap.png"
+      },
+      {
+        "id": "Single Round Eyepiece Reader.png",
+        "name": "Single Round Eyepiece Reader",
+        "file": "Single Round Eyepiece Reader.png",
+        "url": "/pong/Headwears/Single Round Eyepiece Reader.png"
+      },
+      {
+        "id": "Sparkle Halo Crown.png",
+        "name": "Sparkle Halo Crown",
+        "file": "Sparkle Halo Crown.png",
+        "url": "/pong/Headwears/Sparkle Halo Crown.png"
+      },
+      {
+        "id": "Tall Green Top Hat.png",
+        "name": "Tall Green Top Hat",
+        "file": "Tall Green Top Hat.png",
+        "url": "/pong/Headwears/Tall Green Top Hat.png"
+      },
+      {
+        "id": "Tinfoil Conspiracy Hat.png",
+        "name": "Tinfoil Conspiracy Hat",
+        "file": "Tinfoil Conspiracy Hat.png",
+        "url": "/pong/Headwears/Tinfoil Conspiracy Hat.png"
+      },
+      {
+        "id": "Trucker Cap.png",
+        "name": "Trucker Cap",
+        "file": "Trucker Cap.png",
+        "url": "/pong/Headwears/Trucker Cap.png"
+      },
+      {
+        "id": "Twin Buns.png",
+        "name": "Twin Buns",
+        "file": "Twin Buns.png",
+        "url": "/pong/Headwears/Twin Buns.png"
+      },
+      {
+        "id": "Wizard Pointed Hat.png",
+        "name": "Wizard Pointed Hat",
+        "file": "Wizard Pointed Hat.png",
+        "url": "/pong/Headwears/Wizard Pointed Hat.png"
+      }
+    ]
+  },
+  "clothing": {
+    "id": "clothing",
+    "name": "CLOTHING",
+    "optional": true,
+    "default": null,
+    "items": [
+      {
+        "id": "Astronaut Jumpsuit.png",
+        "name": "Astronaut Jumpsuit",
+        "file": "Astronaut Jumpsuit.png",
+        "url": "/pong/Clothing/Astronaut Jumpsuit.png"
+      },
+      {
+        "id": "Basic Hoodie.png",
+        "name": "Basic Hoodie",
+        "file": "Basic Hoodie.png",
+        "url": "/pong/Clothing/Basic Hoodie.png"
+      },
+      {
+        "id": "Cloaked Avant-Garde Drape.png",
+        "name": "Cloaked Avant-Garde Drape",
+        "file": "Cloaked Avant-Garde Drape.png",
+        "url": "/pong/Clothing/Cloaked Avant-Garde Drape.png"
+      },
+      {
+        "id": "Cosmic Holo Space Suit.png",
+        "name": "Cosmic Holo Space Suit",
+        "file": "Cosmic Holo Space Suit.png",
+        "url": "/pong/Clothing/Cosmic Holo Space Suit.png"
+      },
+      {
+        "id": "Denim Jacket Patchwork.png",
+        "name": "Denim Jacket Patchwork",
+        "file": "Denim Jacket Patchwork.png",
+        "url": "/pong/Clothing/Denim Jacket Patchwork.png"
+      },
+      {
+        "id": "Flower Sundress.png",
+        "name": "Flower Sundress",
+        "file": "Flower Sundress.png",
+        "url": "/pong/Clothing/Flower Sundress.png"
+      },
+      {
+        "id": "Geometric Web-Pattern Suit.png",
+        "name": "Geometric Web-Pattern Suit",
+        "file": "Geometric Web-Pattern Suit.png",
+        "url": "/pong/Clothing/Geometric Web-Pattern Suit.png"
+      },
+      {
+        "id": "Golden Armor Plate.png",
+        "name": "Golden Armor Plate",
+        "file": "Golden Armor Plate.png",
+        "url": "/pong/Clothing/Golden Armor Plate.png"
+      },
+      {
+        "id": "Gothic Flame Tee.png",
+        "name": "Gothic Flame Tee",
+        "file": "Gothic Flame Tee.png",
+        "url": "/pong/Clothing/Gothic Flame Tee.png"
+      },
+      {
+        "id": "Lunar New Year Track Jacket.png",
+        "name": "Lunar New Year Track Jacket",
+        "file": "Lunar New Year Track Jacket.png",
+        "url": "/pong/Clothing/Lunar New Year Track Jacket.png"
+      },
+      {
+        "id": "Maid Cosplay Variant.png",
+        "name": "Maid Cosplay Variant",
+        "file": "Maid Cosplay Variant.png",
+        "url": "/pong/Clothing/Maid Cosplay Variant.png"
+      },
+      {
+        "id": "Night Suit Pajama Set.png",
+        "name": "Night Suit Pajama Set",
+        "file": "Night Suit Pajama Set.png",
+        "url": "/pong/Clothing/Night Suit Pajama Set.png"
+      },
+      {
+        "id": "Numbered Sports Jersey.png",
+        "name": "Numbered Sports Jersey",
+        "file": "Numbered Sports Jersey.png",
+        "url": "/pong/Clothing/Numbered Sports Jersey.png"
+      },
+      {
+        "id": "Overalls.png",
+        "name": "Overalls",
+        "file": "Overalls.png",
+        "url": "/pong/Clothing/Overalls.png"
+      },
+      {
+        "id": "Pin & Patch Bomber Jacket.png",
+        "name": "Pin & Patch Bomber Jacket",
+        "file": "Pin & Patch Bomber Jacket.png",
+        "url": "/pong/Clothing/Pin & Patch Bomber Jacket.png"
+      },
+      {
+        "id": "Plain Tee.png",
+        "name": "Plain Tee",
+        "file": "Plain Tee.png",
+        "url": "/pong/Clothing/Plain Tee.png"
+      },
+      {
+        "id": "Referee Stripes.png",
+        "name": "Referee Stripes",
+        "file": "Referee Stripes.png",
+        "url": "/pong/Clothing/Referee Stripes.png"
+      },
+      {
+        "id": "Royal Ceremonial Robe.png",
+        "name": "Royal Ceremonial Robe",
+        "file": "Royal Ceremonial Robe.png",
+        "url": "/pong/Clothing/Royal Ceremonial Robe.png"
+      },
+      {
+        "id": "Sailor Collar Top.png",
+        "name": "Sailor Collar Top",
+        "file": "Sailor Collar Top.png",
+        "url": "/pong/Clothing/Sailor Collar Top.png"
+      },
+      {
+        "id": "School Uniform (Boy).png",
+        "name": "School Uniform (Boy)",
+        "file": "School Uniform (Boy).png",
+        "url": "/pong/Clothing/School Uniform (Boy).png"
+      },
+      {
+        "id": "School Uniform (Girl).png",
+        "name": "School Uniform (Girl)",
+        "file": "School Uniform (Girl).png",
+        "url": "/pong/Clothing/School Uniform (Girl).png"
+      },
+      {
+        "id": "Segmented Battle Armor.png",
+        "name": "Segmented Battle Armor",
+        "file": "Segmented Battle Armor.png",
+        "url": "/pong/Clothing/Segmented Battle Armor.png"
+      },
+      {
+        "id": "Sleek Bodysuit with Trench Coat.png",
+        "name": "Sleek Bodysuit with Trench Coat",
+        "file": "Sleek Bodysuit with Trench Coat.png",
+        "url": "/pong/Clothing/Sleek Bodysuit with Trench Coat.png"
+      },
+      {
+        "id": "Suit with Tie.png",
+        "name": "Suit with Tie",
+        "file": "Suit with Tie.png",
+        "url": "/pong/Clothing/Suit with Tie.png"
+      },
+      {
+        "id": "Techwear Utility Vest.png",
+        "name": "Techwear Utility Vest",
+        "file": "Techwear Utility Vest.png",
+        "url": "/pong/Clothing/Techwear Utility Vest.png"
+      },
+      {
+        "id": "Torn Training Gi.png",
+        "name": "Torn Training Gi",
+        "file": "Torn Training Gi.png",
+        "url": "/pong/Clothing/Torn Training Gi.png"
+      },
+      {
+        "id": "Track Jacket.png",
+        "name": "Track Jacket",
+        "file": "Track Jacket.png",
+        "url": "/pong/Clothing/Track Jacket.png"
+      },
+      {
+        "id": "Turtleneck Sweater.png",
+        "name": "Turtleneck Sweater",
+        "file": "Turtleneck Sweater.png",
+        "url": "/pong/Clothing/Turtleneck Sweater.png"
+      },
+      {
+        "id": "Varsity Bomber.png",
+        "name": "Varsity Bomber",
+        "file": "Varsity Bomber.png",
+        "url": "/pong/Clothing/Varsity Bomber.png"
+      },
+      {
+        "id": "Voxel Block Suit.png",
+        "name": "Voxel Block Suit",
+        "file": "Voxel Block Suit.png",
+        "url": "/pong/Clothing/Voxel Block Suit.png"
+      }
+    ]
+  },
+  "item": {
+    "id": "item",
+    "name": "HELD ITEM",
+    "optional": true,
+    "default": null,
+    "items": [
+      {
+        "id": "Anime Wizard Staff.png",
+        "name": "Anime Wizard Staff",
+        "file": "Anime Wizard Staff.png",
+        "url": "/pong/Held Items/Anime Wizard Staff.png"
+      },
+      {
+        "id": "Balloon.png",
+        "name": "Balloon",
+        "file": "Balloon.png",
+        "url": "/pong/Held Items/Balloon.png"
+      },
+      {
+        "id": "Butterfly Net.png",
+        "name": "Butterfly Net",
+        "file": "Butterfly Net.png",
+        "url": "/pong/Held Items/Butterfly Net.png"
+      },
+      {
+        "id": "Carrot.png",
+        "name": "Carrot",
+        "file": "Carrot.png",
+        "url": "/pong/Held Items/Carrot.png"
+      },
+      {
+        "id": "Coffee Cup.png",
+        "name": "Coffee Cup",
+        "file": "Coffee Cup.png",
+        "url": "/pong/Held Items/Coffee Cup.png"
+      },
+      {
+        "id": "Cosmic Orb.png",
+        "name": "Cosmic Orb",
+        "file": "Cosmic Orb.png",
+        "url": "/pong/Held Items/Cosmic Orb.png"
+      },
+      {
+        "id": "Dragon Egg.png",
+        "name": "Dragon Egg",
+        "file": "Dragon Egg.png",
+        "url": "/pong/Held Items/Dragon Egg.png"
+      },
+      {
+        "id": "Fishing Rod.png",
+        "name": "Fishing Rod",
+        "file": "Fishing Rod.png",
+        "url": "/pong/Held Items/Fishing Rod.png"
+      },
+      {
+        "id": "Glowing Katana.png",
+        "name": "Glowing Katana",
+        "file": "Glowing Katana.png",
+        "url": "/pong/Held Items/Glowing Katana.png"
+      },
+      {
+        "id": "Golden Carrot Scepter.png",
+        "name": "Golden Carrot Scepter",
+        "file": "Golden Carrot Scepter.png",
+        "url": "/pong/Held Items/Golden Carrot Scepter.png"
+      },
+      {
+        "id": "Ice Cream Cone.png",
+        "name": "Ice Cream Cone",
+        "file": "Ice Cream Cone.png",
+        "url": "/pong/Held Items/Ice Cream Cone.png"
+      },
+      {
+        "id": "Lollipop.png",
+        "name": "Lollipop",
+        "file": "Lollipop.png",
+        "url": "/pong/Held Items/Lollipop.png"
+      },
+      {
+        "id": "Lucky Time Watch.png",
+        "name": "Lucky Time Watch",
+        "file": "Lucky Time Watch.png",
+        "url": "/pong/Held Items/Lucky Time Watch.png"
+      },
+      {
+        "id": "Phone.png",
+        "name": "Phone",
+        "file": "Phone.png",
+        "url": "/pong/Held Items/Phone.png"
+      },
+      {
+        "id": "Retro Boombox.png",
+        "name": "Retro Boombox",
+        "file": "Retro Boombox.png",
+        "url": "/pong/Held Items/Retro Boombox.png"
+      },
+      {
+        "id": "Round Capture Capsule.png",
+        "name": "Round Capture Capsule",
+        "file": "Round Capture Capsule.png",
+        "url": "/pong/Held Items/Round Capture Capsule.png"
+      },
+      {
+        "id": "Shopping Bag.png",
+        "name": "Shopping Bag",
+        "file": "Shopping Bag.png",
+        "url": "/pong/Held Items/Shopping Bag.png"
+      },
+      {
+        "id": "Six-Star Wish Orb.png",
+        "name": "Six-Star Wish Orb",
+        "file": "Six-Star Wish Orb.png",
+        "url": "/pong/Held Items/Six-Star Wish Orb.png"
+      },
+      {
+        "id": "Skateboard.png",
+        "name": "Skateboard",
+        "file": "Skateboard.png",
+        "url": "/pong/Held Items/Skateboard.png"
+      },
+      {
+        "id": "Smoke Wisp.png",
+        "name": "Smoke Wisp",
+        "file": "Smoke Wisp.png",
+        "url": "/pong/Held Items/Smoke Wisp.png"
+      },
+      {
+        "id": "Thunder God_s Hammer.png",
+        "name": "Thunder God_s Hammer",
+        "file": "Thunder God_s Hammer.png",
+        "url": "/pong/Held Items/Thunder God_s Hammer.png"
+      },
+      {
+        "id": "Toy Sword.png",
+        "name": "Toy Sword",
+        "file": "Toy Sword.png",
+        "url": "/pong/Held Items/Toy Sword.png"
+      },
+      {
+        "id": "Victory Trophy.png",
+        "name": "Victory Trophy",
+        "file": "Victory Trophy.png",
+        "url": "/pong/Held Items/Victory Trophy.png"
+      }
+    ]
+  }
+}
