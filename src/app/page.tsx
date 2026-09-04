@@ -162,7 +162,7 @@ export default function PongPongLanding() {
       </div>
 
       {/* ── SECTION 01: THE COLLECTION (BOUNCING BUNNIES ONCHAIN) ── */}
-      <section id="collection" className="scroll-mt-32 pt-16 md:pt-24 pb-20 md:pb-28 px-4 md:px-8 relative z-20">
+      <section id="collection" className="scroll-mt-32 my-12 md:my-20 pt-16 md:pt-24 pb-16 md:pb-24 px-4 md:px-8 relative z-20">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -174,7 +174,7 @@ export default function PongPongLanding() {
       </section>
 
       {/* ── SECTION 02: THE BOUNCE GOES PHYSICAL (MERCH) ── */}
-      <section id="merch" className="scroll-mt-32 pt-16 md:pt-24 pb-20 md:pb-28 px-4 md:px-8 relative z-20">
+      <section id="merch" className="scroll-mt-32 my-12 md:my-20 pt-16 md:pt-24 pb-16 md:pb-24 px-4 md:px-8 relative z-20">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -186,7 +186,7 @@ export default function PongPongLanding() {
       </section>
 
       {/* ── SECTION 03: BUNNY LAB (BUILD YOUR BOUNCE - INTERACTIVE) ── */}
-      <section id="bunny-lab" className="scroll-mt-32 pt-16 md:pt-24 pb-36 md:pb-48 px-4 md:px-8 relative z-20">
+      <section id="bunny-lab" className="scroll-mt-32 my-16 md:my-28 pt-16 md:pt-24 pb-24 md:pb-36 px-4 md:px-8 relative z-20">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* Title Header with 3D text and bunnies */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -202,7 +202,7 @@ export default function PongPongLanding() {
       </section>
 
       {/* ── SECTION 04: $PONGPONG / SIGNAL DETECTED ── */}
-      <section id="signal" className="scroll-mt-32 pt-32 md:pt-44 pb-28 md:pb-40 px-4 md:px-8 relative z-20">
+      <section id="signal" className="scroll-mt-32 my-16 md:my-32 pt-20 md:pt-32 pb-20 md:pb-32 px-4 md:px-8 relative z-20">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -214,7 +214,7 @@ export default function PongPongLanding() {
       </section>
 
       {/* ── SECTION 05: DOWN THE RABBIT HOLE (CLASSIFIED) ── */}
-      <section id="classified" className="scroll-mt-32 pt-20 md:pt-28 pb-28 md:pb-40 px-4 md:px-8 relative z-20">
+      <section id="classified" className="scroll-mt-32 my-16 md:my-32 pt-16 md:pt-28 pb-20 md:pb-32 px-4 md:px-8 relative z-20">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -246,7 +246,7 @@ export default function PongPongLanding() {
       </div>
 
       {/* ── SECTION 06: SOMETHING'S FALLING FROM THE ROBINHOOD SKY ── */}
-      <section id="drop" className="scroll-mt-32 mt-16 md:mt-24 pt-20 md:pt-32 pb-28 md:pb-40 px-4 md:px-8 relative z-20">
+      <section id="drop" className="scroll-mt-32 my-16 md:my-28 pt-16 md:pt-28 pb-20 md:pb-32 px-4 md:px-8 relative z-20">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -264,7 +264,7 @@ export default function PongPongLanding() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="pt-12 pb-28 px-4 md:px-8 relative z-30">
+      <footer className="pt-16 pb-32 px-4 md:px-8 relative z-30">
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
