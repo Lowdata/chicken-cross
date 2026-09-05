@@ -15,7 +15,7 @@ declare global {
 import { ThreeGameEngine } from '@/lib/game/threeGameEngine';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
-import { GameStatus, CarrotFloatingText } from '@/lib/game/types';
+import { GameStatus, CarrotFloatingText, DeathReason } from '@/lib/game/types';
 import {
   loadDailyLives,
   consumeLife,
@@ -47,6 +47,8 @@ export const GameContainer: React.FC = () => {
   const [score, setScore] = useState<number>(0);
   const [sessionCarrots, setSessionCarrots] = useState<number>(0);
   const [isNewHigh, setIsNewHigh] = useState<boolean>(false);
+  const [isEagleWarning, setIsEagleWarning] = useState<boolean>(false);
+  const [deathReason, setDeathReason] = useState<DeathReason>('car');
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const completedTasksRef = useRef<string[]>([]);
 
@@ -188,7 +190,7 @@ export const GameContainer: React.FC = () => {
           setDifficultyLevel(level);
           setDifficultyMultiplier(multiplier);
         },
-        onCarrotCollected: (currentSessionTotal, screenPos) => {
+        onCarrotCollected: (currentSessionTotal, screenPos, isGolden) => {
           setSessionCarrots(currentSessionTotal);
           triggerHaptic('carrot');
 
@@ -200,8 +202,8 @@ export const GameContainer: React.FC = () => {
               id: newId,
               x: screenPos.x,
               y: screenPos.y,
-              text: '+1',
-              isGolden: false,
+              text: isGolden ? '✨ 9TH RARE CARROT! ✨' : '+1',
+              isGolden: !!isGolden,
             },
           ]);
 
@@ -222,7 +224,12 @@ export const GameContainer: React.FC = () => {
             }
           }
         },
-        onGameOver: async (finalScore, sessionCarrotsGathered) => {
+        onEagleWarning: (active) => {
+          setIsEagleWarning(active);
+        },
+        onGameOver: async (finalScore, sessionCarrotsGathered, reason = 'car') => {
+          setDeathReason(reason);
+          setIsEagleWarning(false);
           const runBonus = sessionCarrotsGathered * 5;
           const totalRunPoints = finalScore + runBonus;
 
@@ -402,9 +409,12 @@ export const GameContainer: React.FC = () => {
     setScore(0);
     setSessionCarrots(0);
     setIsNewHigh(false);
+    setIsEagleWarning(false);
+    setDeathReason('car');
     setDifficultyLevel(1);
     setDifficultyMultiplier(1.0);
 
+    engineRef.current.setMaxCarrots(sessionMaxCarrots);
     engineRef.current.resetWorld();
     engineRef.current.start();
     setGameStatus('playing');
@@ -484,6 +494,12 @@ export const GameContainer: React.FC = () => {
             e.preventDefault();
             handlePause();
             break;
+          case 'e':
+          case 'E':
+            if (engineRef.current) {
+              engineRef.current.triggerEagleAttack();
+            }
+            break;
         }
       } else if (gameStatus === 'paused') {
         if (e.key === 'Escape' || e.key === ' ' || e.key === 'p' || e.key === 'P') {
@@ -558,6 +574,7 @@ export const GameContainer: React.FC = () => {
       <HUD
         score={score}
         sessionCarrots={sessionCarrots}
+        maxCarrots={maxCarrots}
         totalCarrots={totalCarrots}
         highScore={highScore}
         lives={lives}
@@ -569,6 +586,7 @@ export const GameContainer: React.FC = () => {
         onOpenTasks={() => setIsTasksOpen(true)}
         onPause={handlePause}
         gameStatus={gameStatus}
+        isEagleWarning={isEagleWarning}
       />
 
       {/* Mobile Touch Controls */}
@@ -598,6 +616,7 @@ export const GameContainer: React.FC = () => {
           highScore={highScore}
           isNewHigh={isNewHigh}
           lives={lives}
+          deathReason={deathReason}
           onRetry={handleStartGame}
           onOpenWardrobe={() => { setGameStatus('idle'); setIsWardrobeOpen(true); }}
           onBuyLife={handleBuyLife}

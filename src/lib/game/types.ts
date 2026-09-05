@@ -134,6 +134,8 @@ export interface GameStats {
 
 export type GameStatus = 'idle' | 'playing' | 'paused' | 'gameover';
 
+export type DeathReason = 'car' | 'water' | 'eagle';
+
 export interface CarrotFloatingText {
   id: number;
   x: number;
@@ -141,3 +143,4 @@ export interface CarrotFloatingText {
   text: string;
   isGolden: boolean;
 }
+

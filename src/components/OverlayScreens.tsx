@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
-import { BUNNY_SKINS } from '@/lib/game/types';
+import { BUNNY_SKINS, DeathReason } from '@/lib/game/types';
 import {
   MAX_DAILY_LIVES,
   EXTRA_LIFE_CARROT_COST,
@@ -195,6 +195,7 @@ interface GameOverOverlayProps {
   highScore: number;
   isNewHigh: boolean;
   lives: number;
+  deathReason?: DeathReason;
   onRetry: () => void;
   onOpenWardrobe: () => void;
   onBuyLife: () => void;
@@ -209,6 +210,7 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
   highScore,
   isNewHigh,
   lives,
+  deathReason,
   onRetry,
   onOpenWardrobe,
   onBuyLife,
@@ -238,11 +240,21 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md select-none animate-fade-in">
       <div className="modal-container w-full max-w-md text-center relative overflow-hidden max-h-[92dvh] overflow-y-auto !p-5 sm:!p-8">
         {/* Title */}
-        <div className="text-3xl sm:text-4xl font-black text-rose-400 tracking-tight">
-          Oof! Squished!
+        <div className="text-3xl sm:text-4xl font-black text-rose-400 tracking-tight flex items-center justify-center gap-2">
+          {deathReason === 'eagle' ? (
+            <span>🦅 Snatched!</span>
+          ) : deathReason === 'water' ? (
+            <span>🌊 Splash!</span>
+          ) : (
+            <span>💥 Oof! Squished!</span>
+          )}
         </div>
         <p className="text-[11px] sm:text-sm text-white/60 font-medium mt-1 mb-3">
-          Here is your run harvest breakdown:
+          {deathReason === 'eagle'
+            ? 'The apex predator swooped in! Watch the shadow corridor and evade next time!'
+            : deathReason === 'water'
+            ? 'Bunnies cannot swim! Stick to the floating logs!'
+            : 'Watch out for fast traffic on the roads!'}
         </p>
 
         {/* Score Breakdown Card */}

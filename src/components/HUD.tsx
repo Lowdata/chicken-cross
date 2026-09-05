@@ -10,6 +10,7 @@ import { WalletButton } from './WalletButton';
 interface HUDProps {
   score: number;
   sessionCarrots: number;
+  maxCarrots?: number;
   totalCarrots: number;
   highScore: number;
   lives: number;
@@ -21,11 +22,13 @@ interface HUDProps {
   onOpenTasks?: () => void;
   onPause: () => void;
   gameStatus: 'idle' | 'playing' | 'paused' | 'gameover';
+  isEagleWarning?: boolean;
 }
 
 export const HUD: React.FC<HUDProps> = ({
   score,
   sessionCarrots,
+  maxCarrots = 8,
   totalCarrots,
   highScore,
   lives,
@@ -37,9 +40,28 @@ export const HUD: React.FC<HUDProps> = ({
   onOpenTasks,
   onPause,
   gameStatus,
+  isEagleWarning,
 }) => {
   return (
     <header className="fixed top-0 left-0 right-0 pt-safe px-2.5 sm:px-5 py-2 flex justify-between items-start pointer-events-none z-30 select-none">
+      {/* Center Warning: Eagle Strike Incoming Alert */}
+      {isEagleWarning && gameStatus === 'playing' && (
+        <div className="absolute left-1/2 -translate-x-1/2 top-2.5 sm:top-4 z-40 pointer-events-none animate-bounce">
+          <div className="bg-rose-600/95 border-2 border-amber-300 text-white px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl shadow-[0_0_30px_rgba(225,29,72,0.85)] flex items-center gap-2 sm:gap-2.5 backdrop-blur-md animate-pulse">
+            <span className="text-xl sm:text-2xl">🦅</span>
+            <div className="text-left">
+              <div className="font-black text-xs sm:text-sm tracking-wider uppercase text-amber-200 leading-tight">
+                EAGLE INCOMING!
+              </div>
+              <div className="text-[10px] sm:text-xs font-bold text-white/95 leading-tight">
+                Watch the shadow corridor & EVADE!
+              </div>
+            </div>
+            <span className="text-lg sm:text-xl text-amber-300">⚠️</span>
+          </div>
+        </div>
+      )}
+
       {/* Left side: Score, Live Carrots, and Speed Multiplier */}
       <div className="flex flex-col gap-1.5 sm:gap-2 items-start pointer-events-auto">
         {/* Score pill */}
@@ -50,10 +72,24 @@ export const HUD: React.FC<HUDProps> = ({
           </span>
         </div>
 
-        {/* Live session carrots collected - shows X/maxCarrots */}
-        <div className="hud-pill bg-brand-orange/20 text-brand-orange backdrop-blur-md border border-brand-orange/40 rounded-2xl px-2.5 sm:px-3.5 py-1 sm:py-1.5 shadow-[0_0_15px_rgba(245,158,11,0.2)] flex items-center gap-1.5 sm:gap-2 animate-bounce-subtle">
-          <span className="text-base sm:text-lg">🥕</span>
-          <span className="font-extrabold text-sm sm:text-xl tracking-wide text-white">{sessionCarrots}</span>
+        {/* Live session carrots collected - shows sessionCarrots/maxCarrots */}
+        <div
+          className={`hud-pill backdrop-blur-md border rounded-2xl px-2.5 sm:px-3.5 py-1 sm:py-1.5 flex items-center gap-1.5 sm:gap-2 animate-bounce-subtle ${
+            maxCarrots === 9
+              ? 'bg-brand-purple/25 text-brand-purple border-brand-purple/50 shadow-[0_0_20px_rgba(168,85,247,0.35)]'
+              : 'bg-brand-orange/20 text-brand-orange border-brand-orange/40 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+          }`}
+        >
+          <span className="text-base sm:text-lg">{maxCarrots === 9 ? '✨' : '🥕'}</span>
+          <span className="font-extrabold text-sm sm:text-xl tracking-wide text-white">
+            {sessionCarrots}
+            <span className="text-white/40 text-xs sm:text-sm font-bold ml-0.5">/{maxCarrots}</span>
+          </span>
+          {maxCarrots === 9 && (
+            <span className="text-[9px] bg-brand-purple text-white font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse ml-0.5">
+              1/100 Rare
+            </span>
+          )}
         </div>
 
         {/* Speed / Difficulty boost badge (shows when multiplier > 1.0) */}

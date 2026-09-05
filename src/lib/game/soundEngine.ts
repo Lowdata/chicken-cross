@@ -223,6 +223,103 @@ class SoundEngine {
     }
   }
 
+  /** Piercing eagle / hawk screech cry */
+  public playEagleScreech() {
+    if (!this.enabled) return;
+    const ctx = this.initContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      // Carrier oscillator
+      const carrier = ctx.createOscillator();
+      const carrierGain = ctx.createGain();
+      // Modulator for harsh vibrato / screech texture
+      const mod = ctx.createOscillator();
+      const modGain = ctx.createGain();
+
+      carrier.type = 'sawtooth';
+      // Pitch contour: starts sharp, screams high, then drops
+      carrier.frequency.setValueAtTime(1400, now);
+      carrier.frequency.exponentialRampToValueAtTime(2400, now + 0.12);
+      carrier.frequency.exponentialRampToValueAtTime(1100, now + 0.65);
+      carrier.frequency.exponentialRampToValueAtTime(700, now + 0.85);
+
+      // Fast harsh frequency modulation
+      mod.type = 'triangle';
+      mod.frequency.setValueAtTime(32, now);
+      mod.frequency.linearRampToValueAtTime(18, now + 0.85);
+      modGain.gain.setValueAtTime(160, now);
+      modGain.gain.exponentialRampToValueAtTime(10, now + 0.85);
+
+      mod.connect(carrier.frequency);
+
+      // Bandpass filter for nasal predatory screech tone
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(2000, now);
+      filter.frequency.exponentialRampToValueAtTime(1300, now + 0.85);
+      filter.Q.setValueAtTime(3.5, now);
+
+      // Volume envelope
+      carrierGain.gain.setValueAtTime(0.001, now);
+      carrierGain.gain.exponentialRampToValueAtTime(0.38, now + 0.08);
+      carrierGain.gain.setValueAtTime(0.35, now + 0.45);
+      carrierGain.gain.exponentialRampToValueAtTime(0.001, now + 0.88);
+
+      carrier.connect(filter);
+      filter.connect(carrierGain);
+      carrierGain.connect(ctx.destination);
+
+      mod.start(now);
+      carrier.start(now);
+      mod.stop(now + 0.9);
+      carrier.stop(now + 0.9);
+    } catch {
+      // Ignore
+    }
+  }
+
+  /** High-speed wind whoosh when eagle swoops close */
+  public playEagleSwoop() {
+    if (!this.enabled) return;
+    const ctx = this.initContext();
+    if (!ctx) return;
+
+    try {
+      const bufferSize = ctx.sampleRate * 0.5;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(400, ctx.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(1800, ctx.currentTime + 0.2);
+      filter.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.5);
+      filter.Q.setValueAtTime(2.0, ctx.currentTime);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.01, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.4, ctx.currentTime + 0.2);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      noise.start(ctx.currentTime);
+      noise.stop(ctx.currentTime + 0.52);
+    } catch {
+      // Ignore
+    }
+  }
+
   /** Light UI button click */
   public playClick() {
     if (!this.enabled) return;
