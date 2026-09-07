@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { GoogleAnalytics } from '@next/third-parties/google';
-import '@rainbow-me/rainbowkit/styles.css';
 import './globals.css';
-import { Web3Provider } from '@/components/Web3Provider';
 import { Bungee, DM_Mono, Outfit } from 'next/font/google';
 
 const bungee = Bungee({
@@ -67,7 +65,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${bungee.variable} ${dmMono.variable} ${outfit.variable}`}>
       <body className="antialiased overflow-x-hidden font-outfit text-[#0F0529]">
-        <Web3Provider>{children}</Web3Provider>
+        {children}
         {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
       </body>
     </html>
