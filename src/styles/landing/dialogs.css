@@ -24,6 +24,7 @@
   max-height:min(88dvh, var(--dlg-h));
   overflow:auto;
   overscroll-behavior:contain;
+  scrollbar-gutter:stable;
   border-radius:var(--bh-r-panel);
   border:1.5px solid rgba(38,22,86,.94);
   background:linear-gradient(180deg, rgba(46,29,92,.94), rgba(20,12,44,.96));
@@ -356,6 +357,7 @@
   min-height:0;
   overflow:auto;
   overscroll-behavior:contain;
+  scrollbar-gutter:stable;
   padding-top:20px;
 }
 .htSteps{
