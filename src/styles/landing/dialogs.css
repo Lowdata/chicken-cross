@@ -33,11 +33,9 @@
 }
 @supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
   .dlgShell__panel{
-    background:linear-gradient(180deg, rgba(28,17,58,.86), rgba(16,9,36,.9));
+    background:linear-gradient(180deg, rgba(28,17,58,.88), rgba(16,9,36,.92));
     border-color:rgba(255,255,255,.1);
     box-shadow:0 30px 80px 0 rgba(6,2,22,.6), inset 0 1px 0 rgba(255,255,255,.14);
-    -webkit-backdrop-filter:blur(34px) saturate(1.4);
-            backdrop-filter:blur(34px) saturate(1.4);
   }
 }
 .dlgShell__panel:focus{ outline:none }
