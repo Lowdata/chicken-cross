@@ -105,7 +105,8 @@ export default function OnboardingFlow({ onClose }: { onClose: () => void }){
   const titleId = 'dlgOnboardingTitle';
 
   return (
-    <DialogShell onClose={onClose} labelledBy={titleId} maxWidth={520} maxHeight={step === 'wallet' ? 508 : 507}>
+    <DialogShell onClose={onClose} labelledBy={titleId} maxWidth={520} maxHeight={558}>
+      <div className="obDlg">
       <p className="dlgKicker">access required</p>
       <h2 className="dlgTitle" id={titleId}>onboarding protocol</h2>
       <StepTabs current={step} />
@@ -158,6 +159,7 @@ export default function OnboardingFlow({ onClose }: { onClose: () => void }){
           <button className="dlgGhost" onClick={() => { disconnect(); setStep('wallet'); }}>back</button>
         </div>
       )}
+      </div>
     </DialogShell>
   );
 }

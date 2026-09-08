@@ -12,8 +12,8 @@
 @supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
   .dlgShell{
     background:radial-gradient(120% 90% at 50% 0%, rgba(58,36,114,.62), rgba(9,4,26,.78));
-    -webkit-backdrop-filter:blur(14px) saturate(1.1);
-            backdrop-filter:blur(14px) saturate(1.1);
+    -webkit-backdrop-filter:blur(24px) saturate(1.35);
+            backdrop-filter:blur(24px) saturate(1.35);
   }
 }
 @keyframes dlg-backdrop-in{ from{ opacity:0 } to{ opacity:1 } }
@@ -21,7 +21,6 @@
 .dlgShell__panel{
   position:relative;
   width:min(var(--dlg-w), 100%);
-  height:min(var(--dlg-h), 88dvh);
   max-height:min(88dvh, var(--dlg-h));
   overflow:auto;
   overscroll-behavior:contain;
@@ -30,12 +29,15 @@
   background:linear-gradient(180deg, rgba(46,29,92,.94), rgba(20,12,44,.96));
   box-shadow:0 30px 80px 0 rgba(6,2,22,.6);
   animation:dlg-panel-in 260ms cubic-bezier(.2,.8,.2,1);
+  transition:height 260ms cubic-bezier(.2,.8,.2,1);
 }
 @supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
   .dlgShell__panel{
-    background:linear-gradient(180deg, rgba(46,29,92,.72), rgba(20,12,44,.8));
-    -webkit-backdrop-filter:blur(20px);
-            backdrop-filter:blur(20px);
+    background:linear-gradient(180deg, rgba(46,29,92,.58), rgba(20,12,44,.66));
+    border-color:rgba(255,255,255,.1);
+    box-shadow:0 30px 80px 0 rgba(6,2,22,.6), inset 0 1px 0 rgba(255,255,255,.14);
+    -webkit-backdrop-filter:blur(34px) saturate(1.4);
+            backdrop-filter:blur(34px) saturate(1.4);
   }
 }
 .dlgShell__panel:focus{ outline:none }
@@ -64,6 +66,11 @@
 .dlgClose:hover{ filter:brightness(1.08) }
 .dlgClose:focus-visible{ outline:2px solid var(--bh-accent); outline-offset:2px }
 .dlgClose svg{ width:20px; height:20px }
+
+.obDlg{
+  padding:21.5px 25.5px 27.5px;
+  box-sizing:border-box;
+}
 
 .dlgKicker{
   margin:0;
@@ -279,6 +286,10 @@
   gap:14px;
   padding-right:52px;
 }
+.htHead--narrow{
+  justify-content:flex-start;
+  padding-right:58px;
+}
 .htHead__ico{
   width:34px;
   height:34px;
@@ -295,6 +306,12 @@
   color:var(--bh-ink-strong);
   text-align:center;
 }
+.htHead__title--narrow{
+  font-size:20px;
+  text-align:left;
+}
+.htClose{ top:12px; right:12px; }
+.htIcoImg{ display:block; }
 .htSub{
   margin:6px 0 0;
   font-family:var(--body);
@@ -322,10 +339,14 @@
   text-align:center;
   color:var(--bh-ink-strong);
 }
+.dlgShell__panel--stack{ overflow:hidden; display:flex; flex-direction:column }
+.dlgShell__panel--stack > .htDlg{ display:flex; flex-direction:column; flex:1; min-height:0 }
+
 .htBody{
   flex:1;
   min-height:0;
-  overflow:visible;
+  overflow:auto;
+  overscroll-behavior:contain;
   padding-top:20px;
 }
 .htSteps{
@@ -415,33 +436,75 @@
   color:rgba(255,255,255,.62);
 }
 
-.htKeys{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
-.htKeys li{
-  display:flex;
+.htKeys{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; }
+.htKeys__row{
+  display:grid;
+  grid-template-columns:84px 1fr;
+  column-gap:14px;
+  row-gap:14px;
   align-items:center;
-  gap:14px;
-  flex-wrap:wrap;
-  border-radius:14px;
+  border-radius:var(--bh-r-control);
   background:rgba(255,255,255,.05);
   padding:14px 16px;
 }
+.htKeys__row--tip{ grid-template-rows:auto auto; }
 .htKeys__k{
-  flex:0 0 64px;
+  grid-column:1;
+  grid-row:1;
   font-family:var(--body);
   font-weight:700;
-  font-size:10px;
-  letter-spacing:1.6px;
+  font-size:12px;
+  letter-spacing:1.92px;
   text-transform:uppercase;
-  color:rgba(255,255,255,.45);
+  color:rgba(255,255,255,.55);
 }
-.htKeys__g{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-.htKeys li b{
-  margin-left:auto;
+.htKeys__g{
+  grid-column:2;
+  grid-row:1;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.htKeys__or{
+  padding:0 4px;
   font-family:var(--body);
-  font-weight:500;
-  font-size:13px;
-  color:rgba(255,255,255,.9);
+  font-weight:600;
+  font-size:11px;
+  letter-spacing:1.32px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.42);
 }
+.htKeys__c{
+  grid-column:2;
+  grid-row:2;
+  margin:0;
+  font-family:var(--body);
+  font-weight:400;
+  font-size:14px;
+  color:rgba(255,255,255,.72);
+}
+.kc{
+  display:grid;
+  place-items:center;
+  min-width:34px;
+  height:34px;
+  padding:0 8px;
+  border:0;
+  border-radius:8px;
+  background:linear-gradient(180deg, #fff, #e8ddff);
+  box-shadow:0 2px 2px rgba(10,4,30,.45), inset 0 -3px 0 rgba(120,85,190,.45);
+  font-family:var(--body);
+  font-weight:700;
+  font-size:14px;
+  color:#2a1145;
+}
+.kc--glyph{
+  min-width:38px;
+  height:38px;
+  background:linear-gradient(180deg, #fff, #e2d4ff);
+}
+.kc__img{ width:24px; height:24px; display:block; }
 
 .htMeter{ display:flex; flex-direction:column; gap:10px; }
 .htTier{
@@ -451,9 +514,9 @@
 }
 .htTier.is-win{ background:rgba(255,225,77,.1); box-shadow:inset 0 0 0 1px rgba(255,225,77,.3); }
 .htTier__row{ display:flex; align-items:flex-end; gap:5px; }
-.htTier__slot{ width:22px; height:22px; object-fit:contain; }
-.htTier__slot.is-off{ opacity:.24; filter:grayscale(1) brightness(1.5); }
-.htTier__slot.is-gold{ filter:drop-shadow(0 0 4px rgba(255,210,63,.7)); height:26px; }
+.htTier__slot{ width:16px; height:34px; object-fit:contain; }
+.htTier__slot.is-off{ opacity:.5; }
+.htTier__slot.is-gold{ filter:drop-shadow(0 0 6px rgba(255,210,63,.85)); height:42px; }
 .htTier__head{ display:flex; align-items:baseline; gap:10px; margin-top:8px; }
 .htTier__head b{ font-family:var(--body); font-weight:700; font-size:14px; color:var(--bh-ink-strong); }
 .htTier__head i{ font-style:normal; font-family:var(--mono); font-size:12px; color:rgba(255,255,255,.5); }
@@ -521,6 +584,15 @@
   .htStep__body{ align-items:flex-start; }
   .htStep__t{ margin-top:0; font-size:14px; }
   .htStep__c{ font-size:12px; }
+
+  .htKeys__row{ grid-template-columns:1fr; row-gap:8px; }
+  .htKeys__k, .htKeys__g, .htKeys__c{ grid-column:1; }
+  .htKeys__k{ grid-row:1; }
+  .htKeys__g{ grid-row:2; }
+  .htKeys__c{ grid-row:3; }
+
+  .htTier__slot{ width:16px; height:26px; }
+  .htTier__slot.is-gold{ height:32px; }
 }
 
 .rsDlg{

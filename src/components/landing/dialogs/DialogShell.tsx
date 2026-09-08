@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 
 type Props = {
   onClose: () => void;
@@ -14,10 +14,11 @@ type Props = {
 
 let lockCount = 0;
 
-export default function DialogShell({
+const DialogShell = forwardRef<HTMLDivElement, Props>(function DialogShell({
   onClose, labelledBy, className = '', panelClassName = '', maxWidth, maxHeight, children,
-}: Props){
+}: Props, forwardedRef){
   const panel = useRef<HTMLDivElement>(null);
+  useImperativeHandle(forwardedRef, () => panel.current as HTMLDivElement);
 
   useEffect(() => {
     const prevFocus = document.activeElement as HTMLElement | null;
@@ -76,4 +77,6 @@ export default function DialogShell({
       </div>
     </div>
   );
-}
+});
+
+export default DialogShell;

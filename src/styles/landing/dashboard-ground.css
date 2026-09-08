@@ -1,0 +1,33 @@
+.dashGround{
+  --px:0;
+  --py:0;
+  --glow:0;
+}
+.dashGround__ambient{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  background:url('/pp-figma/dash-ambient.webp') center/cover no-repeat;
+  pointer-events:none;
+  transform:translate3d(calc(var(--px) * 1%), calc(var(--py) * 1.1%), 0) scale(1.03);
+  will-change:transform;
+}
+.dashGround__glow{
+  position:fixed;
+  left:0;
+  top:0;
+  z-index:0;
+  width:min(72vw, 720px);
+  height:min(72vw, 720px);
+  border-radius:50%;
+  background:radial-gradient(closest-side, rgba(255,143,208,.22), rgba(150,90,230,.1) 48%, rgba(150,90,230,0) 100%);
+  opacity:var(--glow);
+  pointer-events:none;
+  transform:translate3d(calc(50vw + var(--px) * 50vw - 50%), calc(50vh + var(--py) * 50vh - 50%), 0);
+  transition:opacity 600ms ease;
+  will-change:transform, opacity;
+}
+@media (hover:none), (prefers-reduced-motion:reduce){
+  .dashGround__ambient{ transform:scale(1.03) }
+  .dashGround__glow{ display:none }
+}

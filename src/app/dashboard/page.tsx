@@ -1,13 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Check, X, Sparkles, Gamepad2, Home } from 'lucide-react';
+import { Check, Sparkles, Gamepad2, Home } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
+import HowToPlayDialog from '@/components/landing/dialogs/HowToPlayDialog';
+import '@/styles/landing/tokens.css';
+import '@/styles/landing/dialogs.css';
+import '@/styles/landing/dashboard-ground.css';
 
 interface Task {
   id: string;
@@ -87,6 +91,55 @@ export default function DashboardPage() {
   const [activeStep, setActiveStep] = useState<number>(0);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>('00:42:54');
+  const groundRef = useRef<HTMLDivElement>(null);
+
+  const closeHowToPlay = useCallback(() => {
+    soundEngine.playClick();
+    setHowToPlayOpen(false);
+  }, []);
+
+  useEffect(() => {
+    const el = groundRef.current;
+    if (!el) return;
+    const still = window.matchMedia('(hover: none), (prefers-reduced-motion: reduce)');
+    if (still.matches) return;
+
+    let tx = 0;
+    let ty = 0;
+    let cx = 0;
+    let cy = 0;
+    let frame = 0;
+    let lit = false;
+
+    const tick = () => {
+      cx += (tx - cx) * 0.08;
+      cy += (ty - cy) * 0.08;
+      el.style.setProperty('--px', cx.toFixed(4));
+      el.style.setProperty('--py', cy.toFixed(4));
+      if (Math.abs(tx - cx) > 0.0005 || Math.abs(ty - cy) > 0.0005) {
+        frame = requestAnimationFrame(tick);
+      } else {
+        frame = 0;
+      }
+    };
+
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      tx = (e.clientX / window.innerWidth) * 2 - 1;
+      ty = (e.clientY / window.innerHeight) * 2 - 1;
+      if (!lit) {
+        lit = true;
+        el.style.setProperty('--glow', '1');
+      }
+      if (!frame) frame = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener('pointermove', onMove, { passive: true });
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -210,8 +263,9 @@ export default function DashboardPage() {
   const completedCount = tasks.filter((t) => t.completed).length;
 
   return (
-    <div className="min-h-screen bg-[#0b0718] text-white flex flex-col justify-between selection:bg-brand-pink selection:text-[#0b0718] relative overflow-x-hidden font-outfit">
-      <div className="fixed inset-0 bg-[url('/pp-figma/dash-ambient.webp')] bg-cover bg-center pointer-events-none z-0" />
+    <div ref={groundRef} className="dashGround min-h-screen bg-[#0b0718] text-white flex flex-col justify-between selection:bg-brand-pink selection:text-[#0b0718] relative overflow-x-hidden font-outfit">
+      <div className="dashGround__ambient" aria-hidden="true" />
+      <div className="dashGround__glow" aria-hidden="true" />
 
       {toastMessage && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#28184C] border border-brand-pink/40 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex items-center gap-2 animate-fade-in">
@@ -220,7 +274,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <header className="relative z-20 max-w-[1212px] w-full mx-auto px-4 pt-4 sm:pt-0 sm:h-16 before:absolute before:inset-y-0 before:left-1/2 before:-translate-x-1/2 before:w-screen before:bg-[rgba(12,6,40,0.72)] before:backdrop-blur-[12px] before:border-b before:border-white/10 before:-z-10 before:pointer-events-none">
+      <header className="relative z-20 max-w-[1212px] w-full mx-auto px-4 pt-4 sm:pt-0 sm:h-16 before:absolute before:inset-y-0 before:left-1/2 before:-translate-x-1/2 before:w-screen before:bg-[rgba(12,6,40,0.72)] before:backdrop-blur-[20px] before:border-b before:border-white/10 before:-z-10 before:pointer-events-none">
         <div className="flex items-center justify-between gap-2 flex-wrap h-full">
           <div className="flex items-center gap-2 sm:gap-3.5 flex-wrap">
             <div className="bg-white/[0.06] backdrop-blur-md border border-white/[0.12] rounded-xl h-[34px] px-[15px] flex items-center gap-[9px]">
@@ -323,7 +377,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          <div className="bg-[rgba(34,23,101,0.55)] ring-[1.5px] ring-inset ring-[rgba(255,143,208,0.55)] rounded-2xl p-5 backdrop-blur-[9px] relative">
+          <div className="bg-[rgba(34,23,101,0.42)] ring-[1.5px] ring-inset ring-[rgba(255,143,208,0.55)] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl p-5 backdrop-blur-[22px] backdrop-saturate-[1.35] relative">
             <div className="flex items-center justify-between min-h-[60px] pb-4">
               <h2 className="font-bungee text-xl leading-[22px] text-white tracking-[0.4px] uppercase">
                 earn your hearts
@@ -405,7 +459,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-[rgba(34,23,101,0.55)] ring-[1.5px] ring-inset ring-[rgba(255,143,208,0.55)] rounded-2xl p-5 backdrop-blur-[9px] relative">
+          <div className="bg-[rgba(34,23,101,0.42)] ring-[1.5px] ring-inset ring-[rgba(255,143,208,0.55)] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl p-5 backdrop-blur-[22px] backdrop-saturate-[1.35] relative">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="font-bungee text-xl leading-[22px] text-white tracking-[0.4px] uppercase min-h-[60px] pb-4 flex items-center">
@@ -499,119 +553,7 @@ export default function DashboardPage() {
         </div>
       </footer>
 
-      {howToPlayOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none">
-          <div className="bg-[#130a2a] border-2 border-brand-pink/30 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-[0_25px_70px_rgba(0,0,0,0.85)] relative max-h-[92dvh] overflow-y-auto">
-            <button
-              onClick={() => {
-                soundEngine.playClick();
-                setHowToPlayOpen(false);
-              }}
-              className="absolute top-5 right-5 w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-              aria-label="Close"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="text-center mb-6">
-              <h2 className="font-bungee text-2xl sm:text-3xl text-white tracking-wide uppercase">
-                how to play
-              </h2>
-              <p className="text-xs sm:text-sm text-white/60 font-medium mt-1">
-                everything you need, in 3 pages.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4 mb-6">
-              <div className="bg-white/[0.05] border border-white/10 rounded-2xl p-4 flex flex-col items-center text-center relative group hover:border-brand-pink/40 transition-all">
-                <span className="self-start font-dm-mono text-[11px] font-bold text-white/35 mb-2">
-                  01
-                </span>
-                <div className="w-20 h-20 bg-black/30 rounded-2xl flex items-center justify-center p-2 mb-3 shadow-inner">
-                  <Image
-                    src="/images/bunny-voxel-hero.png"
-                    alt="Hop across"
-                    width={64}
-                    height={64}
-                    className="object-contain group-hover:scale-110 transition-transform"
-                  />
-                </div>
-                <h3 className="font-bungee text-sm sm:text-base text-white mb-1.5 uppercase">
-                  hop across
-                </h3>
-                <p className="text-[12px] text-white/60 leading-relaxed">
-                  guide your bunny across busy roads and rivers. every hop forward scores. cars hurt.
-                </p>
-              </div>
-
-              <div className="bg-white/[0.05] border border-white/10 rounded-2xl p-4 flex flex-col items-center text-center relative group hover:border-brand-pink/40 transition-all">
-                <span className="self-start font-dm-mono text-[11px] font-bold text-white/35 mb-2">
-                  02
-                </span>
-                <div className="w-20 h-20 bg-black/30 rounded-2xl flex items-center justify-center p-2 mb-3 shadow-inner">
-                  <Image
-                    src="/images/dashboard-carrot-badge.png"
-                    alt="Collect carrots"
-                    width={56}
-                    height={56}
-                    className="object-contain group-hover:scale-110 group-hover:rotate-6 transition-transform"
-                  />
-                </div>
-                <h3 className="font-bungee text-sm sm:text-base text-white mb-1.5 uppercase">
-                  collect carrots
-                </h3>
-                <p className="text-[12px] text-white/60 leading-relaxed">
-                  carrots are scattered along the way. five in a run puts you in the reward pool.
-                </p>
-              </div>
-
-              <div className="bg-white/[0.05] border border-white/10 rounded-2xl p-4 flex flex-col items-center text-center relative group hover:border-brand-pink/40 transition-all">
-                <span className="self-start font-dm-mono text-[11px] font-bold text-white/35 mb-2">
-                  03
-                </span>
-                <div className="w-20 h-20 bg-black/30 rounded-2xl flex items-center justify-center p-2 mb-3 shadow-inner">
-                  <Image
-                    src="/images/hero_planet_exact.png"
-                    alt="Claim rewards"
-                    width={56}
-                    height={56}
-                    className="object-contain group-hover:scale-110 transition-transform"
-                  />
-                </div>
-                <h3 className="font-bungee text-sm sm:text-base text-white mb-1.5 uppercase">
-                  claim rewards
-                </h3>
-                <p className="text-[12px] text-white/60 leading-relaxed">
-                  connect your wallet, finish the tasks, claim what you earned. referrals pay too.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-amber-500/20 to-emerald-500/15 border border-amber-400/30 rounded-2xl p-4 mb-6 flex items-center gap-3.5">
-              <span className="text-2xl shrink-0">🥕</span>
-              <div className="text-left">
-                <div className="font-bold text-xs sm:text-sm text-amber-200">
-                  every run can pay.
-                </div>
-                <div className="text-[11px] sm:text-xs text-white/70 font-medium">
-                  you only need five carrots to be in the draw.
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                soundEngine.playClick();
-                triggerHaptic('tap');
-                setHowToPlayOpen(false);
-              }}
-              className="w-full bg-gradient-to-r from-[#FBC7F4] via-[#F7A4EF] to-[#E474DB] hover:brightness-105 active:scale-[0.99] text-[#4A1560] font-bold text-sm sm:text-base py-3.5 rounded-xl shadow-lg transition-all cursor-pointer"
-            >
-              got it
-            </button>
-          </div>
-        </div>
-      )}
+      {howToPlayOpen && <HowToPlayDialog onClose={closeHowToPlay} />}
     </div>
   );
 }

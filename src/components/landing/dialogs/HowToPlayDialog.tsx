@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import DialogShell from './DialogShell';
 
 function useIsNarrow(){
@@ -16,9 +16,9 @@ function useIsNarrow(){
 }
 
 const ASSET = '/pp-game/';
+const FIG = '/pp-figma/';
 
 type Step = { n: string; t: string; ico: string; c: string };
-type KeyRow = { k: string; g: 'arrows' | 'swipe' | 'speed'; b: string };
 type Tier = { on: number; of: number; gold: number; span: string; k: string; t: string; c: string };
 
 const STEPS: Step[] = [
@@ -30,12 +30,6 @@ const STEPS: Step[] = [
     c: 'connect your wallet, finish the tasks, claim what you earned. referrals pay too.' },
 ];
 
-const KEYS: KeyRow[] = [
-  { k: 'desktop', g: 'arrows', b: 'arrow keys or WASD to hop.' },
-  { k: 'mobile', g: 'swipe', b: 'swipe or tap to hop.' },
-  { k: 'tip', g: 'speed', b: 'the road speeds up every 5 seconds.' },
-];
-
 const TIERS: Tier[] = [
   { on: 4, of: 9, gold: 0, span: '1 – 4', k: 'warm', t: 'no reward',
     c: "you're warming up. keep hopping and grab more carrots next run." },
@@ -45,62 +39,11 @@ const TIERS: Tier[] = [
     c: 'the 9th carrot has a 1 in 100 chance. land it and the whitelist is yours.' },
 ];
 
-const ArrowGlyph = ({ n }: { n: 'up' | 'down' | 'left' | 'right' }) => {
-  const d: Record<string, string> = {
-    up: 'M12 5v14M12 5l-5 5M12 5l5 5', down: 'M12 19V5M12 19l-5-5M12 19l5-5',
-    left: 'M5 12h14M5 12l5-5M5 12l5 5', right: 'M19 12H5M19 12l-5-5M19 12l-5 5',
-  };
-  return (
-    <svg className="kc__g" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d={d[n]} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-};
-
-const GLYPH: Record<KeyRow['g'], React.ReactNode> = {
-  arrows: (
-    <>
-      <kbd className="kc"><ArrowGlyph n="up" /></kbd>
-      <kbd className="kc"><ArrowGlyph n="left" /></kbd>
-      <kbd className="kc"><ArrowGlyph n="down" /></kbd>
-      <kbd className="kc"><ArrowGlyph n="right" /></kbd>
-    </>
-  ),
-  swipe: (
-    <span className="kc kc--glyph">
-      <svg className="kc__g" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <path d="M11 21V10a2.5 2.5 0 0 1 5 0v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M16 16.5a2.2 2.2 0 0 1 4.4 0V18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M20.4 18a2.2 2.2 0 0 1 4.4 0v3.6c0 3.4-2.6 6.4-6.2 6.4h-2.4c-2 0-3.4-.8-4.6-2.4L8 21.6"
-          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </span>
-  ),
-  speed: (
-    <span className="kc kc--glyph">
-      <svg className="kc__g" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <circle cx="16" cy="17" r="10" stroke="currentColor" strokeWidth="2" />
-        <path d="M16 11v6l4 2.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M12 3h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    </span>
-  ),
-};
-
 function CloseIcon(){
-  return (
-    <svg viewBox="0 0 16 16" aria-hidden="true" width="20" height="20">
-      <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
+  return <img className="htIcoImg" src={`${FIG}ht-close.svg`} alt="" width={22} height={22} />;
 }
 function ArrowIcon({ dir }: { dir: 'l' | 'r' }){
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
-      <path d={dir === 'l' ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'} stroke="currentColor"
-        strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  return <img className="htIcoImg" src={`${FIG}${dir === 'l' ? 'ht-arrow-prev' : 'ht-arrow-next'}.svg`} alt="" width={22} height={22} />;
 }
 
 const PAGE_KICKERS = ['the run', 'controls', 'rewards'];
@@ -112,6 +55,23 @@ export default function HowToPlayDialog({ onClose }: { onClose: () => void }){
   const titleId = 'dlgHowToTitle';
   const narrow = useIsNarrow();
   const go = (n: number) => setPage(Math.max(0, Math.min(pages - 1, n)));
+
+  const panelRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    const body = bodyRef.current;
+    if (!panel || !body) return;
+    const nextHeight = panel.scrollHeight;
+    panel.style.height = `${panel.getBoundingClientRect().height}px`;
+    requestAnimationFrame(() => {
+      panel.style.height = `${nextHeight}px`;
+    });
+    const clear = () => { panel.style.height = ''; };
+    panel.addEventListener('transitionend', clear, { once: true });
+    return () => panel.removeEventListener('transitionend', clear);
+  }, [page, narrow]);
 
   const onKeyNav = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowLeft') go(page - 1);
@@ -132,23 +92,37 @@ export default function HowToPlayDialog({ onClose }: { onClose: () => void }){
   }), []);
 
   return (
-    <DialogShell onClose={onClose} labelledBy={titleId} maxWidth={narrow ? 390 : 760} maxHeight={narrow ? 745 : 650}>
+    <DialogShell
+      ref={panelRef}
+      onClose={onClose}
+      labelledBy={titleId}
+      panelClassName="dlgShell__panel--stack"
+      maxWidth={narrow ? 390 : 760}
+      maxHeight={narrow ? 858 : 829}
+    >
       <div className="htDlg" onKeyDown={onKeyNav}>
-        <div className="htHead">
-          <img className="htHead__ico" src={`${ASSET}deco-carrot.webp`} alt="" aria-hidden="true" />
-          <h2 className="htHead__title" id={titleId}>how to play</h2>
-          <img className="htHead__ico" src={`${ASSET}deco-carrot.webp`} alt="" aria-hidden="true" />
-        </div>
+        {narrow ? (
+          <div className="htHead htHead--narrow">
+            <img className="htHead__ico" src={`${ASSET}deco-carrot.webp`} alt="" aria-hidden="true" />
+            <h2 className="htHead__title htHead__title--narrow" id={titleId}>how to play</h2>
+          </div>
+        ) : (
+          <div className="htHead">
+            <img className="htHead__ico" src={`${ASSET}deco-carrot.webp`} alt="" aria-hidden="true" />
+            <h2 className="htHead__title" id={titleId}>how to play</h2>
+            <img className="htHead__ico" src={`${ASSET}deco-carrot.webp`} alt="" aria-hidden="true" />
+          </div>
+        )}
         <p className="htSub">everything you need, in {pages} pages.</p>
 
-        <button className="dlgClose" onClick={onClose} aria-label="Close">
+        <button className="dlgClose htClose" onClick={onClose} aria-label="Close">
           <CloseIcon />
         </button>
 
         <p className="htKicker">{PAGE_KICKERS[page]}</p>
         <h3 className="htTitle">{PAGE_TITLES[page]}</h3>
 
-        <div className="htBody">
+        <div className="htBody" ref={bodyRef}>
           {page === 0 && (
             <>
               <ul className="htSteps">
@@ -176,13 +150,37 @@ export default function HowToPlayDialog({ onClose }: { onClose: () => void }){
           {page === 1 && (
             <>
               <ul className="htKeys">
-                {KEYS.map(row => (
-                  <li key={row.k}>
-                    <span className="htKeys__k">{row.k}</span>
-                    <span className="htKeys__g">{GLYPH[row.g]}</span>
-                    <b>{row.b}</b>
-                  </li>
-                ))}
+                <li className="htKeys__row">
+                  <span className="htKeys__k">desktop</span>
+                  <span className="htKeys__g">
+                    <kbd className="kc">↑</kbd>
+                    <kbd className="kc">←</kbd>
+                    <kbd className="kc">↓</kbd>
+                    <kbd className="kc">→</kbd>
+                    <span className="htKeys__or">or</span>
+                    <kbd className="kc">W</kbd>
+                    <kbd className="kc">A</kbd>
+                    <kbd className="kc">S</kbd>
+                    <kbd className="kc">D</kbd>
+                  </span>
+                  <p className="htKeys__c">to hop.</p>
+                </li>
+                <li className="htKeys__row">
+                  <span className="htKeys__k">mobile</span>
+                  <span className="htKeys__g">
+                    <span className="kc kc--glyph"><img className="kc__img" src={`${FIG}ht-touch.svg`} alt="" /></span>
+                    <span className="htKeys__or">or</span>
+                    <span className="kc kc--glyph"><img className="kc__img" src={`${FIG}ht-gamepad.svg`} alt="" /></span>
+                  </span>
+                  <p className="htKeys__c">swipe or tap to hop.</p>
+                </li>
+                <li className="htKeys__row htKeys__row--tip">
+                  <span className="htKeys__k">tip</span>
+                  <span className="htKeys__g">
+                    <span className="kc kc--glyph"><img className="kc__img" src={`${FIG}ht-clock.svg`} alt="" /></span>
+                  </span>
+                  <p className="htKeys__c">the road speeds up every 5 seconds.</p>
+                </li>
               </ul>
               <div className="htBanner">
                 <img className="htBanner__ico" src={`${ASSET}deco-heart.webp`} alt="" />
