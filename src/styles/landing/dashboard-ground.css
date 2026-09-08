@@ -1,33 +1,37 @@
-.dashGround{
-  --px:0;
-  --py:0;
-  --glow:0;
-}
-.dashGround__ambient{
+html:has(.dashGround), body:has(.dashGround){ background:#0b0718 }
+
+.dashGround__mesh{
   position:fixed;
   inset:0;
   z-index:0;
-  background:url('/pp-figma/dash-ambient.webp') center/cover no-repeat;
   pointer-events:none;
-  transform:translate3d(calc(var(--px) * 1%), calc(var(--py) * 1.1%), 0) scale(1.03);
-  will-change:transform;
+  background:
+    radial-gradient(46% 38% at 12% 8%,   rgba(122, 62, 168, .58), transparent 68%),
+    radial-gradient(40% 34% at 88% 4%,   rgba(196, 70, 140, .40), transparent 66%),
+    radial-gradient(52% 44% at 78% 42%,  rgba(86, 58, 190, .52), transparent 70%),
+    radial-gradient(44% 40% at 22% 54%,  rgba(46, 74, 150, .44), transparent 68%),
+    radial-gradient(58% 46% at 50% 96%,  rgba(150, 52, 122, .38), transparent 72%),
+    radial-gradient(36% 30% at 6% 88%,   rgba(38, 96, 130, .34), transparent 66%),
+    linear-gradient(180deg, #150c30 0%, #100a26 46%, #0b0718 100%);
 }
-.dashGround__glow{
+
+.dashGround__grain{
   position:fixed;
-  left:0;
-  top:0;
+  inset:0;
   z-index:0;
-  width:min(72vw, 720px);
-  height:min(72vw, 720px);
-  border-radius:50%;
-  background:radial-gradient(closest-side, rgba(255,143,208,.22), rgba(150,90,230,.1) 48%, rgba(150,90,230,0) 100%);
-  opacity:var(--glow);
   pointer-events:none;
-  transform:translate3d(calc(50vw + var(--px) * 50vw - 50%), calc(50vh + var(--py) * 50vh - 50%), 0);
-  transition:opacity 600ms ease;
-  will-change:transform, opacity;
+  opacity:.16;
+  mix-blend-mode:overlay;
+  background-image:url('/pp-art/micronoise.webp');
+  background-size:180px 180px;
 }
-@media (hover:none), (prefers-reduced-motion:reduce){
-  .dashGround__ambient{ transform:scale(1.03) }
-  .dashGround__glow{ display:none }
+
+@media (prefers-reduced-motion:no-preference) and (hover:hover){
+  .dashGround__mesh{
+    animation:dashDrift 34s ease-in-out infinite alternate;
+  }
+}
+@keyframes dashDrift{
+  from{ background-position:0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0 }
+  to{   background-position:2% -1%, -2% 1%, 1% 2%, -1% -2%, 2% 1%, -2% -1%, 0 0 }
 }

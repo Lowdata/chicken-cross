@@ -63,10 +63,47 @@
   .dlgShell, .dlgShell__panel{ animation:none }
 }
 
+@media (max-width:640px), (max-height:720px){
+  .dlgShell{ padding:0; }
+  .dlgShell__panel{
+    width:100%;
+    max-width:100%;
+    height:100%;
+    max-height:100%;
+    border-radius:0;
+    border-top-left-radius:var(--bh-r-panel);
+    border-top-right-radius:var(--bh-r-panel);
+    border-left:0;
+    border-right:0;
+    border-bottom:0;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom);
+    animation:dlg-sheet-in 260ms cubic-bezier(.2,.8,.2,1);
+    transition:none;
+  }
+  .dlgShell__panel > *{
+    flex:1;
+    min-height:0;
+    overflow:auto;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+  }
+  .dlgShell[data-state="closing"] .dlgShell__panel{
+    animation:dlg-sheet-in 260ms cubic-bezier(.2,.8,.2,1) reverse forwards;
+  }
+}
+@keyframes dlg-sheet-in{ from{ transform:translateY(100%) } to{ transform:none } }
+@media (prefers-reduced-motion:reduce){
+  .dlgShell__panel{ animation:none !important }
+}
+
 .dlgClose{
   position:absolute;
   top:10.5px;
-  right:10.5px;
+  right:13.5px;
   width:44px;
   height:44px;
   border:0;
@@ -120,6 +157,13 @@
   list-style:none;
   margin:12px 0 0;
   padding:0;
+}
+
+@media (max-width:640px), (max-height:720px){
+  .obDlg{ padding-top:52px; }
+  .dlgKicker, .dlgTitle{ padding:0 48px; }
+  .dlgTitle{ font-size:22px; }
+  .dlgSteps{ margin-bottom:6px; }
 }
 .dlgSteps__divider{ height:1px; background:rgba(255,143,208,.5) }
 .dlgSteps__item{
@@ -333,7 +377,7 @@
   font-size:20px;
   text-align:left;
 }
-.htClose{ top:12px; right:12px; }
+.htClose{ top:10.5px; right:13.5px; }
 .htIcoImg{ display:block; }
 .htSub{
   margin:6px 0 0;
@@ -1252,4 +1296,15 @@
 @media (prefers-reduced-motion:reduce){
   .dlgSteps--tabs .dlgSteps__item, .dlgRow__act, .wdCard{ transition:none }
   .dlgSteps--tabs .dlgSteps__item:active, .dlgRow__act:not(:disabled):active{ translate:none; scale:1 }
+}
+
+.tc-frosted{
+  background:rgba(14,8,32,.72);
+}
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .tc-frosted{
+    background:rgba(14,8,32,.42);
+    -webkit-backdrop-filter:blur(18px) saturate(1.35);
+            backdrop-filter:blur(18px) saturate(1.35);
+  }
 }

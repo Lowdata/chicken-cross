@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { isFrozen, onFreezeChange } from '@/lib/landing/freeze';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -93,65 +92,13 @@ export default function DashboardPage() {
   const [howToPlayOpen, setHowToPlayOpen] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'info' | 'reward' | 'error'>('info');
   const [timeRemaining, setTimeRemaining] = useState<string>('00:42:54');
   const groundRef = useRef<HTMLDivElement>(null);
 
   const closeHowToPlay = useCallback(() => {
     soundEngine.playClick();
     setHowToPlayOpen(false);
-  }, []);
-
-  useEffect(() => {
-    const el = groundRef.current;
-    if (!el) return;
-    const still = window.matchMedia('(hover: none), (prefers-reduced-motion: reduce)');
-    if (still.matches) return;
-
-    let tx = 0;
-    let ty = 0;
-    let cx = 0;
-    let cy = 0;
-    let frame = 0;
-    let lit = false;
-
-    const tick = () => {
-      cx += (tx - cx) * 0.08;
-      cy += (ty - cy) * 0.08;
-      el.style.setProperty('--px', cx.toFixed(4));
-      el.style.setProperty('--py', cy.toFixed(4));
-      if (Math.abs(tx - cx) > 0.0005 || Math.abs(ty - cy) > 0.0005) {
-        frame = requestAnimationFrame(tick);
-      } else {
-        frame = 0;
-      }
-    };
-
-    const onMove = (e: PointerEvent) => {
-      if (e.pointerType !== 'mouse') return;
-      if (isFrozen()) return;
-      tx = (e.clientX / window.innerWidth) * 2 - 1;
-      ty = (e.clientY / window.innerHeight) * 2 - 1;
-      if (!lit) {
-        lit = true;
-        el.style.setProperty('--glow', '1');
-      }
-      if (!frame) frame = requestAnimationFrame(tick);
-    };
-
-    const offFreeze = onFreezeChange((frozen: boolean) => {
-      if (!frozen) return;
-      if (frame) cancelAnimationFrame(frame);
-      frame = 0;
-      tx = cx;
-      ty = cy;
-    });
-
-    window.addEventListener('pointermove', onMove, { passive: true });
-    return () => {
-      offFreeze();
-      window.removeEventListener('pointermove', onMove);
-      if (frame) cancelAnimationFrame(frame);
-    };
   }, []);
 
   useEffect(() => {
@@ -194,8 +141,9 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, type: 'info' | 'reward' | 'error' = 'info') => {
     setToastMessage(msg);
+    setToastType(type);
     setTimeout(() => {
       setToastMessage((prev) => (prev === msg ? null : prev));
     }, 3000);
@@ -243,7 +191,7 @@ export default function DashboardPage() {
       localStorage.setItem('bunny_dashboard_hearts', newHearts.toString());
     } catch {}
 
-    showToast(`Task completed! +1 Heart added ❤️`);
+    showToast(`Task completed! +1 Heart added`, 'reward');
 
     if (task.link) {
       window.open(task.link, '_blank');
@@ -269,7 +217,7 @@ export default function DashboardPage() {
       localStorage.setItem('bunny_dashboard_hearts', newHearts.toString());
     } catch {}
 
-    showToast(`Referral redeemed! +1 Heart added ❤️`);
+    showToast(`Referral redeemed! +1 Heart added`, 'reward');
     setReferralInput('');
   };
 
@@ -277,13 +225,24 @@ export default function DashboardPage() {
 
   return (
     <div ref={groundRef} className="dashGround min-h-screen bg-[#0b0718] text-white flex flex-col justify-between selection:bg-brand-pink selection:text-[#0b0718] relative overflow-x-hidden font-outfit">
-      <div className="dashGround__ambient" aria-hidden="true" />
-      <div className="dashGround__glow" aria-hidden="true" />
+      <div className="dashGround__mesh" aria-hidden="true" />
+      <div className="dashGround__grain" aria-hidden="true" />
 
       {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#28184C] border border-brand-pink/40 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex items-center gap-2 animate-fade-in">
-          <Sparkles className="w-4 h-4 text-brand-pink shrink-0" />
+        <div
+          role="status"
+          className={`dashToast tc-frosted fixed top-[calc(env(safe-area-inset-top)+4.5rem)] left-1/2 -translate-x-1/2 z-50 border text-white font-outfit font-bold text-xs sm:text-[13px] pl-4 pr-3 py-2.5 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex items-center gap-2.5 ${toastType === 'reward' ? 'border-[#ffe14d]/40' : toastType === 'error' ? 'border-brand-pink/40' : 'border-white/15'}`}
+        >
+          <Sparkles className={`w-4 h-4 shrink-0 ${toastType === 'reward' ? 'text-[#ffe14d]' : toastType === 'error' ? 'text-brand-pink' : 'text-white/70'}`} />
           <span>{toastMessage}</span>
+          <button
+            type="button"
+            onClick={() => setToastMessage(null)}
+            aria-label="Dismiss notification"
+            className="ml-1 w-6 h-6 min-w-[24px] rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <span aria-hidden="true">×</span>
+          </button>
         </div>
       )}
 
@@ -312,7 +271,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="flex items-center flex-wrap gap-2 sm:gap-3.5">
             <Link
               href="/"
               className="bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white min-h-11 min-w-11 px-2 sm:px-3 rounded-xl border border-white/10 flex items-center justify-center gap-1.5 text-xs font-bold transition-[transform,background-color,color,box-shadow,filter] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100"
@@ -342,15 +301,15 @@ export default function DashboardPage() {
                         triggerHaptic('tap');
                         openConnectModal();
                       }}
-                      className="bg-gradient-to-b from-[#ff9ed6] to-[#f5479e] hover:brightness-105 text-white font-semibold text-sm h-11 px-[18px] rounded-xl transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100 cursor-pointer"
+                      className="bg-gradient-to-b from-[#ff9ed6] to-[#f5479e] hover:brightness-105 text-white font-bold text-xs min-h-11 min-w-11 px-2 sm:px-3 rounded-xl transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100 cursor-pointer"
                     >
                       <FlipLabel>connect wallet</FlipLabel>
                     </button>
                   );
                 }
                 return (
-                  <div className="flex items-center gap-2.5">
-                    <span className="h-[45px] px-3 rounded-xl bg-white/[0.07] flex items-center font-dm-mono text-xs tracking-[0.48px] text-[#ffe14d]">
+                  <div className="flex items-center flex-wrap gap-2">
+                    <span className="min-h-11 px-3 rounded-xl bg-white/[0.07] flex items-center font-dm-mono text-xs tracking-[0.48px] text-[#ffe14d]">
                       {account.displayName}
                     </span>
                     <button
@@ -359,10 +318,10 @@ export default function DashboardPage() {
                         triggerHaptic('tap');
                         openAccountModal();
                       }}
-                      className="h-11 px-4 rounded-xl bg-gradient-to-b from-[#e6d6fd] via-[#dbc6fc] via-[46%] to-[#c89afc] shadow-[0_3px_0_rgba(120,85,195,0.45),inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-3px_0_rgba(120,80,190,0.42)] text-[#3a1660] text-sm flex items-center gap-2 cursor-pointer hover:brightness-105 transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100"
+                      className="min-h-11 min-w-11 px-2 sm:px-3 rounded-xl bg-gradient-to-b from-[#e6d6fd] via-[#dbc6fc] via-[46%] to-[#c89afc] shadow-[0_3px_0_rgba(120,85,195,0.45),inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-3px_0_rgba(120,80,190,0.42)] text-[#3a1660] text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:brightness-105 transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100"
                     >
-                      <Image src="/pp-figma/dash-logout.svg" alt="" width={18} height={18} className="w-[18px] h-[18px]" />
-                      <FlipLabel>log out</FlipLabel>
+                      <Image src="/pp-figma/dash-logout.svg" alt="" width={16} height={16} className="w-4 h-4" />
+                      <span className="hidden sm:inline"><FlipLabel>log out</FlipLabel></span>
                     </button>
                   </div>
                 );

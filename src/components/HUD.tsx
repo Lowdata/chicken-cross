@@ -102,7 +102,7 @@ export const HUD: React.FC<HUDProps> = ({
         )}
       </div>
 
-      <div className="pointer-events-auto flex items-center h-[38px] mt-0.5 rounded-full px-4 gap-1 md:gap-2.5 bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35]">
+      <div className="max-[820px]:hidden pointer-events-auto flex items-center h-[38px] mt-0.5 rounded-full px-4 gap-1 md:gap-2.5 bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35]">
         <span className="hidden md:inline font-outfit font-bold text-[11px] tracking-[1.98px] uppercase text-white/55 whitespace-nowrap">
           lives
         </span>
@@ -121,6 +121,20 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       <div className="flex flex-col items-end gap-2 pointer-events-auto">
+        <div className={`${chip} hidden max-[820px]:flex`} aria-hidden="true">
+          <div className="flex items-center gap-1">
+            {Array.from({ length: MAX_DAILY_LIVES }).map((_, idx) => (
+              <Image
+                key={idx}
+                src="/pp-figma/hud-heart.png"
+                alt=""
+                width={19}
+                height={19}
+                className={`w-4 h-4 object-contain transition-opacity duration-300 ${idx < lives ? 'opacity-100' : 'opacity-30'}`}
+              />
+            ))}
+          </div>
+        </div>
         <div className="flex flex-col md:flex-row items-end gap-2">
           <WalletButton />
 
