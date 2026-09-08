@@ -23,7 +23,7 @@ export default function NotFound(){
             and couldn&rsquo;t find this page.
           </p>
 
-          <div className="nf__actions">
+          <div className="nf__actions hero__cta">
             <Link className="btn --glass --primary" data-shine href="/">
               <FlipLabel>Back to Home</FlipLabel>
             </Link>
