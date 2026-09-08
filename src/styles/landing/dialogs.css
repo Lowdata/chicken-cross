@@ -33,7 +33,7 @@
 }
 @supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
   .dlgShell__panel{
-    background:linear-gradient(180deg, rgba(46,29,92,.58), rgba(20,12,44,.66));
+    background:linear-gradient(180deg, rgba(28,17,58,.86), rgba(16,9,36,.9));
     border-color:rgba(255,255,255,.1);
     box-shadow:0 30px 80px 0 rgba(6,2,22,.6), inset 0 1px 0 rgba(255,255,255,.14);
     -webkit-backdrop-filter:blur(34px) saturate(1.4);
@@ -259,6 +259,7 @@
   cursor:pointer;
   transition:color 200ms cubic-bezier(.2,.7,.2,1), translate 200ms cubic-bezier(.2,.7,.2,1), scale 200ms cubic-bezier(.2,.7,.2,1);
 }
+.dlgGhost .flip__c{ text-decoration:underline; text-underline-offset:2px }
 .dlgGhost:hover{ color:var(--bh-ink-strong) }
 .dlgGhost:active{ translate:0 1px; scale:.96; transition-duration:90ms; transition-timing-function:ease-out }
 .dlgGhost:focus-visible{ outline:2px solid var(--bh-accent); outline-offset:2px }

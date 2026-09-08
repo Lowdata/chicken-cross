@@ -1,6 +1,5 @@
 'use client';
 
-import '@rainbow-me/rainbowkit/styles.css';
 import { useCallback, useState } from 'react';
 import { Web3Provider } from '@/components/Web3Provider';
 import OnboardingFlow from './OnboardingFlow';
