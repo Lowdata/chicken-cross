@@ -55,9 +55,11 @@ export function mountScene({ ui, canvas }){
       frozenAt = performance.now();
       cancelAnimationFrame(handle);
       handle = 0;
+      lenis.stop();
     } else {
       pauseOffset += performance.now() - frozenAt;
       handle = requestAnimationFrame(frame);
+      lenis.start();
     }
   };
   const offFreeze = onFreezeChange(onFreeze);

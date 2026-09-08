@@ -113,6 +113,7 @@ const DialogShell = forwardRef<HTMLDivElement, Props>(function DialogShell({
         role="dialog"
         aria-modal="true"
         tabIndex={-1}
+        data-lenis-prevent
         aria-labelledby={labelledBy}
         style={{ ['--dlg-w' as string]: `${maxWidth}px`, ['--dlg-h' as string]: `${maxHeight}px` }}
         onAnimationEnd={e => {

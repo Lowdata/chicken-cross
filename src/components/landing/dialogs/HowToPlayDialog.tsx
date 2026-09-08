@@ -128,7 +128,7 @@ export default function HowToPlayDialog({ open = true, onClose }: { open?: boole
         <p className="htKicker">{PAGE_KICKERS[page]}</p>
         <h3 className="htTitle">{PAGE_TITLES[page]}</h3>
 
-        <div className="htBody" ref={bodyRef}>
+        <div data-lenis-prevent className="htBody" ref={bodyRef}>
           {page === 0 && (
             <>
               <ul className="htSteps">

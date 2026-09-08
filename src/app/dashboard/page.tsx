@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { isFrozen, onFreezeChange } from '@/lib/landing/freeze';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -127,6 +128,7 @@ export default function DashboardPage() {
 
     const onMove = (e: PointerEvent) => {
       if (e.pointerType !== 'mouse') return;
+      if (isFrozen()) return;
       tx = (e.clientX / window.innerWidth) * 2 - 1;
       ty = (e.clientY / window.innerHeight) * 2 - 1;
       if (!lit) {
@@ -136,8 +138,17 @@ export default function DashboardPage() {
       if (!frame) frame = requestAnimationFrame(tick);
     };
 
+    const offFreeze = onFreezeChange((frozen: boolean) => {
+      if (!frozen) return;
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      tx = cx;
+      ty = cy;
+    });
+
     window.addEventListener('pointermove', onMove, { passive: true });
     return () => {
+      offFreeze();
       window.removeEventListener('pointermove', onMove);
       if (frame) cancelAnimationFrame(frame);
     };
