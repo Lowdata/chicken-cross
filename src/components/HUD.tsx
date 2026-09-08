@@ -27,8 +27,8 @@ interface HUDProps {
   isEagleWarning?: boolean;
 }
 
-const chip = 'flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5';
-const control = 'w-[44px] h-[44px] rounded-[14px] bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 flex items-center justify-center text-white/85 hover:bg-white/10 active:scale-90 transition-all cursor-pointer';
+const chip = 'flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35] border border-white/5';
+const control = 'w-[44px] h-[44px] rounded-[14px] bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35] border border-white/5 flex items-center justify-center text-white/85 hover:bg-white/10 active:scale-90 transition-all cursor-pointer';
 const label = 'font-outfit font-semibold text-[11px] tracking-[1.54px] uppercase text-white/50 whitespace-nowrap';
 
 export const HUD: React.FC<HUDProps> = ({
@@ -71,7 +71,7 @@ export const HUD: React.FC<HUDProps> = ({
         <Link
           href="/dashboard"
           aria-label="Back to dashboard"
-          className="w-11 h-11 min-h-[44px] rounded-full bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 flex items-center justify-center text-white/85 hover:bg-white/10 active:scale-90 transition-all"
+          className="w-11 h-11 min-h-[44px] rounded-full bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35] border border-white/5 flex items-center justify-center text-white/85 hover:bg-white/10 active:scale-90 transition-all"
         >
           <Image src="/pp-figma/hud-back.svg" alt="" width={16} height={16} className="w-4 h-4" />
         </Link>
@@ -102,7 +102,7 @@ export const HUD: React.FC<HUDProps> = ({
         )}
       </div>
 
-      <div className="pointer-events-auto flex items-center h-[38px] mt-0.5 rounded-full px-4 gap-1 md:gap-2.5 bg-[rgba(14,8,32,0.76)] backdrop-blur-[10px]">
+      <div className="pointer-events-auto flex items-center h-[38px] mt-0.5 rounded-full px-4 gap-1 md:gap-2.5 bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35]">
         <span className="hidden md:inline font-outfit font-bold text-[11px] tracking-[1.98px] uppercase text-white/55 whitespace-nowrap">
           lives
         </span>

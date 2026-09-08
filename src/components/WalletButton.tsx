@@ -50,7 +50,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                       openConnectModal();
                     }}
                     type="button"
-                    className={`hud-pill flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 text-white font-outfit font-semibold text-[13px] whitespace-nowrap transition-all active:scale-95 cursor-pointer hover:bg-white/10 select-none ${
+                    className={`hud-pill flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35] border border-white/5 text-white font-outfit font-semibold text-[13px] whitespace-nowrap transition-all active:scale-95 cursor-pointer hover:bg-white/10 select-none ${
                       compact
                         ? 'px-2.5 py-1.5 text-xs'
                         : 'px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm'
@@ -74,7 +74,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                       openChainModal();
                     }}
                     type="button"
-                    className="hud-pill flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 text-white font-outfit font-semibold text-[13px] whitespace-nowrap transition-all active:scale-95 cursor-pointer hover:bg-white/10 text-[#ff8fd0]"
+                    className="hud-pill flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35] border border-white/5 text-white font-outfit font-semibold text-[13px] whitespace-nowrap transition-all active:scale-95 cursor-pointer hover:bg-white/10 text-[#ff8fd0]"
                   >
                     <AlertCircle className="w-3.5 h-3.5" />
                     <span>Wrong Net</span>
@@ -93,7 +93,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                     }}
                     type="button"
                     title={chain.name ?? 'Chain'}
-                    className="hud-pill flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 text-white font-outfit font-semibold text-[13px] whitespace-nowrap transition-all active:scale-95 cursor-pointer hover:bg-white/10"
+                    className="hud-pill flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35] border border-white/5 text-white font-outfit font-semibold text-[13px] whitespace-nowrap transition-all active:scale-95 cursor-pointer hover:bg-white/10"
                   >
                     {chain.hasIcon && (
                       <div
@@ -122,7 +122,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                       openAccountModal();
                     }}
                     type="button"
-                    className="hud-pill flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 text-white font-outfit font-semibold text-[13px] whitespace-nowrap transition-all active:scale-95 cursor-pointer hover:bg-white/10"
+                    className="hud-pill flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35] border border-white/5 text-white font-outfit font-semibold text-[13px] whitespace-nowrap transition-all active:scale-95 cursor-pointer hover:bg-white/10"
                   >
                     <div className="w-2 h-2 rounded-full bg-[#8bf3c4]" />
                     <span className="text-xs sm:text-sm font-extrabold text-slate-800">
