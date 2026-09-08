@@ -77,6 +77,15 @@
   justify-content:center;
   gap:14px;
 }
+#ui .nf__actions.hero__cta{
+  position:static !important;
+  top:auto !important;
+  left:auto !important;
+  right:auto !important;
+  transform:none !important;
+  margin-top:30px !important;
+  flex-wrap:wrap !important;
+}
 #ui .nf__actions.hero__cta .btn:first-child,
 #ui .nf__actions.hero__cta .btn:last-child,
 #ui .nf__actions.hero__cta .btn{ width:auto !important; padding:0 32px !important }
