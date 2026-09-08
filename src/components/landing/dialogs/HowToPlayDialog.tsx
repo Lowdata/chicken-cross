@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import FlipLabel from '@/components/landing/FlipLabel';
 import DialogShell from './DialogShell';
 
 function useIsNarrow(){
@@ -49,7 +50,7 @@ function ArrowIcon({ dir }: { dir: 'l' | 'r' }){
 const PAGE_KICKERS = ['the run', 'controls', 'rewards'];
 const PAGE_TITLES = ['three hops to earning', 'how you move', 'how many carrots you need'];
 
-export default function HowToPlayDialog({ onClose }: { onClose: () => void }){
+export default function HowToPlayDialog({ open = true, onClose }: { open?: boolean; onClose: () => void }){
   const [page, setPage] = useState(0);
   const pages = 3;
   const titleId = 'dlgHowToTitle';
@@ -58,6 +59,10 @@ export default function HowToPlayDialog({ onClose }: { onClose: () => void }){
 
   const panelRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open) setPage(0);
+  }, [open]);
 
   useEffect(() => {
     const panel = panelRef.current;
@@ -94,6 +99,7 @@ export default function HowToPlayDialog({ onClose }: { onClose: () => void }){
   return (
     <DialogShell
       ref={panelRef}
+      open={open}
       onClose={onClose}
       labelledBy={titleId}
       panelClassName="dlgShell__panel--stack"
@@ -238,7 +244,7 @@ export default function HowToPlayDialog({ onClose }: { onClose: () => void }){
           </button>
         </nav>
 
-        <button className="dlgPrimary htPrimary" type="button" onClick={onClose}>got it</button>
+        <button className="dlgPrimary htPrimary" type="button" onClick={onClose}><FlipLabel>got it</FlipLabel></button>
       </div>
     </DialogShell>
   );

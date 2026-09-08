@@ -3,6 +3,7 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useAccount, useDisconnect } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import FlipLabel from '@/components/landing/FlipLabel';
 import DialogShell from './DialogShell';
 
 type Step = 'wallet' | 'handle' | 'ready';
@@ -44,7 +45,7 @@ function StepTabs({ current }: { current: Step }){
   );
 }
 
-export default function OnboardingFlow({ onClose }: { onClose: () => void }){
+export default function OnboardingFlow({ open = true, onClose, onExited }: { open?: boolean; onClose: () => void; onExited?: () => void }){
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { disconnect } = useDisconnect();
@@ -77,6 +78,10 @@ export default function OnboardingFlow({ onClose }: { onClose: () => void }){
     if (isConnected && address && step === 'wallet') load(address);
   }, [isConnected, address, step, load]);
 
+  useEffect(() => {
+    if (open && step === 'ready' && player) onClose();
+  }, [onClose, open, player, step]);
+
   const confirmHandle = async () => {
     if (!address) return;
     if (!handle.trim()){ setError('Your X handle, so rewards can find you.'); return; }
@@ -97,15 +102,10 @@ export default function OnboardingFlow({ onClose }: { onClose: () => void }){
     }
   };
 
-  if (step === 'ready' && player){
-    onClose();
-    return null;
-  }
-
   const titleId = 'dlgOnboardingTitle';
 
   return (
-    <DialogShell onClose={onClose} labelledBy={titleId} maxWidth={520} maxHeight={558}>
+    <DialogShell open={open} onClose={onClose} onExited={onExited} labelledBy={titleId} maxWidth={520} maxHeight={558}>
       <div className="obDlg">
       <p className="dlgKicker">access required</p>
       <h2 className="dlgTitle" id={titleId}>onboarding protocol</h2>
@@ -122,9 +122,9 @@ export default function OnboardingFlow({ onClose }: { onClose: () => void }){
           <p className="dlgCard__lede">connect to keep your hearts, your runs and your place in the draw.</p>
           {error && <p className="dlgErr" role="alert">{error}</p>}
           <button className="dlgPrimary" onClick={() => openConnectModal?.()} disabled={busy}>
-            {busy ? 'checking…' : 'initialize connection'}
+            {busy ? 'checking…' : <FlipLabel>initialize connection</FlipLabel>}
           </button>
-          <button className="dlgGhost" onClick={onClose}>skip for now</button>
+          <button className="dlgGhost" onClick={onClose}><FlipLabel>skip for now</FlipLabel></button>
           <ul className="dlgPills">
             <li className="dlgPill">hearts saved</li>
             <li className="dlgPill">runs tracked</li>

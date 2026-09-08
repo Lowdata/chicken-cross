@@ -18,6 +18,7 @@ function useIsNarrow(){
 const ASSET = '/pp-game/';
 
 export type RunStartProps = {
+  open?: boolean;
   onClose: () => void;
   onPlay: () => void;
   onHowToPlay?: () => void;
@@ -45,13 +46,13 @@ function PlayIcon(){
 }
 
 export default function RunStartDialog({
-  onClose, onPlay, onHowToPlay, livesRemaining, livesTotal, livesResetIn, bunnySkin, bunnySkinIcon, highScore,
+  open = true, onClose, onPlay, onHowToPlay, livesRemaining, livesTotal, livesResetIn, bunnySkin, bunnySkinIcon, highScore,
 }: RunStartProps){
   const titleId = 'dlgRunStartTitle';
   const narrow = useIsNarrow();
 
   return (
-    <DialogShell onClose={onClose} labelledBy={titleId} maxWidth={narrow ? 390 : 420} maxHeight={narrow ? 640 : 656}>
+    <DialogShell open={open} onClose={onClose} labelledBy={titleId} maxWidth={narrow ? 390 : 420} maxHeight={narrow ? 640 : 656}>
       <div className="rsDlg">
         <img className="rsLogo" src={`${ASSET}hero-lockup.webp`} alt="Bunny Hop" />
         <p className="rsLede" id={titleId}>one life per run.</p>

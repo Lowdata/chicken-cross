@@ -18,6 +18,7 @@ function useIsNarrow(){
 const ASSET = '/pp-game/';
 
 export type RunOverProps = {
+  open?: boolean;
   onClose: () => void;
   onPlayAgain: () => void;
   onWardrobe?: () => void;
@@ -50,7 +51,7 @@ function RewindIcon(){
 }
 
 export default function RunOverDialog({
-  onClose, onPlayAgain, onWardrobe, distancePts, carrotsGathered, carrotsOf, carrotsPts,
+  open = true, onClose, onPlayAgain, onWardrobe, distancePts, carrotsGathered, carrotsOf, carrotsPts,
   totalScore, livesRemaining, livesTotal, highScore, livesToPlayAgain, wardrobePrice,
 }: RunOverProps){
   const titleId = 'dlgRunOverTitle';
@@ -58,7 +59,7 @@ export default function RunOverDialog({
   const narrow = useIsNarrow();
 
   return (
-    <DialogShell onClose={onClose} labelledBy={titleId} maxWidth={narrow ? 390 : 420} maxHeight={582}>
+    <DialogShell open={open} onClose={onClose} labelledBy={titleId} maxWidth={narrow ? 390 : 420} maxHeight={582}>
       <div className="rsDlg">
         <h2 className="roTitle" id={titleId}>oof, squished.</h2>
         <p className="roLede">here is your run harvest breakdown.</p>

@@ -1,9 +1,11 @@
 'use client';
 
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 type Props = {
+  open: boolean;
   onClose: () => void;
+  onExited?: () => void;
   labelledBy: string;
   className?: string;
   panelClassName?: string;
@@ -15,17 +17,49 @@ type Props = {
 let lockCount = 0;
 
 const DialogShell = forwardRef<HTMLDivElement, Props>(function DialogShell({
-  onClose, labelledBy, className = '', panelClassName = '', maxWidth, maxHeight, children,
+  open, onClose, onExited, labelledBy, className = '', panelClassName = '', maxWidth, maxHeight, children,
 }: Props, forwardedRef){
   const panel = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  const onExitedRef = useRef(onExited);
+  const [rendered, setRendered] = useState(open);
+  const [state, setState] = useState<'open' | 'closing' | 'closed'>(open ? 'open' : 'closed');
   useImperativeHandle(forwardedRef, () => panel.current as HTMLDivElement);
 
   useEffect(() => {
+    onCloseRef.current = onClose;
+    onExitedRef.current = onExited;
+  }, [onClose, onExited]);
+
+  const finishExit = useCallback(() => {
+    setState('closed');
+    setRendered(false);
+    onExitedRef.current?.();
+  }, []);
+
+  useEffect(() => {
+    if (open){
+      setRendered(true);
+      setState('open');
+      return;
+    }
+    if (!rendered) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      finishExit();
+      return;
+    }
+    setState('closing');
+    const fallback = window.setTimeout(finishExit, 280);
+    return () => window.clearTimeout(fallback);
+  }, [finishExit, open, rendered]);
+
+  useEffect(() => {
+    if (!rendered) return;
     const prevFocus = document.activeElement as HTMLElement | null;
     panel.current?.focus();
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape'){ e.stopPropagation(); onClose(); return; }
+      if (e.key === 'Escape'){ e.stopPropagation(); onCloseRef.current(); return; }
       if (e.key !== 'Tab' || !panel.current) return;
       const focusables = Array.from(
         panel.current.querySelectorAll<HTMLElement>(
@@ -56,13 +90,16 @@ const DialogShell = forwardRef<HTMLDivElement, Props>(function DialogShell({
       }
       prevFocus?.focus?.();
     };
-  }, [onClose]);
+  }, [rendered]);
+
+  if (!rendered) return null;
 
   return (
     <div
       className={`dlgShell ${className}`}
+      data-state={state}
       role="presentation"
-      onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}
+      onMouseDown={e => { if (e.target === e.currentTarget) onCloseRef.current(); }}
     >
       <div
         ref={panel}
@@ -72,6 +109,9 @@ const DialogShell = forwardRef<HTMLDivElement, Props>(function DialogShell({
         tabIndex={-1}
         aria-labelledby={labelledBy}
         style={{ ['--dlg-w' as string]: `${maxWidth}px`, ['--dlg-h' as string]: `${maxHeight}px` }}
+        onAnimationEnd={e => {
+          if (state === 'closing' && e.target === e.currentTarget) finishExit();
+        }}
       >
         {children}
       </div>

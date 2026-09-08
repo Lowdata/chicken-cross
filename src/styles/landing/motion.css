@@ -496,28 +496,29 @@ section h2 > img, .d2 .d2__ln{ transform-origin:50% 100%; backface-visibility:hi
   filter:none;
 }
 
-#ui .flip{
+.flip{
   position:relative; display:inline-block; overflow:hidden;
   vertical-align:bottom; line-height:inherit;
 }
-#ui .flip__sr{
+.flip__sr{
   position:absolute; width:1px; height:1px; margin:-1px; padding:0;
   overflow:hidden; clip-path:inset(50%); white-space:nowrap;
 }
-#ui .flip__row{ display:block; white-space:pre }
-#ui .flip__row--in{ position:absolute; left:0; top:0; width:100% }
-#ui .flip__c{
+.flip__row{ display:block; white-space:pre }
+.flip__row--in{ position:absolute; left:0; top:0; width:100% }
+.flip__c{
   display:inline-block; white-space:pre;
   transition:translate 420ms cubic-bezier(.2,.7,.2,1) var(--flip-d, 0ms);
 }
-#ui .flip__row--in .flip__c{ translate:0 110% }
+.flip__row--in .flip__c{ translate:0 110% }
 
-#ui :is(a, button):hover .flip__row:not(.flip__row--in) .flip__c{ translate:0 -110% }
-#ui :is(a, button):hover .flip__row--in .flip__c{ translate:0 0 }
+:is(a, button):hover .flip__row:not(.flip__row--in) .flip__c{ translate:0 -110% }
+:is(a, button):hover .flip__row--in .flip__c{ translate:0 0 }
 
 @media (prefers-reduced-motion:reduce){
-  #ui .flip__c{ transition:none }
-  #ui .flip__row--in{ display:none }
+  .flip__c{ transition:none }
+  .flip__row--in{ display:none }
+  :is(a, button):hover .flip__row:not(.flip__row--in) .flip__c{ translate:none }
 }
 
 @media (hover: none){

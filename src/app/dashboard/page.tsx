@@ -8,9 +8,11 @@ import { Check, Sparkles, Gamepad2, Home } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
+import FlipLabel from '@/components/landing/FlipLabel';
 import HowToPlayDialog from '@/components/landing/dialogs/HowToPlayDialog';
 import '@/styles/landing/tokens.css';
 import '@/styles/landing/dialogs.css';
+import '@/styles/landing/motion.css';
 import '@/styles/landing/dashboard-ground.css';
 
 interface Task {
@@ -302,7 +304,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 sm:gap-2.5">
             <Link
               href="/"
-              className="bg-white/[0.06] hover:bg-white/[0.12] active:scale-95 text-white/80 hover:text-white p-2 sm:px-3 sm:py-1.5 rounded-xl border border-white/10 flex items-center gap-1.5 text-xs font-bold transition-all"
+              className="bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white min-h-11 min-w-11 px-2 sm:px-3 rounded-xl border border-white/10 flex items-center justify-center gap-1.5 text-xs font-bold transition-[transform,background-color,color,box-shadow,filter] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100"
               title="Return to Home"
             >
               <Home className="w-3.5 h-3.5" />
@@ -311,7 +313,7 @@ export default function DashboardPage() {
 
             <Link
               href="/game"
-              className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-200 border border-purple-500/30 active:scale-95 p-2 sm:px-3 sm:py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-bold transition-all"
+              className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-200 border border-purple-500/30 min-h-11 min-w-11 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-[transform,background-color,color,box-shadow,filter] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100"
               title="Hop into Game"
             >
               <Gamepad2 className="w-3.5 h-3.5 text-brand-pink" />
@@ -329,9 +331,9 @@ export default function DashboardPage() {
                         triggerHaptic('tap');
                         openConnectModal();
                       }}
-                      className="bg-gradient-to-b from-[#ff9ed6] to-[#f5479e] hover:brightness-105 active:scale-95 text-white font-semibold text-sm h-11 px-[18px] rounded-xl transition-all cursor-pointer"
+                      className="bg-gradient-to-b from-[#ff9ed6] to-[#f5479e] hover:brightness-105 text-white font-semibold text-sm h-11 px-[18px] rounded-xl transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100 cursor-pointer"
                     >
-                      connect wallet
+                      <FlipLabel>connect wallet</FlipLabel>
                     </button>
                   );
                 }
@@ -346,10 +348,10 @@ export default function DashboardPage() {
                         triggerHaptic('tap');
                         openAccountModal();
                       }}
-                      className="h-11 px-4 rounded-xl bg-gradient-to-b from-[#e6d6fd] via-[#dbc6fc] via-[46%] to-[#c89afc] shadow-[0_3px_0_rgba(120,85,195,0.45),inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-3px_0_rgba(120,80,190,0.42)] text-[#3a1660] text-sm flex items-center gap-2 cursor-pointer hover:brightness-105 active:scale-95 transition-all"
+                      className="h-11 px-4 rounded-xl bg-gradient-to-b from-[#e6d6fd] via-[#dbc6fc] via-[46%] to-[#c89afc] shadow-[0_3px_0_rgba(120,85,195,0.45),inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-3px_0_rgba(120,80,190,0.42)] text-[#3a1660] text-sm flex items-center gap-2 cursor-pointer hover:brightness-105 transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100"
                     >
                       <Image src="/pp-figma/dash-logout.svg" alt="" width={18} height={18} className="w-[18px] h-[18px]" />
-                      log out
+                      <FlipLabel>log out</FlipLabel>
                     </button>
                   </div>
                 );
@@ -388,7 +390,7 @@ export default function DashboardPage() {
                   triggerHaptic('tap');
                   setHowToPlayOpen(true);
                 }}
-                className="bg-white/[0.08] hover:bg-white/[0.12] active:scale-95 text-white/90 hover:text-white min-h-11 px-4 rounded-xl text-sm font-semibold whitespace-nowrap flex items-center gap-2 transition-all cursor-pointer"
+                className="bg-white/[0.08] hover:bg-white/[0.12] text-white/90 hover:text-white min-h-11 px-4 rounded-xl text-sm font-semibold whitespace-nowrap flex items-center gap-2 transition-[transform,background-color,color,box-shadow,filter] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100 cursor-pointer"
               >
                 <span className="w-5 h-5 rounded-[10px] bg-[#ffe14d] text-[#2a1f00] text-xs leading-3 font-bold flex items-center justify-center">?</span>
                 <span>how to play</span>
@@ -414,9 +416,9 @@ export default function DashboardPage() {
                   {task.completed ? (
                     <button
                       disabled
-                      className="bg-white/[0.08] text-white/75 text-sm h-11 min-w-11 px-4 rounded-xl cursor-default"
+                      className="bg-white/[0.08] text-white/75 text-sm h-11 min-w-11 px-4 rounded-xl cursor-default transition-[transform,background-color,color,box-shadow,filter] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] disabled:opacity-75 disabled:active:translate-y-0 disabled:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none"
                     >
-                      done
+                      <FlipLabel>done</FlipLabel>
                     </button>
                   ) : task.type === 'refer' ? (
                     <button
@@ -425,16 +427,16 @@ export default function DashboardPage() {
                         triggerHaptic('tap');
                         handleCopyCode();
                       }}
-                      className="bg-gradient-to-b from-[#fbc7f4] via-[#f7a4ef] via-[46%] to-[#e474db] hover:brightness-105 active:scale-95 text-[#4a1560] text-sm h-11 min-w-11 px-4 rounded-xl shadow-[0_3px_0_rgba(120,40,140,0.45),inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-3px_0_rgba(150,45,140,0.45)] transition-all cursor-pointer"
+                      className="bg-gradient-to-b from-[#fbc7f4] via-[#f7a4ef] via-[46%] to-[#e474db] hover:brightness-105 text-[#4a1560] text-sm h-11 min-w-11 px-4 rounded-xl shadow-[0_3px_0_rgba(120,40,140,0.45),inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-3px_0_rgba(150,45,140,0.45)] transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100 cursor-pointer"
                     >
-                      refer
+                      <FlipLabel>refer</FlipLabel>
                     </button>
                   ) : (
                     <button
                       onClick={() => handleCompleteTask(task)}
-                      className="bg-gradient-to-b from-[#fbc7f4] via-[#f7a4ef] via-[46%] to-[#e474db] hover:brightness-105 active:scale-95 text-[#4a1560] text-sm h-11 min-w-11 px-4 rounded-xl shadow-[0_3px_0_rgba(120,40,140,0.45),inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-3px_0_rgba(150,45,140,0.45)] transition-all cursor-pointer"
+                      className="bg-gradient-to-b from-[#fbc7f4] via-[#f7a4ef] via-[46%] to-[#e474db] hover:brightness-105 text-[#4a1560] text-sm h-11 min-w-11 px-4 rounded-xl shadow-[0_3px_0_rgba(120,40,140,0.45),inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-3px_0_rgba(150,45,140,0.45)] transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100 cursor-pointer"
                     >
-                      do it
+                      <FlipLabel>do it</FlipLabel>
                     </button>
                   )}
                 </div>
@@ -452,9 +454,9 @@ export default function DashboardPage() {
                   soundEngine.playClick();
                   triggerHaptic('hop');
                 }}
-                className="w-full h-16 bg-gradient-to-b from-[#ff9ed6] via-[#ff74be] via-[46%] to-[#f4479f] hover:brightness-110 active:scale-[0.99] text-white font-bungee text-xl leading-6 tracking-[0.4px] uppercase px-[18px] rounded-xl shadow-[0_3px_0_rgba(160,40,110,0.5),inset_0_2px_0_rgba(255,255,255,0.72),inset_0_-3px_0_rgba(150,30,100,0.42)] flex items-center justify-center transition-all"
+                className="w-full h-16 bg-gradient-to-b from-[#ff9ed6] via-[#ff74be] via-[46%] to-[#f4479f] hover:brightness-110 text-white font-bungee text-xl leading-6 tracking-[0.4px] uppercase px-[18px] rounded-xl shadow-[0_3px_0_rgba(160,40,110,0.5),inset_0_2px_0_rgba(255,255,255,0.72),inset_0_-3px_0_rgba(150,30,100,0.42)] flex items-center justify-center transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100"
               >
-                play bunny hop
+                <FlipLabel>play bunny hop</FlipLabel>
               </Link>
             </div>
           </div>
@@ -493,19 +495,19 @@ export default function DashboardPage() {
 
                 <button
                   onClick={handleCopyCode}
-                  className="min-h-11 px-1.5 text-[#ffe14d] text-xs font-semibold flex items-center gap-[7px] cursor-pointer hover:brightness-110 active:scale-95 transition-all"
+                  className="min-h-11 min-w-11 px-1.5 text-[#ffe14d] text-xs font-semibold flex items-center gap-[7px] cursor-pointer hover:brightness-110 transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100"
                 >
                   {copiedCode ? <Check className="w-5 h-5" /> : <Image src="/pp-figma/dash-copy.svg" alt="" width={20} height={20} className="w-5 h-5" />}
-                  <span>{copiedCode ? 'copied' : 'copy'}</span>
+                  <FlipLabel>{copiedCode ? 'copied' : 'copy'}</FlipLabel>
                 </button>
               </div>
 
               <button
                 onClick={handleCopyLink}
-                className="w-full h-11 mt-3 bg-gradient-to-b from-[#b79efc] via-[#a688fa] via-[46%] to-[#8763f7] hover:brightness-105 active:scale-[0.98] text-white text-sm px-[18px] rounded-xl shadow-[0_3px_0_rgba(70,40,170,0.5),inset_0_2px_0_rgba(255,255,255,0.75),inset_0_-3px_0_rgba(60,30,150,0.45)] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full h-11 mt-3 bg-gradient-to-b from-[#b79efc] via-[#a688fa] via-[46%] to-[#8763f7] hover:brightness-105 text-white text-sm px-[18px] rounded-xl shadow-[0_3px_0_rgba(70,40,170,0.5),inset_0_2px_0_rgba(255,255,255,0.75),inset_0_-3px_0_rgba(60,30,150,0.45)] transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {copiedLink && <Check className="w-4 h-4" />}
-                <span>{copiedLink ? 'link copied!' : 'copy link'}</span>
+                <FlipLabel>{copiedLink ? 'link copied!' : 'copy link'}</FlipLabel>
               </button>
             </div>
 
@@ -521,14 +523,14 @@ export default function DashboardPage() {
                   onChange={(e) => setReferralInput(e.target.value.toUpperCase())}
                   placeholder="PP······"
                   maxLength={10}
-                  className="flex-1 min-w-0 h-11 bg-[#1f1a3e] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] focus:shadow-[inset_0_0_0_1px_#ffe14d] focus:outline-none rounded-xl px-3.5 text-white font-dm-mono text-sm tracking-[1.4px] uppercase placeholder:text-white/[0.32] transition-all"
+                  className="flex-1 min-w-0 h-11 bg-[#1f1a3e] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] focus:shadow-[inset_0_0_0_1px_var(--bh-accent)] focus:outline-none rounded-xl px-3.5 text-white font-dm-mono text-sm tracking-[1.4px] uppercase placeholder:text-white/[0.32] transition-[box-shadow,color,background-color] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] motion-reduce:transition-none"
                 />
                 <button
                   type="submit"
                   disabled={!referralInput.trim()}
-                  className="bg-gradient-to-b from-[#e6d6fd] via-[#dbc6fc] via-[46%] to-[#c89afc] hover:brightness-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-[#3a1660] text-sm h-11 px-4 rounded-xl shadow-[0_3px_0_rgba(120,85,195,0.45),inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-3px_0_rgba(120,80,190,0.42)] transition-all cursor-pointer"
+                  className="bg-gradient-to-b from-[#e6d6fd] via-[#dbc6fc] via-[46%] to-[#c89afc] enabled:hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed text-[#3a1660] text-sm h-11 px-4 rounded-xl shadow-[0_3px_0_rgba(120,85,195,0.45),inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-3px_0_rgba(120,80,190,0.42)] transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] enabled:active:translate-y-px enabled:active:scale-[0.96] enabled:active:duration-[90ms] enabled:active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:enabled:active:translate-y-0 motion-reduce:enabled:active:scale-100 cursor-pointer"
                 >
-                  redeem
+                  <FlipLabel>redeem</FlipLabel>
                 </button>
               </form>
 
@@ -544,16 +546,16 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>&copy; {new Date().getFullYear()} Bunny Hop. All rights reserved.</span>
           <div className="flex items-center gap-4">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <Link href="/game" className="hover:text-white transition-colors">Game</Link>
-            <button onClick={() => setHowToPlayOpen(true)} className="hover:text-white transition-colors cursor-pointer">
+            <Link href="/" className="min-h-11 min-w-11 inline-flex items-center justify-center hover:text-white transition-[transform,color] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100">Home</Link>
+            <Link href="/game" className="min-h-11 min-w-11 inline-flex items-center justify-center hover:text-white transition-[transform,color] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100">Game</Link>
+            <button onClick={() => setHowToPlayOpen(true)} className="min-h-11 hover:text-white transition-[transform,color] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100 cursor-pointer">
               How to play
             </button>
           </div>
         </div>
       </footer>
 
-      {howToPlayOpen && <HowToPlayDialog onClose={closeHowToPlay} />}
+      <HowToPlayDialog open={howToPlayOpen} onClose={closeHowToPlay} />
     </div>
   );
 }
