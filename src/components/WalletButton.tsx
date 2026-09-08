@@ -50,7 +50,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                       openConnectModal();
                     }}
                     type="button"
-                    className={`hud-pill bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold shadow-md border-2 border-emerald-300/60 rounded-2xl flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer select-none ${
+                    className={`hud-pill flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 text-white font-outfit font-semibold text-[13px] whitespace-nowrap transition-all active:scale-95 cursor-pointer hover:bg-white/10 select-none ${
                       compact
                         ? 'px-2.5 py-1.5 text-xs'
                         : 'px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm'
@@ -74,7 +74,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                       openChainModal();
                     }}
                     type="button"
-                    className="hud-pill bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-xs shadow-md border-2 border-rose-300 rounded-2xl px-2.5 py-1.5 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                    className="hud-pill flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 text-white font-outfit font-semibold text-[13px] whitespace-nowrap transition-all active:scale-95 cursor-pointer hover:bg-white/10 text-[#ff8fd0]"
                   >
                     <AlertCircle className="w-3.5 h-3.5" />
                     <span>Wrong Net</span>
@@ -93,7 +93,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                     }}
                     type="button"
                     title={chain.name ?? 'Chain'}
-                    className="hud-pill bg-white/90 hover:bg-white backdrop-blur-md border-2 border-white/80 rounded-2xl px-2 py-1.5 sm:px-2.5 sm:py-1.5 shadow-md flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                    className="hud-pill flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 text-white font-outfit font-semibold text-[13px] whitespace-nowrap transition-all active:scale-95 cursor-pointer hover:bg-white/10"
                   >
                     {chain.hasIcon && (
                       <div
@@ -109,7 +109,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                         )}
                       </div>
                     )}
-                    <span className="text-xs font-bold text-slate-700 hidden md:inline">
+                    <span className="text-[13px] font-semibold text-white/85 hidden md:inline">
                       {chain.name}
                     </span>
                   </button>
@@ -122,9 +122,9 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ compact = false }) =
                       openAccountModal();
                     }}
                     type="button"
-                    className="hud-pill bg-white/90 hover:bg-white backdrop-blur-md border-2 border-white/80 rounded-2xl px-2.5 sm:px-3 py-1.5 shadow-md flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+                    className="hud-pill flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 text-white font-outfit font-semibold text-[13px] whitespace-nowrap transition-all active:scale-95 cursor-pointer hover:bg-white/10"
                   >
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <div className="w-2 h-2 rounded-full bg-[#8bf3c4]" />
                     <span className="text-xs sm:text-sm font-extrabold text-slate-800">
                       {account.displayName}
                     </span>

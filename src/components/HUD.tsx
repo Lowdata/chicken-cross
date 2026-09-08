@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
@@ -67,13 +68,13 @@ export const HUD: React.FC<HUDProps> = ({
       )}
 
       <div className="flex flex-col gap-2 items-start pointer-events-auto">
-        <div
-          title="Back"
-          aria-hidden="true"
-          className="w-11 h-11 min-h-[44px] rounded-full bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 flex items-center justify-center"
+        <Link
+          href="/dashboard"
+          aria-label="Back to dashboard"
+          className="w-11 h-11 min-h-[44px] rounded-full bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 flex items-center justify-center text-white/85 hover:bg-white/10 active:scale-90 transition-all"
         >
           <Image src="/pp-figma/hud-back.svg" alt="" width={16} height={16} className="w-4 h-4" />
-        </div>
+        </Link>
 
         <div className={chip}>
           <span className={label}>score</span>
