@@ -10,6 +10,7 @@ import { mountInteractions } from './interactions.js';
 import { mountFps } from './fps.js';
 import { mountSheen } from './sheen.js';
 import { mountLogoMorph } from './logoMorph.js';
+import { isFrozen, onFreezeChange } from './freeze.js';
 
 const DEV = process.env.NODE_ENV !== 'production';
 
@@ -37,12 +38,31 @@ export function mountScene({ ui, canvas }){
   const onFrame = fn => hooks.push(fn);
 
   let alive = true;
-  let handle = requestAnimationFrame(function frame(t){
+  let handle = 0;
+  let pauseOffset = 0;
+  let frozenAt = 0;
+
+  function frame(t){
     if (!alive) return;
-    raf(t);
-    for (let i = 0; i < hooks.length; i++) hooks[i](t);
+    const ct = t - pauseOffset;
+    raf(ct);
+    for (let i = 0; i < hooks.length; i++) hooks[i](ct);
     handle = requestAnimationFrame(frame);
-  });
+  }
+
+  const onFreeze = next => {
+    if (next){
+      frozenAt = performance.now();
+      cancelAnimationFrame(handle);
+      handle = 0;
+    } else {
+      pauseOffset += performance.now() - frozenAt;
+      handle = requestAnimationFrame(frame);
+    }
+  };
+  const offFreeze = onFreezeChange(onFreeze);
+  if (isFrozen()) onFreeze(true);
+  else handle = requestAnimationFrame(frame);
 
   const drift = mountDrift({ onFrame, state });
   const chrome = mountChrome({ onFrame, state });
@@ -67,6 +87,7 @@ export function mountScene({ ui, canvas }){
     unmorph();
     mountTouchDispose?.();
     alive = false;
+    offFreeze();
     cancelAnimationFrame(handle);
     hooks.length = 0;
     lenis.destroy();

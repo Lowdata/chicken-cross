@@ -1,3 +1,5 @@
+import { isFrozen, onFreezeChange } from './freeze.js';
+
 const VERT = `
 attribute vec2 p;
 varying vec2 uv;
@@ -266,12 +268,28 @@ export function mountLogoMorph(root){
     };
 
     let hold = 0;
-    raf = requestAnimationFrame(tick);
+    let frozenAt = 0;
+    const onFreeze = (next) => {
+      if (next){
+        frozenAt = performance.now();
+        clearTimeout(hold);
+        cancelAnimationFrame(raf);
+        raf = 0;
+      } else {
+        const dt = performance.now() - frozenAt;
+        phaseEnd += dt;
+        morphFrom += dt;
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    const offFreeze = onFreezeChange(onFreeze);
+    if (isFrozen()) onFreeze(true);
+    else raf = requestAnimationFrame(tick);
 
     const onResize = () => { for (const u of units) u.fit(); };
     addEventListener('resize', onResize, { passive: true });
     units.onResize = onResize;
-    units.clearHold = () => clearTimeout(hold);
+    units.clearHold = () => { clearTimeout(hold); offFreeze(); };
   }).catch(() => {});
 
   return () => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { setFrozen } from '../../../lib/landing/freeze.js';
 
 type Props = {
   open: boolean;
@@ -15,6 +16,7 @@ type Props = {
 };
 
 let lockCount = 0;
+let freezeCount = 0;
 
 const DialogShell = forwardRef<HTMLDivElement, Props>(function DialogShell({
   open, onClose, onExited, labelledBy, className = '', panelClassName = '', maxWidth, maxHeight, children,
@@ -75,19 +77,23 @@ const DialogShell = forwardRef<HTMLDivElement, Props>(function DialogShell({
     document.addEventListener('keydown', onKey, true);
 
     if (lockCount === 0){
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
-      if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
     lockCount += 1;
+
+    freezeCount += 1;
+    setFrozen(true);
 
     return () => {
       document.removeEventListener('keydown', onKey, true);
       lockCount = Math.max(0, lockCount - 1);
       if (lockCount === 0){
+        document.documentElement.style.overflow = '';
         document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
       }
+      freezeCount = Math.max(0, freezeCount - 1);
+      if (freezeCount === 0) setFrozen(false);
       prevFocus?.focus?.();
     };
   }, [rendered]);

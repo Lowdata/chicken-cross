@@ -80,6 +80,8 @@ void main(){
   o = vec4(clamp(col, 0.0, 1.0), 1.0);
 }`;
 
+import { isFrozen, onFreezeChange } from './freeze.js';
+
 export function initHoloSky(canvas){
   const gl = canvas.getContext('webgl2', { antialias:false, alpha:false, powerPreference:'high-performance' });
   if(!gl) return () => {};
@@ -112,7 +114,8 @@ export function initHoloSky(canvas){
   };
 
   let mouse = [0.5, 0.5], target = [0.5, 0.5], scroll = 0, raf = 0;
-  const start = performance.now();
+  let start = performance.now();
+  let frozenAt = 0;
   const dpr = () => Math.min(devicePixelRatio || 1, 1.6);
 
   function resize(){
@@ -148,10 +151,23 @@ export function initHoloSky(canvas){
   addEventListener('resize', resize);
   addEventListener('pointermove', onMove, { passive:true });
   addEventListener('scroll', onScroll, { passive:true });
-  raf = requestAnimationFrame(frame);
+  const stop = () => { cancelAnimationFrame(raf); raf = 0; };
+  const onFreeze = (next) => {
+    if (next){
+      frozenAt = performance.now();
+      stop();
+    } else if (!reduce) {
+      start += performance.now() - frozenAt;
+      raf = requestAnimationFrame(frame);
+    }
+  };
+  const offFreeze = onFreezeChange(onFreeze);
+  if (isFrozen()) onFreeze(true);
+  else raf = requestAnimationFrame(frame);
 
   return () => {
-    cancelAnimationFrame(raf);
+    offFreeze();
+    stop();
     ro.disconnect();
     removeEventListener('resize', resize);
     removeEventListener('pointermove', onMove);
