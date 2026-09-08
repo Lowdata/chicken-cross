@@ -239,9 +239,9 @@ export default function DashboardPage() {
             type="button"
             onClick={() => setToastMessage(null)}
             aria-label="Dismiss notification"
-            className="ml-1 w-6 h-6 min-w-[24px] rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="ml-1 -mr-2 w-11 h-11 min-w-11 min-h-11 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
-            <span aria-hidden="true">×</span>
+            <span aria-hidden="true" className="text-base leading-none">×</span>
           </button>
         </div>
       )}

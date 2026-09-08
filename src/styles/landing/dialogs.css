@@ -65,11 +65,14 @@
 
 @media (max-width:640px), (max-height:720px){
   .dlgShell{ padding:0; }
+  .dlgShell{ align-items:end; }
   .dlgShell__panel{
     width:100%;
     max-width:100%;
-    height:100%;
-    max-height:100%;
+    height:auto;
+    max-height:100dvh;
+    margin-top:auto;
+    padding-bottom:env(safe-area-inset-bottom);
     border-radius:0;
     border-top-left-radius:var(--bh-r-panel);
     border-top-right-radius:var(--bh-r-panel);
@@ -1308,3 +1311,12 @@
             backdrop-filter:blur(18px) saturate(1.35);
   }
 }
+
+.dashToast{
+  animation:dash-toast-in 200ms cubic-bezier(.2,.7,.2,1);
+}
+@keyframes dash-toast-in{ from{ opacity:0; transform:translate(-50%, -8px) } to{ opacity:1; transform:translate(-50%, 0) } }
+@media (prefers-reduced-motion:reduce){
+  .dashToast{ animation:dash-toast-in-reduced 200ms linear }
+}
+@keyframes dash-toast-in-reduced{ from{ opacity:0 } to{ opacity:1 } }

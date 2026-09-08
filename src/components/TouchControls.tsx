@@ -64,7 +64,7 @@ export const TouchControls: React.FC<TouchControlsProps> = ({ onMove }) => {
           onTouchStart={(e) => handleTouch('down', e)}
           onClick={(e) => handleTouch('down', e)}
           aria-label="Step Back"
-          className="w-14 h-10 min-w-[56px] bg-[rgba(14,8,32,0.42)] tc-frosted text-white/90 rounded-[14px] flex items-center justify-center shadow-[0_3px_0_rgba(0,0,0,0.4)] active:translate-y-[1px] active:scale-[.96] active:shadow-none border border-white/10 transition-all duration-200 ease-[cubic-bezier(.2,.7,.2,1)] active:duration-[90ms] active:ease-out cursor-pointer"
+          className="w-14 h-14 min-w-[56px] min-h-[56px] bg-[rgba(14,8,32,0.42)] tc-frosted text-white/90 rounded-[14px] flex items-center justify-center shadow-[0_3px_0_rgba(0,0,0,0.4)] active:translate-y-[1px] active:scale-[.96] active:shadow-none border border-white/10 transition-all duration-200 ease-[cubic-bezier(.2,.7,.2,1)] active:duration-[90ms] active:ease-out cursor-pointer"
         >
           <ArrowDown className="w-5 h-5 stroke-[2.5]" />
         </button>
