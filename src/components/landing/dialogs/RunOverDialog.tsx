@@ -32,6 +32,8 @@ export type RunOverProps = {
   highScore: number;
   livesToPlayAgain: number;
   wardrobePrice?: number;
+  outOfLives?: boolean;
+  refillAction?: { label: string; onClick: () => void };
 };
 
 function CloseIcon(){
@@ -53,6 +55,7 @@ function RewindIcon(){
 export default function RunOverDialog({
   open = true, onClose, onPlayAgain, onWardrobe, distancePts, carrotsGathered, carrotsOf, carrotsPts,
   totalScore, livesRemaining, livesTotal, highScore, livesToPlayAgain, wardrobePrice,
+  outOfLives, refillAction,
 }: RunOverProps){
   const titleId = 'dlgRunOverTitle';
   const inTier = carrotsGathered >= 5;
@@ -111,12 +114,18 @@ export default function RunOverDialog({
         </ul>
 
         <div className="roActions">
-          <button className="dlgPrimary" type="button" onClick={onPlayAgain}>
-            <RewindIcon />
-            <span style={{ margin: '0 6px' }}>hop again</span>
-            <span>{livesToPlayAgain}</span>
-            <img src={`${ASSET}ico-heart.png`} alt="" style={{ width: 20, height: 20, marginLeft: 4 }} />
-          </button>
+          {outOfLives && refillAction ? (
+            <button className="dlgPrimary" type="button" onClick={refillAction.onClick}>
+              <span>{refillAction.label}</span>
+            </button>
+          ) : (
+            <button className="dlgPrimary" type="button" onClick={onPlayAgain}>
+              <RewindIcon />
+              <span style={{ margin: '0 6px' }}>hop again</span>
+              <span>{livesToPlayAgain}</span>
+              <img src={`${ASSET}ico-heart.png`} alt="" style={{ width: 20, height: 20, marginLeft: 4 }} />
+            </button>
+          )}
           {onWardrobe && (
             <button className="roSecondary" type="button" onClick={onWardrobe}>
               <span>bunny wardrobe</span>

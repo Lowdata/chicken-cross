@@ -28,6 +28,10 @@ export type RunStartProps = {
   bunnySkin: string;
   bunnySkinIcon?: string;
   highScore: number;
+  carrots?: number;
+  outOfLives?: boolean;
+  refillAction?: { label: string; onClick: () => void };
+  onChangeSkin?: () => void;
 };
 
 function CloseIcon(){
@@ -46,7 +50,8 @@ function PlayIcon(){
 }
 
 export default function RunStartDialog({
-  open = true, onClose, onPlay, onHowToPlay, livesRemaining, livesTotal, livesResetIn, bunnySkin, bunnySkinIcon, highScore,
+  open = true, onClose, onPlay, onHowToPlay, livesRemaining, livesTotal, livesResetIn, bunnySkin, bunnySkinIcon, highScore, carrots,
+  outOfLives, refillAction, onChangeSkin,
 }: RunStartProps){
   const titleId = 'dlgRunStartTitle';
   const narrow = useIsNarrow();
@@ -54,7 +59,7 @@ export default function RunStartDialog({
   return (
     <DialogShell open={open} onClose={onClose} labelledBy={titleId} maxWidth={narrow ? 390 : 420} maxHeight={narrow ? 640 : 656}>
       <div className="rsDlg">
-        <img className="rsLogo" src={`${ASSET}hero-lockup.webp`} alt="Bunny Hop" />
+        <img className="rsLogo" src={`${ASSET}bunnyhop-wordmark.png`} alt="Bunny Hop" />
         <p className="rsLede" id={titleId}>one life per run.</p>
 
         <button className="dlgClose" onClick={onClose} aria-label="Close">
@@ -77,17 +82,40 @@ export default function RunStartDialog({
           </li>
           <li>
             <img className="rsList__ico" src={bunnySkinIcon ?? `${ASSET}3d/hero-bunny.png`} alt="" />
-            <span className="rsList__label">{bunnySkin}</span>
+            <span>
+              <span className="rsList__label">{bunnySkin}</span>
+              {onChangeSkin && (
+                <button className="rsList__change" type="button" onClick={onChangeSkin}>change skin</button>
+              )}
+            </span>
+            <span className="rsList__val">
+              {carrots ?? 0}
+              <img className="rsList__valIco" src="/pp-figma/hud-carrot.png" alt="" />
+            </span>
+          </li>
+          <li>
+            <img className="rsList__ico" src="/pp-figma/hud-spd.svg" alt="" />
+            <span>
+              <span className="rsList__label">high score</span>
+            </span>
             <span className="rsList__val">{highScore}</span>
           </li>
         </ul>
 
         <div className="rsActions">
-          <button className="dlgPrimary" type="button" onClick={onPlay}>
-            <PlayIcon />
-            <span style={{ marginLeft: 9 }}>hop in and play</span>
-          </button>
-          <p className="rsHint">WASD · arrows · swipe</p>
+          {outOfLives && refillAction ? (
+            <button className="dlgPrimary" type="button" onClick={refillAction.onClick}>
+              <span>{refillAction.label}</span>
+            </button>
+          ) : (
+            <>
+              <button className="dlgPrimary" type="button" onClick={onPlay}>
+                <PlayIcon />
+                <span style={{ marginLeft: 9 }}>hop in and play</span>
+              </button>
+              <p className="rsHint">WASD · arrows · swipe</p>
+            </>
+          )}
           {onHowToPlay && (
             <button className="rsGhostLink" type="button" onClick={onHowToPlay}>how to play</button>
           )}

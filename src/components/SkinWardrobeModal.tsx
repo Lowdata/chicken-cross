@@ -6,6 +6,7 @@ import confetti from 'canvas-confetti';
 import { BUNNY_SKINS, BunnySkin } from '@/lib/game/types';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
+import DialogShell from './landing/dialogs/DialogShell';
 
 interface SkinWardrobeModalProps {
   isOpen: boolean;
@@ -29,8 +30,7 @@ export const SkinWardrobeModal: React.FC<SkinWardrobeModalProps> = ({
   onUnlockSkin,
 }) => {
   const [filter, setFilter] = useState<FilterTab>('all');
-
-  if (!isOpen) return null;
+  const titleId = 'skinsTitle';
 
   const handleUnlock = (skin: BunnySkin) => {
     if (totalCarrots >= skin.cost) {
@@ -62,12 +62,12 @@ export const SkinWardrobeModal: React.FC<SkinWardrobeModalProps> = ({
   });
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in select-none">
-      <div className="bg-white/95 backdrop-blur-xl rounded-3xl border-4 border-amber-300 max-w-xl w-full p-4 sm:p-7 shadow-2xl relative max-h-[88dvh] overflow-hidden flex flex-col">
+    <DialogShell open={isOpen} onClose={onClose} labelledBy={titleId} maxWidth={576} maxHeight={720} panelClassName="dlgShell__panel--bare">
+      <div className="bg-white/95 backdrop-blur-xl rounded-3xl border-4 border-amber-300 w-full p-4 sm:p-7 shadow-2xl relative flex flex-col select-none">
         {/* Sticky Header */}
         <div className="flex justify-between items-center pb-3 border-b border-slate-100 flex-shrink-0">
           <div>
-            <h2 className="text-xl sm:text-3xl font-black text-slate-800 flex items-center gap-1.5 sm:gap-2">
+            <h2 id={titleId} className="text-xl sm:text-3xl font-black text-slate-800 flex items-center gap-1.5 sm:gap-2">
               <span>🐰</span> Bunny Wardrobe
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-500 font-medium line-clamp-1">
@@ -242,6 +242,6 @@ export const SkinWardrobeModal: React.FC<SkinWardrobeModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </DialogShell>
   );
 };

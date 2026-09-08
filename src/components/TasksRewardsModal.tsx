@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
+import DialogShell from './landing/dialogs/DialogShell';
 
 interface UserProfile {
   walletAddress: string;
@@ -137,17 +138,16 @@ export const TasksRewardsModal: React.FC<TasksRewardsModalProps> = ({ isOpen, on
     }
   };
 
-  if (!isOpen) return null;
-
   const isDone = (task: string) => user?.completedTasks?.includes(task) || false;
+  const titleId = 'tasksTitle';
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="modal-container !p-0 w-full sm:max-w-md max-h-[92dvh] flex flex-col !rounded-b-none sm:!rounded-b-[var(--radius-modal)]">
+    <DialogShell open={isOpen} onClose={onClose} labelledBy={titleId} maxWidth={448} maxHeight={760} panelClassName="dlgShell__panel--bare">
+      <div className="modal-container !p-0 w-full flex flex-col select-none">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-gradient-to-r from-brand-orange/10 to-brand-purple/10 shrink-0">
           <div>
-            <h2 className="text-lg font-black text-white flex items-center gap-2">
+            <h2 id={titleId} className="text-lg font-black text-white flex items-center gap-2">
               <Gift className="w-5 h-5 text-brand-orange" />
               Tasks & Rewards
             </h2>
@@ -459,7 +459,7 @@ export const TasksRewardsModal: React.FC<TasksRewardsModalProps> = ({ isOpen, on
           )}
         </div>
       </div>
-    </div>
+    </DialogShell>
   );
 };
 

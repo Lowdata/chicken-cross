@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Volume2, VolumeX, Sparkles, Pause, Heart, Zap, Gamepad2, Gift } from 'lucide-react';
+import Image from 'next/image';
+import { Sparkles } from 'lucide-react';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
 import { MAX_DAILY_LIVES } from '@/lib/game/livesManager';
@@ -25,6 +26,10 @@ interface HUDProps {
   isEagleWarning?: boolean;
 }
 
+const chip = 'flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5';
+const control = 'w-[44px] h-[44px] rounded-[14px] bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 flex items-center justify-center text-white/85 hover:bg-white/10 active:scale-90 transition-all cursor-pointer';
+const label = 'font-outfit font-semibold text-[11px] tracking-[1.54px] uppercase text-white/50 whitespace-nowrap';
+
 export const HUD: React.FC<HUDProps> = ({
   score,
   sessionCarrots,
@@ -43,8 +48,7 @@ export const HUD: React.FC<HUDProps> = ({
   isEagleWarning,
 }) => {
   return (
-    <header className="fixed top-0 left-0 right-0 pt-safe px-2.5 sm:px-5 py-2 flex justify-between items-start pointer-events-none z-30 select-none">
-      {/* Center Warning: Eagle Strike Incoming Alert */}
+    <header className="fixed top-0 left-0 right-0 pt-safe px-[18px] py-3.5 flex justify-between items-start pointer-events-none z-30 select-none">
       {isEagleWarning && gameStatus === 'playing' && (
         <div className="absolute left-1/2 -translate-x-1/2 top-2.5 sm:top-4 z-40 pointer-events-none animate-bounce">
           <div className="bg-rose-600/95 border-2 border-amber-300 text-white px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl shadow-[0_0_30px_rgba(225,29,72,0.85)] flex items-center gap-2 sm:gap-2.5 backdrop-blur-md animate-pulse">
@@ -54,7 +58,7 @@ export const HUD: React.FC<HUDProps> = ({
                 EAGLE INCOMING!
               </div>
               <div className="text-[10px] sm:text-xs font-bold text-white/95 leading-tight">
-                Watch the shadow corridor & EVADE!
+                Watch the shadow corridor &amp; EVADE!
               </div>
             </div>
             <span className="text-lg sm:text-xl text-amber-300">⚠️</span>
@@ -62,78 +66,70 @@ export const HUD: React.FC<HUDProps> = ({
         </div>
       )}
 
-      {/* Left side: Score, Live Carrots, and Speed Multiplier */}
-      <div className="flex flex-col gap-1.5 sm:gap-2 items-start pointer-events-auto">
-        {/* Score pill */}
-        <div className="hud-pill bg-brand-surface/80 backdrop-blur-md border border-white/10 rounded-2xl px-3 sm:px-4 py-1.5 sm:py-2 shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex items-center gap-2 transition-transform hover:scale-105">
-          <span className="text-[10px] sm:text-xs uppercase font-extrabold tracking-wider text-white/50">SCORE</span>
-          <span className="text-xl sm:text-3xl font-black text-white tracking-tight leading-none">
+      <div className="flex flex-col gap-2 items-start pointer-events-auto">
+        <div
+          title="Back"
+          aria-hidden="true"
+          className="w-11 h-11 min-h-[44px] rounded-full bg-[rgba(14,8,32,0.72)] backdrop-blur-[10px] border border-white/5 flex items-center justify-center"
+        >
+          <Image src="/pp-figma/hud-back.svg" alt="" width={16} height={16} className="w-4 h-4" />
+        </div>
+
+        <div className={chip}>
+          <span className={label}>score</span>
+          <span className="font-outfit font-bold text-[15px] text-[#ffe14d] leading-none whitespace-nowrap">
             {score}
           </span>
         </div>
 
-        {/* Live session carrots collected - shows sessionCarrots/maxCarrots */}
-        <div
-          className={`hud-pill backdrop-blur-md border rounded-2xl px-2.5 sm:px-3.5 py-1 sm:py-1.5 flex items-center gap-1.5 sm:gap-2 animate-bounce-subtle ${
-            maxCarrots === 9
-              ? 'bg-brand-purple/25 text-brand-purple border-brand-purple/50 shadow-[0_0_20px_rgba(168,85,247,0.35)]'
-              : 'bg-brand-orange/20 text-brand-orange border-brand-orange/40 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
-          }`}
-        >
-          <span className="text-base sm:text-lg">{maxCarrots === 9 ? '✨' : '🥕'}</span>
-          <span className="font-extrabold text-sm sm:text-xl tracking-wide text-white">
+        <div className={chip}>
+          <Image src="/pp-figma/hud-carrot.png" alt="" width={17} height={17} className="w-[17px] h-[17px] object-contain" />
+          <span className="font-outfit font-bold text-[15px] text-[#ffb45e] leading-none whitespace-nowrap">
             {sessionCarrots}
-            <span className="text-white/40 text-xs sm:text-sm font-bold ml-0.5">/{maxCarrots}</span>
           </span>
-          {maxCarrots === 9 && (
-            <span className="text-[9px] bg-brand-purple text-white font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse ml-0.5">
-              1/100 Rare
-            </span>
-          )}
+          <span className={label}>{`/${maxCarrots}`}</span>
         </div>
 
-        {/* Speed / Difficulty boost badge (shows when multiplier > 1.0) */}
         {gameStatus === 'playing' && difficultyMultiplier > 1.0 && (
-          <div className="hud-pill bg-brand-purple/20 text-brand-purple backdrop-blur-md border border-brand-purple/40 rounded-xl px-2 sm:px-2.5 py-0.5 sm:py-1 shadow-[0_0_15px_rgba(139,92,246,0.2)] flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-black tracking-wide animate-pulse">
-            <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-brand-purple" />
-            <span className="text-white">{difficultyMultiplier}x Spd</span>
+          <div className={chip}>
+            <Image src="/pp-figma/hud-spd.svg" alt="" width={13} height={13} className="w-[13px] h-[13px]" />
+            <span className="font-outfit font-bold text-[13px] text-[#c9b6ff] leading-none whitespace-nowrap">
+              {difficultyMultiplier}x
+            </span>
+            <span className={label}>spd</span>
           </div>
         )}
       </div>
 
-      {/* Center Top: Daily Lives Hearts (Visible on tablet & desktop) */}
-      <div className="pointer-events-auto hidden md:flex items-center gap-1.5 bg-brand-surface/80 backdrop-blur-md border border-white/10 rounded-2xl px-3.5 py-2 shadow-md">
-        <span className="text-xs uppercase font-black tracking-wider text-rose-500 mr-1 flex items-center gap-1">
-          <Heart className="w-3.5 h-3.5 fill-rose-500" /> Lives:
+      <div className="pointer-events-auto flex items-center h-[38px] mt-0.5 rounded-full px-4 gap-1 md:gap-2.5 bg-[rgba(14,8,32,0.76)] backdrop-blur-[10px]">
+        <span className="hidden md:inline font-outfit font-bold text-[11px] tracking-[1.98px] uppercase text-white/55 whitespace-nowrap">
+          lives
         </span>
-        {Array.from({ length: MAX_DAILY_LIVES }).map((_, idx) => {
-          const hasHeart = idx < lives;
-          return (
-            <span
+        <div className="flex items-center gap-1">
+          {Array.from({ length: MAX_DAILY_LIVES }).map((_, idx) => (
+            <Image
               key={idx}
-              className={`text-lg transition-transform duration-300 ${
-                hasHeart ? 'scale-100 opacity-100 drop-shadow-sm' : 'scale-90 opacity-25 grayscale'
-              }`}
-            >
-              ❤️
-            </span>
-          );
-        })}
+              src="/pp-figma/hud-heart.png"
+              alt=""
+              width={19}
+              height={19}
+              className={`w-4 h-[19px] md:w-[19px] object-contain transition-opacity duration-300 ${idx < lives ? 'opacity-100' : 'opacity-30'}`}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Right side: Wallet, Highscore, Carrot Bank, Mobile Lives & Utility Actions */}
-      <div className="flex flex-col items-end gap-1.5 sm:gap-2 pointer-events-auto">
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
-          {/* Web3 Wallet Connect Button */}
+      <div className="flex flex-col items-end gap-2 pointer-events-auto">
+        <div className="flex flex-col md:flex-row items-end gap-2">
           <WalletButton />
 
-          {/* Mobile Hearts Pill */}
-          <div className="md:hidden hud-pill bg-brand-surface/80 backdrop-blur-md border border-white/10 rounded-2xl px-2 py-1 shadow-md flex items-center gap-1">
-            <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
-            <span className="text-xs font-black text-rose-400">{lives}/{MAX_DAILY_LIVES}</span>
+          <div className={chip}>
+            <span className="w-2 h-2 rounded-full bg-[#8bf3c4] shadow-[0_0_8px_rgba(139,243,196,0.8)]" />
+            <span className="font-outfit font-semibold text-[12px] text-white/82 whitespace-nowrap">
+              Robinhood Chain
+            </span>
           </div>
 
-          {/* Total Carrot Bank */}
           <button
             onClick={() => {
               soundEngine.playClick();
@@ -141,14 +137,17 @@ export const HUD: React.FC<HUDProps> = ({
               onOpenWardrobe();
             }}
             title="Carrot Bank & Skins"
-            className="hud-pill bg-brand-surface/80 hover:bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-md flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all active:scale-95 group"
+            className={`${chip} hover:bg-white/10 transition-colors cursor-pointer group`}
           >
-            <span className="text-sm sm:text-base group-hover:rotate-12 transition-transform">🥕</span>
-            <span className="text-xs sm:text-base font-black text-white">{totalCarrots}</span>
-            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-brand-orange ml-0.5" />
+            <Image src="/pp-figma/hud-carrot.png" alt="" width={17} height={17} className="w-[17px] h-[17px] object-contain group-hover:rotate-12 transition-transform" />
+            <span className="font-outfit font-bold text-[15px] text-[#ffb45e] leading-none whitespace-nowrap">
+              {totalCarrots}
+            </span>
+            <Sparkles className="w-3 h-3 text-brand-orange" />
           </button>
+        </div>
 
-          {/* Tasks & Rewards Button */}
+        <div className="flex items-center gap-2">
           <button
             onClick={() => {
               if (onOpenTasks) {
@@ -158,35 +157,31 @@ export const HUD: React.FC<HUDProps> = ({
               }
             }}
             title="Tasks & Rewards"
-            className="hud-pill bg-brand-purple hover:bg-brand-purple-dark text-white rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-[0_2px_0_var(--color-brand-purple-dark)] active:translate-y-0.5 active:shadow-none flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-all group border-none"
+            className={control}
+            aria-label="Tasks & Rewards"
           >
-            <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" />
-            <span className="text-[10px] sm:text-xs font-black hidden xs:inline">EARN</span>
+            <Image src="/pp-figma/hud-gift.svg" alt="" width={18} height={18} className="w-[18px] h-[18px]" />
           </button>
-        </div>
 
-        {/* Action buttons (Audio, Touch Controls Toggle, Pause) */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-
-          {/* Sound Toggle */}
           <button
             onClick={() => {
               soundEngine.playClick();
               triggerHaptic('tap');
               onToggleSound();
             }}
-            className="hud-btn w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-brand-surface/80 hover:bg-white/10 backdrop-blur-md border border-white/10 shadow-md flex items-center justify-center text-white/80 hover:text-white active:scale-90 transition-all cursor-pointer"
+            className={control}
             title={soundEnabled ? 'Mute Audio' : 'Unmute Audio'}
             aria-label="Toggle Sound"
           >
-            {soundEnabled ? (
-              <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-brand-orange" />
-            ) : (
-              <VolumeX className="w-4 h-4 sm:w-5 sm:h-5 text-white/40" />
-            )}
+            <Image
+              src="/pp-figma/hud-sound.svg"
+              alt=""
+              width={18}
+              height={18}
+              className={`w-[18px] h-[18px] ${soundEnabled ? '' : 'opacity-40'}`}
+            />
           </button>
 
-          {/* Pause Button */}
           {gameStatus === 'playing' && (
             <button
               onClick={() => {
@@ -194,11 +189,11 @@ export const HUD: React.FC<HUDProps> = ({
                 triggerHaptic('tap');
                 onPause();
               }}
-              className="hud-btn w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-brand-surface/80 hover:bg-white/10 backdrop-blur-md border border-white/10 shadow-md flex items-center justify-center text-white/80 hover:text-white active:scale-90 transition-all cursor-pointer"
+              className={control}
               title="Pause Game"
               aria-label="Pause Game"
             >
-              <Pause className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
+              <Image src="/pp-figma/hud-pause.svg" alt="" width={18} height={18} className="w-[18px] h-[18px]" />
             </button>
           )}
         </div>
