@@ -2,7 +2,7 @@
 
 import { lazy, Suspense, useEffect, useState } from 'react';
 
-const Gate = lazy(() => import('./OnboardingProvider'));
+const Gate = lazy(() => import('./dialogs/OnboardingFlowProvider'));
 
 export default function OnboardingGate(){
   const [open, setOpen] = useState(false);
