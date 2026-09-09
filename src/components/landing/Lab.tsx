@@ -19,7 +19,7 @@ export default function Lab(){
             <span className="kicker lb__kicker">BUNNY LAB</span>
             <h2 className="lb__h fh"><span className="fh__ln fh__holo fh--l1" data-text="BUILD YOUR"><span className="fh__t">BUILD YOUR</span></span><span className="fh__ln fh__plate fh--l2" data-text="BOUNCE"><span className="fh__t">BOUNCE</span></span><span className="fh__ln fh__holo fh--l3" data-text="BEFORE IT’S"><span className="fh__t">BEFORE IT’S</span></span><span className="fh__ln fh__holo fh--l4" data-text="REAL"><span className="fh__t">REAL</span></span></h2>
 
-            <p className="lede lb__pill">350+ traits, zero permission needed. Mix, match, meme.</p>
+            <p className="lede lb__pill">35 curated traits, zero permission needed. Mix, match, meme.</p>
           </div>
 
           <TraitLab />

@@ -6,31 +6,25 @@ export type TraitItem = { name: string; url: string; thumb?: string };
 type Manifest = Record<string, TraitItem[]>;
 
 const LAYERS = [
-  'Backgrounds', 'Aura - Power Effect', 'Origin Region', 'Breed - Kind', 'Evolution Stage',
-  'Fur - Body', 'Skin - Material', 'Bottoms', 'Footwear', 'Clothing', 'Body Accessories',
-  'Ears', 'Eyes', 'Mouths', 'Facial Hair', 'Face Accessories', 'Eyewear', 'Headwears',
-  'Held Items', 'Companion - Pet', 'Specialty', '1-1 Special',
+  'Body', 'Clothes', 'Eyes', 'Mouth', 'Hand Held Item',
 ] as const;
 
 const GLYPH: Record<string, string> = {
-  'Backgrounds': '▢', 'Aura - Power Effect': '✷', 'Origin Region': '◈', 'Breed - Kind': '❥',
-  'Evolution Stage': '⇡', 'Fur - Body': '❋', 'Skin - Material': '◐', 'Bottoms': '▽',
-  'Footwear': '△', 'Clothing': '✚', 'Body Accessories': '✧', 'Ears': '∩', 'Eyes': '◉',
-  'Mouths': '‿', 'Facial Hair': '〰', 'Face Accessories': '❂', 'Eyewear': '◎',
-  'Headwears': '⌂', 'Held Items': '✱', 'Companion - Pet': '❀', 'Specialty': '★',
-  '1-1 Special': '✦',
+  'Body': '❋',
+  'Clothes': '✚',
+  'Eyes': '◉',
+  'Mouth': '‿',
+  'Hand Held Item': '✱',
 };
 
-const HIDDEN = new Set(['Aura - Power Effect']);
+const HIDDEN = new Set<string>();
 
 const OPENING: Record<string, string> = {
-  'Backgrounds': 'Cloud Sky Scene',
-  'Breed - Kind': 'Netherland Dwarf',
-  'Fur - Body': 'Blush Pink',
+  'Body': 'Blush Pink',
+  'Clothes': 'Basic Hoodie',
   'Eyes': 'Default Round',
-  'Mouths': 'Cute Smile',
-  'Clothing': 'Plain Tee',
-  'Held Items': 'Carrot',
+  'Mouth': 'Cute Smile',
+  'Hand Held Item': 'Carrot',
 };
 
 const pretty = (c: string) => c.replace(/ - /g, ' / ').toLowerCase();
@@ -86,13 +80,12 @@ export default function TraitLab(){
     [order, eq]
   );
 
-  const kind = eq['Breed - Kind']?.name;
-  const skin = eq['Skin - Material']?.name || eq['Fur - Body']?.name;
-  const buildName = dispName(kind && skin ? `${skin} ${kind}` : kind || skin || 'empty build').toLowerCase();
+  const skin = eq['Body']?.name;
+  const buildName = dispName(skin ? `${skin} bounce` : 'empty build').toLowerCase();
 
-  const tone = dispName(eq['Skin - Material']?.name || eq['Fur - Body']?.name || 'none').toUpperCase();
-  const fit = dispName(eq['Clothing']?.name || 'none').toUpperCase();
-  const held = dispName(eq['Held Items']?.name || 'none').toUpperCase();
+  const tone = dispName(eq['Body']?.name || 'none').toUpperCase();
+  const fit = dispName(eq['Clothes']?.name || 'none').toUpperCase();
+  const held = dispName(eq['Hand Held Item']?.name || 'none').toUpperCase();
 
   const items = cats[cat] || [];
 
@@ -104,7 +97,7 @@ export default function TraitLab(){
     el.classList.add('is-bounce');
   };
 
-  const ROLL = ['Backgrounds', 'Breed - Kind', 'Eyes', 'Mouths', 'Clothing', 'Held Items', 'Headwears'];
+  const ROLL = ['Body', 'Clothes', 'Eyes', 'Mouth', 'Hand Held Item'];
   const randomise = () => {
     setEq(prev => {
       const next = { ...prev };
