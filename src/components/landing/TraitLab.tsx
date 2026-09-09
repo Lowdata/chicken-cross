@@ -155,8 +155,7 @@ export default function TraitLab(){
 
       <div className="panel panel--traits glass-card">
         <div className="pick__head">
-          <span className="pick__label">2 · pick a trait · <b>{pretty(cat)}</b></span>
-          <span className="pick__count">{items.length} options</span>
+          <span className="pick__label">2 · pick a trait</span>
         </div>
         <div className="tilewrap">
           <div className="tilewrap__scroll" data-lenis-prevent>
