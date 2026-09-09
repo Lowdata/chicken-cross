@@ -79,7 +79,10 @@ export default function OnboardingFlow({ open = true, onClose, onExited }: { ope
   }, [isConnected, address, step, load]);
 
   useEffect(() => {
-    if (open && step === 'ready' && player) onClose();
+    if (open && step === 'ready' && player){
+      onClose();
+      window.location.href = '/dashboard';
+    }
   }, [onClose, open, player, step]);
 
   const confirmHandle = async () => {
@@ -124,7 +127,7 @@ export default function OnboardingFlow({ open = true, onClose, onExited }: { ope
           <button className="dlgPrimary" onClick={() => openConnectModal?.()} disabled={busy}>
             {busy ? 'checking…' : <FlipLabel>initialize connection</FlipLabel>}
           </button>
-          <button className="dlgGhost" onClick={onClose}><FlipLabel>skip for now</FlipLabel></button>
+          <button className="dlgGhost" onClick={() => { onClose(); window.location.href = '/game'; }}><FlipLabel>skip for now</FlipLabel></button>
           <ul className="dlgPills">
             <li className="dlgPill">hearts saved</li>
             <li className="dlgPill">runs tracked</li>

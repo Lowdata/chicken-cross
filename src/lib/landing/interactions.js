@@ -1,4 +1,5 @@
 import { initHoloSky } from './holo-sky.js';
+import { scrollTo } from './scroll/scroll.js';
 
 function mountWarrenStrip(root){
   const strip = root.querySelector('#wrStrip');
@@ -39,8 +40,18 @@ function mountToast(root){
       const target = document.querySelector(g.dataset.go);
       if (target){
         const nav = document.querySelector('.nav')?.getBoundingClientRect().height || 0;
-        const y = target.getBoundingClientRect().top + window.scrollY - nav - 12;
-        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        scrollTo(target, { offset: -nav - 12 });
+      }
+    }
+
+    const anchor = e.target.closest('a[href^="#"]');
+    if (anchor && anchor.getAttribute('href') !== '#'){
+      const href = anchor.getAttribute('href');
+      const target = document.querySelector(href);
+      if (target){
+        e.preventDefault();
+        const nav = document.querySelector('.nav')?.getBoundingClientRect().height || 0;
+        scrollTo(target, { offset: -nav - 12 });
       }
     }
   };

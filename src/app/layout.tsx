@@ -63,7 +63,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${bungee.variable} ${dmMono.variable} ${outfit.variable}`}>
+    <html lang="en" className={`${bungee.variable} ${dmMono.variable} ${outfit.variable}`} suppressHydrationWarning>
       <body className="antialiased overflow-x-hidden font-outfit text-[#0F0529]">
         {children}
         {GA_ID && <GoogleAnalytics gaId={GA_ID} />}

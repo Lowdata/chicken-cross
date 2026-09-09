@@ -185,9 +185,7 @@ export function mountDrift({ onFrame, state, root = document }){
     const owned = [...items.values()].filter(i => i.ownsBase).map(i => i.hook || i.sel);
 
     if (process.env.NODE_ENV !== 'production'){
-      if (owned.length) console.info(`[drift] ${owned.length} targets carry their own translate/rotate (snapshotted as base): ${owned.join(' ')}`);
-      if (unlisted.length) console.info(`[drift] ${unlisted.length} data-drift hooks without a table entry: ${unlisted.join(' ')}`);
-      if (missing.length) console.info(`[drift] ${items.size} targets live, ${missing.length} missing: ${missing.join(' ')}`);
+      // unlisted hooks run with default passive motion
     }
   }
 
