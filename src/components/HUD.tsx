@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
@@ -29,6 +29,7 @@ interface HUDProps {
 
 const chip = 'flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35] border border-white/5';
 const control = 'w-[44px] h-[44px] rounded-[14px] bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35] border border-white/5 flex items-center justify-center text-white/85 hover:bg-white/10 active:scale-90 transition-all cursor-pointer';
+const menuItem = 'flex items-center gap-[10px] w-full min-h-[44px] px-[12px] rounded-[10px] text-left font-outfit font-semibold text-[13px] text-white/85 hover:bg-white/10 active:scale-[.97] transition-all cursor-pointer';
 const label = 'font-outfit font-semibold text-[11px] tracking-[1.54px] uppercase text-white/50 whitespace-nowrap';
 
 export const HUD: React.FC<HUDProps> = ({
@@ -48,6 +49,25 @@ export const HUD: React.FC<HUDProps> = ({
   gameStatus,
   isEagleWarning,
 }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
+    const onDown = (e: PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onDown);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onDown);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => { if (gameStatus !== 'playing') setMenuOpen(false); }, [gameStatus]);
+
   return (
     <header className="fixed top-0 left-0 right-0 pt-safe px-[18px] py-3.5 flex justify-between items-start pointer-events-none z-30 select-none">
       {isEagleWarning && gameStatus === 'playing' && (
@@ -162,7 +182,7 @@ export const HUD: React.FC<HUDProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="hidden min-[821px]:flex items-center gap-2">
           <button
             onClick={() => {
               if (onOpenTasks) {
@@ -210,6 +230,44 @@ export const HUD: React.FC<HUDProps> = ({
             >
               <Image src="/pp-figma/hud-pause.svg" alt="" width={18} height={18} className="w-[18px] h-[18px]" />
             </button>
+          )}
+        </div>
+
+        <div className="relative min-[821px]:hidden" ref={menuRef}>
+          <button
+            onClick={() => { soundEngine.playClick(); triggerHaptic('tap'); setMenuOpen((v) => !v); }}
+            className={control}
+            aria-label="Game menu"
+            aria-expanded={menuOpen}
+            aria-haspopup="menu"
+          >
+            <span className="flex flex-col gap-[3px]" aria-hidden="true">
+              <i className="block w-[16px] h-[2px] rounded-full bg-current" />
+              <i className="block w-[16px] h-[2px] rounded-full bg-current" />
+              <i className="block w-[16px] h-[2px] rounded-full bg-current" />
+            </span>
+          </button>
+
+          {menuOpen && (
+            <div
+              role="menu"
+              className="absolute right-0 top-[52px] min-w-[196px] rounded-[14px] p-[6px] flex flex-col gap-[2px] bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35] border border-white/5 shadow-[0_18px_44px_rgba(6,2,22,.6)]"
+            >
+              <button role="menuitem" className={menuItem} onClick={() => { setMenuOpen(false); if (onOpenTasks) { soundEngine.playClick(); triggerHaptic('tap'); onOpenTasks(); } }}>
+                <Image src="/pp-figma/hud-gift.svg" alt="" width={17} height={17} className="w-[17px] h-[17px]" />
+                <span>tasks &amp; rewards</span>
+              </button>
+              <button role="menuitem" className={menuItem} onClick={() => { setMenuOpen(false); soundEngine.playClick(); triggerHaptic('tap'); onToggleSound(); }}>
+                <Image src="/pp-figma/hud-sound.svg" alt="" width={17} height={17} className={`w-[17px] h-[17px] ${soundEnabled ? '' : 'opacity-40'}`} />
+                <span>{soundEnabled ? 'mute audio' : 'unmute audio'}</span>
+              </button>
+              {gameStatus === 'playing' && (
+                <button role="menuitem" className={menuItem} onClick={() => { setMenuOpen(false); soundEngine.playClick(); triggerHaptic('tap'); onPause(); }}>
+                  <Image src="/pp-figma/hud-pause.svg" alt="" width={17} height={17} className="w-[17px] h-[17px]" />
+                  <span>pause game</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
