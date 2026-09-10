@@ -25,6 +25,11 @@ interface HUDProps {
   onPause: () => void;
   gameStatus: 'idle' | 'playing' | 'paused' | 'gameover';
   isEagleWarning?: boolean;
+  ninthCarrotRadar?: {
+    active: boolean;
+    distanceHops: number;
+    angleDeg: number;
+  } | null;
 }
 
 const chip = 'flex items-center h-[34px] rounded-full px-[13px] gap-[7px] bg-[rgba(14,8,32,0.42)] backdrop-blur-[18px] backdrop-saturate-[1.35] border border-white/5';
@@ -48,6 +53,7 @@ export const HUD: React.FC<HUDProps> = ({
   onPause,
   gameStatus,
   isEagleWarning,
+  ninthCarrotRadar,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -68,21 +74,53 @@ export const HUD: React.FC<HUDProps> = ({
 
   useEffect(() => { if (gameStatus !== 'playing') setMenuOpen(false); }, [gameStatus]);
 
+  const isApexEagle = sessionCarrots >= 8 && maxCarrots === 8;
+  const isEscalatedEagle = sessionCarrots >= 7;
+
   return (
     <header className="fixed top-0 left-0 right-0 pt-safe px-[18px] py-3.5 flex justify-between items-start pointer-events-none z-30 select-none">
+      {/* Eagle Warning Banner */}
       {isEagleWarning && gameStatus === 'playing' && (
         <div className="absolute left-1/2 -translate-x-1/2 top-2.5 sm:top-4 z-40 pointer-events-none animate-bounce">
-          <div className="bg-rose-600/95 border-2 border-amber-300 text-white px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl shadow-[0_0_30px_rgba(225,29,72,0.85)] flex items-center gap-2 sm:gap-2.5 backdrop-blur-md animate-pulse">
+          <div className={`${isApexEagle ? 'bg-red-700/95 border-amber-300 shadow-[0_0_35px_rgba(255,0,0,0.95)]' : isEscalatedEagle ? 'bg-amber-700/95 border-amber-300 shadow-[0_0_30px_rgba(245,158,11,0.85)]' : 'bg-rose-600/95 border-amber-300 shadow-[0_0_30px_rgba(225,29,72,0.85)]'} border-2 text-white px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl flex items-center gap-2 sm:gap-2.5 backdrop-blur-md animate-pulse`}>
             <span className="text-xl sm:text-2xl">🦅</span>
             <div className="text-left">
               <div className="font-black text-xs sm:text-sm tracking-wider uppercase text-amber-200 leading-tight">
-                EAGLE INCOMING!
+                {isApexEagle ? 'APEX EAGLE STRIKE!' : isEscalatedEagle ? 'EAGLE HUNT ESCALATED!' : 'EAGLE INCOMING!'}
               </div>
               <div className="text-[10px] sm:text-xs font-bold text-white/95 leading-tight">
-                Watch the shadow corridor &amp; EVADE!
+                {isApexEagle ? 'Full harvest gathered! Survive the predator!' : isEscalatedEagle ? 'Predator hunting aggressively! EVADE!' : 'Watch the shadow corridor & EVADE!'}
               </div>
             </div>
             <span className="text-lg sm:text-xl text-amber-300">⚠️</span>
+          </div>
+        </div>
+      )}
+
+      {/* 9th Golden Carrot Navigation Radar Banner */}
+      {ninthCarrotRadar?.active && gameStatus === 'playing' && (
+        <div className="absolute left-1/2 -translate-x-1/2 top-16 sm:top-20 z-40 pointer-events-none select-none animate-bounce">
+          <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-500/95 via-yellow-400/95 to-amber-500/95 text-slate-950 font-black shadow-[0_0_35px_rgba(255,215,0,0.95)] border-2 border-white backdrop-blur-md">
+            <span className="text-xl">✨</span>
+            <div className="flex flex-col text-left leading-tight">
+              <span className="text-[10px] uppercase tracking-wider text-slate-900 font-extrabold">
+                9TH GOLDEN CARROT DETECTED!
+              </span>
+              <span className="text-xs font-black text-slate-950">
+                {ninthCarrotRadar.distanceHops} {ninthCarrotRadar.distanceHops === 1 ? 'hop' : 'hops'} ahead
+              </span>
+            </div>
+            <div
+              className="w-8 h-8 rounded-full bg-slate-950 text-amber-400 flex items-center justify-center font-black shadow-inner transition-transform duration-100 ease-out"
+              style={{
+                transform: `rotate(${ninthCarrotRadar.angleDeg}deg)`,
+              }}
+              title={`${ninthCarrotRadar.distanceHops} hops away`}
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current" aria-hidden="true">
+                <path d="M12 2L4 12h5v10h6V12h5L12 2z" />
+              </svg>
+            </div>
           </div>
         </div>
       )}

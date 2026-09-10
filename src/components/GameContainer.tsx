@@ -12,7 +12,7 @@ declare global {
     };
   }
 }
-import { ThreeGameEngine } from '@/lib/game/threeGameEngine';
+import { ThreeGameEngine, NinthCarrotRadarData } from '@/lib/game/threeGameEngine';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
 import { GameStatus, CarrotFloatingText, DeathReason } from '@/lib/game/types';
@@ -50,6 +50,7 @@ export const GameContainer: React.FC = () => {
   const [sessionCarrots, setSessionCarrots] = useState<number>(0);
   const [isNewHigh, setIsNewHigh] = useState<boolean>(false);
   const [isEagleWarning, setIsEagleWarning] = useState<boolean>(false);
+  const [ninthCarrotRadar, setNinthCarrotRadar] = useState<NinthCarrotRadarData | null>(null);
   const [deathReason, setDeathReason] = useState<DeathReason>('car');
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const completedTasksRef = useRef<string[]>([]);
@@ -229,9 +230,13 @@ export const GameContainer: React.FC = () => {
         onEagleWarning: (active) => {
           setIsEagleWarning(active);
         },
+        onNinthCarrotRadar: (radar) => {
+          setNinthCarrotRadar(radar);
+        },
         onGameOver: async (finalScore, sessionCarrotsGathered, reason = 'car') => {
           setDeathReason(reason);
           setIsEagleWarning(false);
+          setNinthCarrotRadar(null);
           const runBonus = sessionCarrotsGathered * 5;
           const totalRunPoints = finalScore + runBonus;
 
@@ -412,6 +417,7 @@ export const GameContainer: React.FC = () => {
     setSessionCarrots(0);
     setIsNewHigh(false);
     setIsEagleWarning(false);
+    setNinthCarrotRadar(null);
     setDeathReason('car');
     setDifficultyLevel(1);
     setDifficultyMultiplier(1.0);
@@ -589,6 +595,7 @@ export const GameContainer: React.FC = () => {
         onPause={handlePause}
         gameStatus={gameStatus}
         isEagleWarning={isEagleWarning}
+        ninthCarrotRadar={ninthCarrotRadar}
       />
 
       {/* Mobile Touch Controls */}
