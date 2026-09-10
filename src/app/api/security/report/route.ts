@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
       },
       suspiciousIps,
       activeBans,
-      countryBreakdown: countryBreakdown.map((c) => ({ country: c._id, sessions: c.sessions })),
+      countryBreakdown: countryBreakdown.map((c: any) => ({ country: c._id, sessions: c.sessions })),
     });
   } catch (err) {
     console.error('GET /api/security/report error:', err);

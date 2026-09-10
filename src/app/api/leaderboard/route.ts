@@ -20,7 +20,7 @@ export async function GET() {
 
     const leaderboard = await db
       .collection('scores')
-      .find({})
+      .find({}, { projection: { name: 1, score: 1, carrots: 1, skin: 1, createdAt: 1, address: 1 } })
       .sort({ score: -1, createdAt: -1 })
       .limit(10)
       .toArray();

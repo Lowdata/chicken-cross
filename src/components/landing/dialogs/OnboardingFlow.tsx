@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import FlipLabel from '@/components/landing/FlipLabel';
 import DialogShell from './DialogShell';
@@ -49,30 +49,87 @@ export default function OnboardingFlow({ open = true, onClose, onExited }: { ope
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { disconnect } = useDisconnect();
+  const { signMessageAsync } = useSignMessage();
 
   const [step, setStep] = useState<Step>('wallet');
   const [player, setPlayer] = useState<Player | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [handle, setHandle] = useState('');
+  const [referralCode, setReferralCode] = useState('');
+
+  // Extract ?ref= from URL query params on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref');
+      if (ref) {
+        setReferralCode(ref.trim().toUpperCase());
+      }
+    }
+  }, []);
 
   const load = useCallback(async (addr: string) => {
     setBusy(true); setError('');
     try {
-      const res = await fetch(`/api/user?address=${addr}`);
-      const data = await res.json();
-      if (data.success && data.user){
-        setPlayer(data.user);
-        setStep(data.user.twitterHandle ? 'ready' : 'handle');
-      } else {
-        setStep('handle');
+      // 1. Check existing verified session first to avoid annoying repeat prompts
+      try {
+        const sessRes = await fetch('/api/auth/session');
+        const sessData = await sessRes.json();
+        if (sessData.authenticated && sessData.address?.toLowerCase() === addr.toLowerCase()) {
+          const res = await fetch(`/api/user?address=${addr}`);
+          const data = await res.json();
+          if (data.success && data.user){
+            setPlayer(data.user);
+            setStep(data.user.twitterHandle ? 'ready' : 'handle');
+            return;
+          }
+        }
+      } catch {}
+
+      // 2. Request cryptographic nonce challenge to prove wallet ownership
+      const nonceRes = await fetch(`/api/auth/nonce?address=${addr}`);
+      const nonceData = await nonceRes.json();
+      if (!nonceRes.ok || !nonceData.message) {
+        throw new Error(nonceData.error || 'Failed to initialize wallet verification');
       }
-    } catch {
-      setError('Could not reach the burrow. Try again.');
+
+      // 3. Prompt user's wallet to sign the challenge
+      const signature = await signMessageAsync({ message: nonceData.message });
+
+      // 4. Verify signature on backend & create/fetch user session
+      const verifyRes = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: addr,
+          message: nonceData.message,
+          signature,
+        }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok || !verifyData.success) {
+        throw new Error(verifyData.error || 'Wallet signature verification failed');
+      }
+
+      setPlayer(verifyData.user);
+      setStep(verifyData.user?.twitterHandle ? 'ready' : 'handle');
+    } catch (err: any) {
+      console.error('Wallet verification error:', err);
+      const isUserRejected =
+        err?.message?.includes('rejected') ||
+        err?.message?.includes('denied') ||
+        err?.code === 4001;
+      setError(
+        isUserRejected
+          ? 'Signature required to verify wallet ownership. Please reconnect.'
+          : err?.message || 'Could not verify wallet. Try again.'
+      );
+      setStep('wallet');
     } finally {
       setBusy(false);
     }
-  }, []);
+  }, [signMessageAsync]);
 
   useEffect(() => {
     if (isConnected && address && step === 'wallet') load(address);
@@ -90,10 +147,27 @@ export default function OnboardingFlow({ open = true, onClose, onExited }: { ope
     if (!handle.trim()){ setError('Your X handle, so rewards can find you.'); return; }
     setBusy(true); setError('');
     try {
+      const code = referralCode.trim().toUpperCase();
+
+      // Pre-validate referral code against MongoDB if provided
+      if (code) {
+        const valRes = await fetch(`/api/referral/validate?code=${encodeURIComponent(code)}&address=${encodeURIComponent(address)}`);
+        const valData = await valRes.json();
+        if (!valData.valid) {
+          setError(valData.error || 'Referral code not found. Please enter an existing code or leave blank.');
+          setBusy(false);
+          return;
+        }
+      }
+
       const res = await fetch('/api/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address, twitterHandle: handle.replace('@', '').trim() }),
+        body: JSON.stringify({
+          address,
+          twitterHandle: handle.replace('@', '').trim(),
+          referredBy: code || null,
+        }),
       });
       const data = await res.json();
       if (data.success){ setPlayer(data.user); setStep('ready'); }
@@ -125,7 +199,7 @@ export default function OnboardingFlow({ open = true, onClose, onExited }: { ope
           <p className="dlgCard__lede">connect to keep your hearts, your runs and your place in the draw.</p>
           {error && <p className="dlgErr" role="alert">{error}</p>}
           <button className="dlgPrimary" onClick={() => openConnectModal?.()} disabled={busy}>
-            {busy ? 'checking…' : <FlipLabel>initialize connection</FlipLabel>}
+            {busy ? 'verifying…' : <FlipLabel>initialize connection</FlipLabel>}
           </button>
           <button className="dlgGhost" onClick={() => { onClose(); window.location.href = '/game'; }}><FlipLabel>skip for now</FlipLabel></button>
           <ul className="dlgPills">
@@ -151,6 +225,19 @@ export default function OnboardingFlow({ open = true, onClose, onExited }: { ope
                 autoComplete="off"
                 spellCheck={false}
                 aria-label="X handle"
+                onKeyDown={e => e.key === 'Enter' && confirmHandle()}
+              />
+            </span>
+          </label>
+          <label className="dlgField">
+            <span className="dlgField__input">
+              <input
+                value={referralCode}
+                onChange={e => setReferralCode(e.target.value.toUpperCase())}
+                placeholder="referral code (optional)"
+                autoComplete="off"
+                spellCheck={false}
+                aria-label="Referral code"
                 onKeyDown={e => e.key === 'Enter' && confirmHandle()}
               />
             </span>

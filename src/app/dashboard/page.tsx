@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 import { Check, Sparkles, Gamepad2, Home } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEngine } from '@/lib/game/soundEngine';
@@ -83,10 +84,12 @@ const INITIAL_TASKS: Task[] = [
 ];
 
 export default function DashboardPage() {
+  const { address, isConnected } = useAccount();
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
   const [hearts, setHearts] = useState<number>(7);
   const [inviteCode] = useState<string>('PP978FDG');
   const [referralInput, setReferralInput] = useState<string>('');
+  const [isRedeeming, setIsRedeeming] = useState<boolean>(false);
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [howToPlayOpen, setHowToPlayOpen] = useState<boolean>(false);
@@ -198,27 +201,60 @@ export default function DashboardPage() {
     }
   };
 
-  const handleRedeemCode = (e: React.FormEvent) => {
+  const handleRedeemCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!referralInput.trim()) return;
+    const code = referralInput.trim().toUpperCase();
+    if (!code) return;
 
-    soundEngine.playFanfare();
-    triggerHaptic('fanfare');
+    if (!isConnected || !address) {
+      showToast('Please connect your wallet first to redeem referrals', 'error');
+      return;
+    }
 
-    confetti({
-      particleCount: 70,
-      spread: 70,
-      origin: { y: 0.6 },
-    });
-
-    const newHearts = hearts + 1;
-    setHearts(newHearts);
+    setIsRedeeming(true);
     try {
-      localStorage.setItem('bunny_dashboard_hearts', newHearts.toString());
-    } catch {}
+      const res = await fetch('/api/tasks/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address,
+          task: 'refer_friend',
+          referralCode: code,
+        }),
+      });
+      const data = await res.json();
 
-    showToast(`Referral redeemed! +1 Heart added`, 'reward');
-    setReferralInput('');
+      if (!res.ok || data.error) {
+        showToast(data.error || 'Failed to redeem referral code', 'error');
+        return;
+      }
+
+      soundEngine.playFanfare();
+      triggerHaptic('fanfare');
+
+      confetti({
+        particleCount: 70,
+        spread: 70,
+        origin: { y: 0.6 },
+      });
+
+      const newHearts = typeof data.user?.lives === 'number' ? data.user.lives : hearts + 3;
+      setHearts(newHearts);
+      try {
+        localStorage.setItem('bunny_dashboard_hearts', newHearts.toString());
+      } catch {}
+
+      showToast(`Referral redeemed! +${data.reward?.lives ?? 3} Hearts added`, 'reward');
+      setReferralInput('');
+
+      setTasks((prev) =>
+        prev.map((t) => (t.type === 'refer' ? { ...t, completed: true } : t))
+      );
+    } catch {
+      showToast('Network error while redeeming referral code', 'error');
+    } finally {
+      setIsRedeeming(false);
+    }
   };
 
   const completedCount = tasks.filter((t) => t.completed).length;
@@ -497,10 +533,10 @@ export default function DashboardPage() {
                 />
                 <button
                   type="submit"
-                  disabled={!referralInput.trim()}
+                  disabled={!referralInput.trim() || isRedeeming}
                   className="bg-gradient-to-b from-[#e6d6fd] via-[#dbc6fc] via-[46%] to-[#c89afc] enabled:hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed text-[#3a1660] text-sm h-11 px-4 rounded-xl shadow-[0_3px_0_rgba(120,85,195,0.45),inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-3px_0_rgba(120,80,190,0.42)] transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] enabled:active:translate-y-px enabled:active:scale-[0.96] enabled:active:duration-[90ms] enabled:active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:enabled:active:translate-y-0 motion-reduce:enabled:active:scale-100 cursor-pointer"
                 >
-                  <FlipLabel>redeem</FlipLabel>
+                  <FlipLabel>{isRedeeming ? 'checking…' : 'redeem'}</FlipLabel>
                 </button>
               </form>
 

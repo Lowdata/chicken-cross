@@ -50,11 +50,15 @@ export async function POST(req: NextRequest) {
       if (!referralCode) {
         return NextResponse.json({ error: 'referralCode required for refer_friend task' }, { status: 400 });
       }
-      const referrer = await db.collection('users').findOne({ referralCode: referralCode.toUpperCase() });
+      const code = referralCode.trim().toUpperCase();
+      const referrer = await db.collection('users').findOne(
+        { referralCode: code },
+        { projection: { _id: 0, walletAddress: 1, referralCode: 1 } }
+      );
       if (!referrer) {
-        return NextResponse.json({ error: 'Invalid referral code' }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid referral code. This code does not exist.' }, { status: 400 });
       }
-      if (referrer.walletAddress === wallet) {
+      if (referrer.walletAddress.toLowerCase() === wallet) {
         return NextResponse.json({ error: 'Cannot refer yourself' }, { status: 400 });
       }
 

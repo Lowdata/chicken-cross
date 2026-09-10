@@ -1,43 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db/mongodb';
 import { nanoid } from 'nanoid';
+import { isAddress, verifyMessage } from 'viem';
+import { jwtVerify } from 'jose';
+
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.SESSION_SECRET || 'bunny-hop-session-secret-2024'
+);
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const address = req.nextUrl.searchParams.get('address');
-  if (!address) {
-    return NextResponse.json({ error: 'address is required' }, { status: 400 });
+  if (!address || !isAddress(address)) {
+    return NextResponse.json({ error: 'Valid Ethereum address is required' }, { status: 400 });
   }
   const wallet = address.toLowerCase();
 
   try {
     const db = await getDb();
     if (!db) {
-      return NextResponse.json({ error: 'DB unavailable' }, { status: 503 });
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let user: any = await db.collection('users').findOne({ walletAddress: wallet });
+
+    const user = await db.collection('users').findOne({ walletAddress: wallet });
     if (!user) {
-      // Auto-create on first lookup
-      const newUser = {
-        walletAddress: wallet,
-        twitterHandle: null,
-        twitterId: null,
-        lives: 5,
-        carrots: 0,
-        rewards: [],
-        completedTasks: [],
-        referralCode: nanoid(8).toUpperCase(),
-        referredBy: null,
-        referralCount: 0,
-        ipHistory: [],
-        isBanned: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      await db.collection('users').insertOne(newUser);
-      user = newUser;
+      return NextResponse.json({ success: true, user: null, exists: false });
     }
-    return NextResponse.json({ success: true, user });
+
+    return NextResponse.json({ success: true, user, exists: true });
   } catch (err) {
     console.error('GET /api/user error:', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -47,45 +38,146 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { address, twitterHandle, twitterId, referredBy } = body;
-    if (!address) {
-      return NextResponse.json({ error: 'address is required' }, { status: 400 });
+    const { address, twitterHandle, twitterId, referredBy, signature, message } = body;
+
+    if (!address || !isAddress(address)) {
+      return NextResponse.json({ error: 'Valid Ethereum address is required' }, { status: 400 });
     }
     const wallet = address.toLowerCase();
+
+    // ── Check signature or active verified session cookie ──
+    const sessionCookie = req.cookies.get('pongpong_session')?.value;
+    let isVerified = false;
+
+    if (sessionCookie) {
+      try {
+        const { payload } = await jwtVerify(sessionCookie, JWT_SECRET);
+        if (payload.wallet === wallet && payload.verified) {
+          isVerified = true;
+        }
+      } catch {}
+    }
+
+    if (!isVerified && signature && message) {
+      try {
+        const validSig = await verifyMessage({
+          address: address as `0x${string}`,
+          message,
+          signature: signature as `0x${string}`,
+        });
+        if (validSig) {
+          isVerified = true;
+        }
+      } catch {}
+    }
+
     const db = await getDb();
     if (!db) {
-      return NextResponse.json({ error: 'DB unavailable' }, { status: 503 });
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
+
+    // ── Strict Referral Code Validation (Optimized with covered index query) ──
+    let validReferralCode: string | null = null;
+    let referrerWallet: string | null = null;
+
+    if (referredBy && typeof referredBy === 'string' && referredBy.trim()) {
+      const code = referredBy.trim().toUpperCase();
+
+      if (!/^[A-Z0-9_-]{4,16}$/.test(code)) {
+        return NextResponse.json({ error: 'Invalid referral code format' }, { status: 400 });
+      }
+
+      // Fast projection query: index on { referralCode: 1 }
+      const referrer = await db.collection('users').findOne(
+        { referralCode: code },
+        { projection: { _id: 0, walletAddress: 1 } }
+      );
+
+      if (!referrer) {
+        return NextResponse.json(
+          { error: 'Referral code does not exist. Please check the code or leave blank.' },
+          { status: 400 }
+        );
+      }
+
+      if (referrer.walletAddress.toLowerCase() === wallet) {
+        return NextResponse.json(
+          { error: 'You cannot use your own referral code.' },
+          { status: 400 }
+        );
+      }
+
+      validReferralCode = code;
+      referrerWallet = referrer.walletAddress;
     }
 
     const existing = await db.collection('users').findOne({ walletAddress: wallet });
+
     if (!existing) {
       const newUser = {
         walletAddress: wallet,
-        twitterHandle: twitterHandle || null,
+        twitterHandle: twitterHandle ? String(twitterHandle).replace('@', '').trim() : null,
         twitterId: twitterId || null,
         lives: 5,
         carrots: 0,
         rewards: [],
         completedTasks: [],
         referralCode: nanoid(8).toUpperCase(),
-        referredBy: referredBy || null,
+        referredBy: validReferralCode,
         referralCount: 0,
         ipHistory: [],
         isBanned: false,
+        isWalletVerified: isVerified,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
+
       await db.collection('users').insertOne(newUser);
+
+      // Award referrer atomically if valid
+      if (referrerWallet) {
+        await db.collection('users').updateOne(
+          { walletAddress: referrerWallet },
+          {
+            $inc: { carrots: 10, referralCount: 1 },
+            $set: { updatedAt: new Date() },
+          }
+        );
+      }
+
       return NextResponse.json({ success: true, created: true, user: newUser });
     }
 
-    // Update twitter if provided
+    // Update existing user
     const update: Record<string, unknown> = { updatedAt: new Date() };
-    if (twitterHandle && !existing.twitterHandle) update.twitterHandle = twitterHandle;
-    if (twitterId && !existing.twitterId) update.twitterId = twitterId;
+    if (isVerified && !existing.isWalletVerified) {
+      update.isWalletVerified = true;
+    }
+    if (twitterHandle && !existing.twitterHandle) {
+      update.twitterHandle = String(twitterHandle).replace('@', '').trim();
+    }
+    if (twitterId && !existing.twitterId) {
+      update.twitterId = twitterId;
+    }
 
-    await db.collection('users').updateOne({ walletAddress: wallet }, { $set: update });
-    const updated = await db.collection('users').findOne({ walletAddress: wallet });
+    // If existing user never had a referrer, and now supplies a valid one
+    if (validReferralCode && !existing.referredBy && referrerWallet) {
+      update.referredBy = validReferralCode;
+      await db.collection('users').updateOne(
+        { walletAddress: referrerWallet },
+        {
+          $inc: { carrots: 10, referralCount: 1 },
+          $set: { updatedAt: new Date() },
+        }
+      );
+    }
+
+    const updated = await db.collection('users').findOneAndUpdate(
+      { walletAddress: wallet },
+      { $set: update },
+      { returnDocument: 'after' }
+    );
+
     return NextResponse.json({ success: true, created: false, user: updated });
   } catch (err) {
     console.error('POST /api/user error:', err);
