@@ -12,10 +12,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db/mongodb';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
-  // Protect with admin secret
-  const secret = req.nextUrl.searchParams.get('secret');
-  if (!secret || secret !== process.env.ADMIN_SECRET) {
+  // Protect with admin secret (from header or query parameter)
+  const adminSecret = process.env.ADMIN_SECRET;
+  const secret = req.headers.get('x-admin-secret') || req.nextUrl.searchParams.get('secret');
+
+  if (!adminSecret || !secret || secret !== adminSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -73,7 +77,7 @@ export async function GET(req: NextRequest) {
       },
       suspiciousIps,
       activeBans,
-      countryBreakdown: countryBreakdown.map((c) => ({ country: c._id, sessions: c.sessions })),
+      countryBreakdown: countryBreakdown.map((c: any) => ({ country: c._id, sessions: c.sessions })),
     });
   } catch (err) {
     console.error('GET /api/security/report error:', err);

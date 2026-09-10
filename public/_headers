@@ -1,0 +1,18 @@
+# Cloudflare Pages serves everything with max-age=0 by default, so a second
+# visit spends 130 round-trips revalidating files that never change. The
+# hashed build output can be cached forever; the art is versioned by hand, so
+# it gets a day plus a week of serving-while-revalidating.
+
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/pp-art/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/pp-figma/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/pp-game/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/pp-traits/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/pp-thumbs/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

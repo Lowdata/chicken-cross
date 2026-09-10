@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Trophy, X, RefreshCw, Flame } from 'lucide-react';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
+import DialogShell from './landing/dialogs/DialogShell';
 
 interface LeaderboardEntry {
   _id?: string;
@@ -50,11 +51,11 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  const titleId = 'lbTitle';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in select-none">
-      <div className="bg-white/95 backdrop-blur-xl rounded-3xl border-4 border-amber-300 max-w-md w-full p-4 sm:p-6 shadow-2xl relative max-h-[88dvh] overflow-hidden flex flex-col">
+    <DialogShell open={isOpen} onClose={onClose} labelledBy={titleId} maxWidth={448} maxHeight={640} panelClassName="dlgShell__panel--bare">
+      <div className="bg-white/95 backdrop-blur-xl rounded-3xl border-4 border-amber-300 w-full p-4 sm:p-6 shadow-2xl relative flex flex-col select-none">
         {/* Header */}
         <div className="flex justify-between items-center pb-3 border-b border-slate-100 flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -62,7 +63,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
               <Trophy className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-800 flex items-center gap-1.5">
+              <h2 id={titleId} className="text-xl sm:text-2xl font-black text-slate-800 flex items-center gap-1.5">
                 Hall of Hoppers
               </h2>
               <p className="text-[11px] text-slate-500 font-medium">Top global crossers &amp; carrot hoarders</p>
@@ -172,6 +173,6 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </DialogShell>
   );
 };

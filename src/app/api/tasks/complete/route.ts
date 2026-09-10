@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db/mongodb';
+import { jwtVerify } from 'jose';
+import { validateReferralCode } from '@/lib/services/referralService';
+
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.SESSION_SECRET || 'bunny-hop-session-secret-2024'
+);
+
+export const dynamic = 'force-dynamic';
 
 // Task definitions with rewards
 const TASK_REWARDS: Record<string, { lives: number; carrots: number; label: string }> = {
@@ -24,6 +32,29 @@ export async function POST(req: NextRequest) {
     }
 
     const wallet = address.toLowerCase();
+
+    // ── Enforce wallet session authentication ──
+    const sessionCookie = req.cookies.get('pongpong_session')?.value;
+    const authHeader = req.headers.get('authorization')?.replace('Bearer ', '');
+    const token = sessionCookie || authHeader;
+
+    let isAuthorized = false;
+    if (token) {
+      try {
+        const { payload } = await jwtVerify(token, JWT_SECRET);
+        if (payload.wallet && String(payload.wallet).toLowerCase() === wallet && payload.verified) {
+          isAuthorized = true;
+        }
+      } catch {}
+    }
+
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Valid wallet session required to complete tasks' },
+        { status: 401 }
+      );
+    }
+
     const db = await getDb();
     if (!db) {
       return NextResponse.json({ error: 'DB unavailable' }, { status: 503 });
@@ -46,21 +77,17 @@ export async function POST(req: NextRequest) {
     }
 
     if (task === 'refer_friend') {
-      // Validate referral code belongs to another user
       if (!referralCode) {
         return NextResponse.json({ error: 'referralCode required for refer_friend task' }, { status: 400 });
       }
-      const referrer = await db.collection('users').findOne({ referralCode: referralCode.toUpperCase() });
-      if (!referrer) {
-        return NextResponse.json({ error: 'Invalid referral code' }, { status: 400 });
-      }
-      if (referrer.walletAddress === wallet) {
-        return NextResponse.json({ error: 'Cannot refer yourself' }, { status: 400 });
+      const valResult = await validateReferralCode(referralCode, wallet, db);
+      if (!valResult.valid) {
+        return NextResponse.json({ error: valResult.error }, { status: 400 });
       }
 
       // Award referrer too
       await db.collection('users').updateOne(
-        { walletAddress: referrer.walletAddress },
+        { walletAddress: valResult.referrerWallet },
         {
           $inc: { carrots: 10, referralCount: 1 },
           $set: { updatedAt: new Date() },

@@ -1,0 +1,187 @@
+{
+  "Body": [
+    {
+      "name": "Blush Pink",
+      "url": "/pp-traits/Fur%20-%20Body/Blush%20Pink.webp",
+      "thumb": "/pp-thumbs/Fur%20-%20Body/Blush%20Pink.webp"
+    },
+    {
+      "name": "24K Gold Fur",
+      "url": "/pp-traits/Fur%20-%20Body/24K%20Gold%20Fur.webp",
+      "thumb": "/pp-thumbs/Fur%20-%20Body/24K%20Gold%20Fur.webp"
+    },
+    {
+      "name": "Galaxy Speckle Fur",
+      "url": "/pp-traits/Fur%20-%20Body/Galaxy%20Speckle%20Fur.webp",
+      "thumb": "/pp-thumbs/Fur%20-%20Body/Galaxy%20Speckle%20Fur.webp"
+    },
+    {
+      "name": "Snow White",
+      "url": "/pp-traits/Fur%20-%20Body/Snow%20White.webp",
+      "thumb": "/pp-thumbs/Fur%20-%20Body/Snow%20White.webp"
+    },
+    {
+      "name": "Pastel Holographic Sheen",
+      "url": "/pp-traits/Fur%20-%20Body/Pastel%20Holographic%20Sheen.webp",
+      "thumb": "/pp-thumbs/Fur%20-%20Body/Pastel%20Holographic%20Sheen.webp"
+    },
+    {
+      "name": "Rainbow Iridescent Fur",
+      "url": "/pp-traits/Fur%20-%20Body/Rainbow%20Iridescent%20Fur.webp",
+      "thumb": "/pp-thumbs/Fur%20-%20Body/Rainbow%20Iridescent%20Fur.webp"
+    },
+    {
+      "name": "Mint Green",
+      "url": "/pp-traits/Fur%20-%20Body/Mint%20Green.webp",
+      "thumb": "/pp-thumbs/Fur%20-%20Body/Mint%20Green.webp"
+    }
+  ],
+  "Eyes": [
+    {
+      "name": "Default Round",
+      "url": "/pp-traits/Eyes/Default%20Round.webp",
+      "thumb": "/pp-thumbs/Eyes/Default%20Round.webp"
+    },
+    {
+      "name": "Heart Eyes",
+      "url": "/pp-traits/Eyes/Heart%20Eyes.webp",
+      "thumb": "/pp-thumbs/Eyes/Heart%20Eyes.webp"
+    },
+    {
+      "name": "Star Pupils",
+      "url": "/pp-traits/Eyes/Star%20Pupils.webp",
+      "thumb": "/pp-thumbs/Eyes/Star%20Pupils.webp"
+    },
+    {
+      "name": "Closed Happy (^_^)",
+      "url": "/pp-traits/Eyes/Closed%20Happy%20%28%5E_%5E%29.webp",
+      "thumb": "/pp-thumbs/Eyes/Closed%20Happy%20%28%5E_%5E%29.webp"
+    },
+    {
+      "name": "Dizzy Swirl",
+      "url": "/pp-traits/Eyes/Dizzy%20Swirl.webp",
+      "thumb": "/pp-thumbs/Eyes/Dizzy%20Swirl.webp"
+    },
+    {
+      "name": "Wink",
+      "url": "/pp-traits/Eyes/Wink.webp",
+      "thumb": "/pp-thumbs/Eyes/Wink.webp"
+    },
+    {
+      "name": "Angry Furrowed",
+      "url": "/pp-traits/Eyes/Angry%20Furrowed.webp",
+      "thumb": "/pp-thumbs/Eyes/Angry%20Furrowed.webp"
+    }
+  ],
+  "Clothes": [
+    {
+      "name": "Basic Hoodie",
+      "url": "/pp-traits/Clothing/Basic%20Hoodie.webp",
+      "thumb": "/pp-thumbs/Clothing/Basic%20Hoodie.webp"
+    },
+    {
+      "name": "Astronaut Jumpsuit",
+      "url": "/pp-traits/Clothing/Astronaut%20Jumpsuit.webp",
+      "thumb": "/pp-thumbs/Clothing/Astronaut%20Jumpsuit.webp"
+    },
+    {
+      "name": "Golden Armor Plate",
+      "url": "/pp-traits/Clothing/Golden%20Armor%20Plate.webp",
+      "thumb": "/pp-thumbs/Clothing/Golden%20Armor%20Plate.webp"
+    },
+    {
+      "name": "Cosmic Holo Space Suit",
+      "url": "/pp-traits/Clothing/Cosmic%20Holo%20Space%20Suit.webp",
+      "thumb": "/pp-thumbs/Clothing/Cosmic%20Holo%20Space%20Suit.webp"
+    },
+    {
+      "name": "Lunar New Year Track Jacket",
+      "url": "/pp-traits/Clothing/Lunar%20New%20Year%20Track%20Jacket.webp",
+      "thumb": "/pp-thumbs/Clothing/Lunar%20New%20Year%20Track%20Jacket.webp"
+    },
+    {
+      "name": "Plain Tee",
+      "url": "/pp-traits/Clothing/Plain%20Tee.webp",
+      "thumb": "/pp-thumbs/Clothing/Plain%20Tee.webp"
+    },
+    {
+      "name": "Varsity Bomber",
+      "url": "/pp-traits/Clothing/Varsity%20Bomber.webp",
+      "thumb": "/pp-thumbs/Clothing/Varsity%20Bomber.webp"
+    }
+  ],
+  "Mouth": [
+    {
+      "name": "Cute Smile",
+      "url": "/pp-traits/Mouths/Cute%20Smile.webp",
+      "thumb": "/pp-thumbs/Mouths/Cute%20Smile.webp"
+    },
+    {
+      "name": "Confident Smirk",
+      "url": "/pp-traits/Mouths/Confident%20Smirk.webp",
+      "thumb": "/pp-thumbs/Mouths/Confident%20Smirk.webp"
+    },
+    {
+      "name": "Carrot Chomp",
+      "url": "/pp-traits/Mouths/Carrot%20Chomp.webp",
+      "thumb": "/pp-thumbs/Mouths/Carrot%20Chomp.webp"
+    },
+    {
+      "name": "Bubblegum Blow",
+      "url": "/pp-traits/Mouths/Bubblegum%20Blow.webp",
+      "thumb": "/pp-thumbs/Mouths/Bubblegum%20Blow.webp"
+    },
+    {
+      "name": "Battle Cry Roar",
+      "url": "/pp-traits/Mouths/Battle%20Cry%20Roar.webp",
+      "thumb": "/pp-thumbs/Mouths/Battle%20Cry%20Roar.webp"
+    },
+    {
+      "name": "Content Neutral",
+      "url": "/pp-traits/Mouths/Content%20Neutral.webp",
+      "thumb": "/pp-thumbs/Mouths/Content%20Neutral.webp"
+    },
+    {
+      "name": "Drool",
+      "url": "/pp-traits/Mouths/Drool.webp",
+      "thumb": "/pp-thumbs/Mouths/Drool.webp"
+    }
+  ],
+  "Hand Held Item": [
+    {
+      "name": "Carrot",
+      "url": "/pp-traits/Held%20Items/Carrot.webp",
+      "thumb": "/pp-thumbs/Held%20Items/Carrot.webp"
+    },
+    {
+      "name": "Golden Carrot Scepter",
+      "url": "/pp-traits/Held%20Items/Golden%20Carrot%20Scepter.webp",
+      "thumb": "/pp-thumbs/Held%20Items/Golden%20Carrot%20Scepter.webp"
+    },
+    {
+      "name": "Cosmic Orb",
+      "url": "/pp-traits/Held%20Items/Cosmic%20Orb.webp",
+      "thumb": "/pp-thumbs/Held%20Items/Cosmic%20Orb.webp"
+    },
+    {
+      "name": "Glowing Katana",
+      "url": "/pp-traits/Held%20Items/Glowing%20Katana.webp",
+      "thumb": "/pp-thumbs/Held%20Items/Glowing%20Katana.webp"
+    },
+    {
+      "name": "Victory Trophy",
+      "url": "/pp-traits/Held%20Items/Victory%20Trophy.webp",
+      "thumb": "/pp-thumbs/Held%20Items/Victory%20Trophy.webp"
+    },
+    {
+      "name": "Retro Boombox",
+      "url": "/pp-traits/Held%20Items/Retro%20Boombox.webp",
+      "thumb": "/pp-thumbs/Held%20Items/Retro%20Boombox.webp"
+    },
+    {
+      "name": "Skateboard",
+      "url": "/pp-traits/Held%20Items/Skateboard.webp",
+      "thumb": "/pp-thumbs/Held%20Items/Skateboard.webp"
+    }
+  ]
+}

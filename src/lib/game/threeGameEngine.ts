@@ -2,6 +2,12 @@ import * as THREE from 'three';
 import { BUNNY_SKINS, BunnySkin, DeathReason } from './types';
 import { soundEngine } from './soundEngine';
 
+export interface NinthCarrotRadarData {
+  active: boolean;
+  distanceHops: number;
+  angleDeg: number;
+}
+
 export interface GameEngineCallbacks {
   onScoreUpdate: (score: number) => void;
   onCarrotCollected: (totalSession: number, screenPos: { x: number; y: number }, isGolden?: boolean) => void;
@@ -9,6 +15,7 @@ export interface GameEngineCallbacks {
   onDifficultyUpdate?: (level: number, multiplier: number) => void;
   onGameStart?: () => void;
   onEagleWarning?: (active: boolean) => void;
+  onNinthCarrotRadar?: (radar: NinthCarrotRadarData | null) => void;
 }
 
 interface EagleData {
@@ -152,6 +159,9 @@ export class ThreeGameEngine {
   private eagleUnlocked = false;
   private eagleSpawnTimer = 0;
   private eagleData: EagleData | null = null;
+
+  // 9th Golden Carrot Navigation Radar
+  private ninthCarrotTarget: { row: number; col: number; x: number; z: number; mesh: THREE.Group } | null = null;
 
   constructor(container: HTMLElement, callbacks: GameEngineCallbacks, initialSkinId: string = 'classic') {
     this.container = container;
@@ -680,6 +690,7 @@ export class ThreeGameEngine {
     }
 
     this.cleanupEagle();
+    this.clearNinthCarrotRadar();
     this.eagleUnlocked = false;
     this.eagleSpawnTimer = 0;
     if (this.callbacks.onEagleWarning) {
@@ -877,10 +888,35 @@ export class ThreeGameEngine {
         const screenY = ((-carrotWorldPos.y + 1) * this.container.clientHeight) / 2;
         this.callbacks.onCarrotCollected(this.sessionCarrots, { x: screenX, y: screenY }, isGolden);
 
-        // Unlock eagle mechanic when player collects required carrots (5)
+        // Eagle Escalation System based on carrot count:
         if (this.sessionCarrots >= this.REQUIRED_CARROTS_FOR_EAGLE && !this.eagleUnlocked) {
           this.eagleUnlocked = true;
-          this.eagleSpawnTimer = 3.5 + Math.random() * 2.5;
+          this.eagleSpawnTimer = 3.5 + Math.random() * 2.0;
+        }
+
+        if (this.sessionCarrots === 7) {
+          // Escalation at 7 carrots: eagle gets aggressive and strikes shortly
+          this.eagleUnlocked = true;
+          this.eagleSpawnTimer = Math.min(this.eagleSpawnTimer, 2.8);
+        }
+
+        if (this.sessionCarrots === 8) {
+          if (this.maxCarrots === 8) {
+            // Normal 8-carrot game: Harvest complete!
+            // Immediate Apex Eagle strike so player is not left hopping aimlessly
+            this.eagleUnlocked = true;
+            this.eagleSpawnTimer = 1.0;
+          } else if (this.maxCarrots === 9) {
+            // 9th Golden Carrot run: spawn the 9th carrot and activate navigation radar
+            this.spawnNinthGoldenCarrot();
+            this.eagleUnlocked = true;
+            this.eagleSpawnTimer = 3.8;
+          }
+        }
+
+        if (this.sessionCarrots === 9 || isGolden) {
+          // 9th Golden Carrot collected!
+          this.clearNinthCarrotRadar();
         }
 
         if (carrot.attachedToLog) {
@@ -1215,6 +1251,20 @@ export class ThreeGameEngine {
       this.callbacks.onEagleWarning(true);
     }
 
+    // Dynamic difficulty tuning based on carrot count
+    let warningTimer = 1.3;
+    let flightDuration = 1.5;
+
+    if (this.sessionCarrots >= 8 && this.maxCarrots === 8) {
+      // Apex Predator Strike: lightning swoop
+      warningTimer = 0.85;
+      flightDuration = 1.15;
+    } else if (this.sessionCarrots >= 7) {
+      // Heightened attack: snappy swoop
+      warningTimer = 1.05;
+      flightDuration = 1.30;
+    }
+
     this.eagleData = {
       group,
       wingLeft,
@@ -1222,9 +1272,9 @@ export class ThreeGameEngine {
       shadow,
       warningMesh,
       state: 'warning',
-      warningTimer: 1.3,
+      warningTimer,
       flightTime: 0,
-      flightDuration: 1.5,
+      flightDuration,
       startPos,
       targetPos,
       endPos,
@@ -1363,8 +1413,19 @@ export class ThreeGameEngine {
         if (this.callbacks.onEagleWarning) {
           this.callbacks.onEagleWarning(false);
         }
-        // Next strike scheduled in 14-22 seconds
-        this.eagleSpawnTimer = 14.0 + Math.random() * 8.0;
+        // Next strike scheduled based on harvest stage:
+        if (this.sessionCarrots >= 8) {
+          // Relentless strikes after collecting 8 carrots (2.2s - 3.8s if 8-carrot game; 3.8s - 5.5s if 9-carrot game)
+          this.eagleSpawnTimer = this.maxCarrots === 8
+            ? 2.2 + Math.random() * 1.6
+            : 3.8 + Math.random() * 1.8;
+        } else if (this.sessionCarrots >= 7) {
+          // Escalated attack frequency at 7 carrots (4.0s - 6.5s)
+          this.eagleSpawnTimer = 4.0 + Math.random() * 2.5;
+        } else {
+          // Standard interval (14s - 22s)
+          this.eagleSpawnTimer = 14.0 + Math.random() * 8.0;
+        }
       }
       return;
     }
@@ -1395,6 +1456,118 @@ export class ThreeGameEngine {
       }
     }
     this.eagleData = null;
+  }
+
+  /* ============================= 9TH GOLDEN CARROT BEACON & RADAR ============================= */
+  private spawnNinthGoldenCarrot() {
+    if (this.ninthCarrotTarget) return;
+
+    // Pick target row 8 to 11 rows ahead of the player
+    const targetRow = this.player.row + 9;
+
+    // Ensure rows ahead are generated
+    while (this.farthestGenerated < targetRow + 5) {
+      this.generateRow(this.farthestGenerated + 1);
+    }
+
+    const rd = this.rows.get(targetRow);
+    if (!rd) return;
+
+    // Find an accessible column
+    let col = Math.floor(-this.HALF_WIDTH / 2 + Math.random() * (this.HALF_WIDTH + 1));
+    if (rd.blocked && rd.blocked.has(col)) {
+      for (let c = -this.HALF_WIDTH; c <= this.HALF_WIDTH; c++) {
+        if (!rd.blocked.has(c)) {
+          col = c;
+          break;
+        }
+      }
+    }
+    if (rd.blocked) rd.blocked.delete(col);
+
+    const carrotMesh = this.buildCarrot(true);
+
+    // Towering golden beacon column shooting into the sky
+    const beaconGeo = new THREE.CylinderGeometry(0.1, 0.35, 26, 12);
+    const beaconMat = new THREE.MeshBasicMaterial({
+      color: 0xffd700,
+      transparent: true,
+      opacity: 0.45,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const beacon = new THREE.Mesh(beaconGeo, beaconMat);
+    beacon.position.y = 13;
+    carrotMesh.add(beacon);
+
+    // Pulsating golden ground beacon halo
+    const haloGeo = new THREE.RingGeometry(0.4, 0.75, 16);
+    haloGeo.rotateX(-Math.PI / 2);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: 0xffe600,
+      transparent: true,
+      opacity: 0.65,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const halo = new THREE.Mesh(haloGeo, haloMat);
+    halo.position.y = 0.04;
+    carrotMesh.add(halo);
+
+    carrotMesh.position.set(col * this.TILE, 0.05, 0);
+    rd.group.add(carrotMesh);
+
+    if (!rd.carrots) rd.carrots = [];
+    rd.carrots.push({
+      mesh: carrotMesh,
+      col,
+      baseY: 0.05,
+      rotSpeed: 3.5,
+      floatOffset: 0,
+      isGolden: true,
+    });
+
+    const targetX = col * this.TILE;
+    const targetZ = -targetRow * this.TILE;
+
+    this.ninthCarrotTarget = {
+      row: targetRow,
+      col,
+      x: targetX,
+      z: targetZ,
+      mesh: carrotMesh,
+    };
+
+    soundEngine.playFanfare();
+    this.spawnParticleBurst(targetX, 0.5, targetZ, 0xffd700, 30);
+  }
+
+  private clearNinthCarrotRadar() {
+    this.ninthCarrotTarget = null;
+    if (this.callbacks.onNinthCarrotRadar) {
+      this.callbacks.onNinthCarrotRadar(null);
+    }
+  }
+
+  private updateNinthCarrotRadar() {
+    if (!this.ninthCarrotTarget || !this.callbacks.onNinthCarrotRadar) return;
+
+    if (!this.alive || this.ended || !this.started) {
+      this.callbacks.onNinthCarrotRadar(null);
+      return;
+    }
+
+    const dx = this.ninthCarrotTarget.x - this.player.x;
+    const dz = this.ninthCarrotTarget.z - this.player.z;
+    const distHops = Math.max(1, Math.round(Math.hypot(dx, dz) / this.TILE));
+    const angleRad = Math.atan2(dx, -dz);
+    const angleDeg = Math.round(angleRad * (180 / Math.PI));
+
+    this.callbacks.onNinthCarrotRadar({
+      active: true,
+      distanceHops: distHops,
+      angleDeg,
+    });
   }
 
   /* ============================= ANIMATION & LOOP ============================= */
@@ -1543,6 +1716,7 @@ export class ThreeGameEngine {
           if (!this.hopping) this.idleAnim(dt);
           this.updateRows(dt, now);
           this.updateEagle(dt);
+          this.updateNinthCarrotRadar();
         } else if (this.splashing) {
           this.updateSplash(now);
           this.updateRows(dt * 0.3, now);
@@ -1589,6 +1763,7 @@ export class ThreeGameEngine {
       this.resizeObserver = null;
     }
     this.cleanupEagle();
+    this.clearNinthCarrotRadar();
     this.scene.traverse((obj) => {
       if ((obj as THREE.Mesh).geometry) (obj as THREE.Mesh).geometry.dispose();
       if ((obj as THREE.Mesh).material) {

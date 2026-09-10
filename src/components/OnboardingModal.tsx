@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useRouter } from 'next/navigation';
 import {
@@ -41,6 +41,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { disconnect } = useDisconnect();
+  const { signMessageAsync } = useSignMessage();
   const router = useRouter();
 
   const [step, setStep] = useState<Step>('connect');
@@ -51,30 +52,75 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
-  // When wallet connects, fetch/create user
-  const fetchUser = useCallback(async (addr: string) => {
+  // When wallet connects, verify signature & load user
+  const verifyAndFetchUser = useCallback(async (addr: string) => {
     setIsLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/user?address=${addr}`);
-      const data = await res.json();
-      if (data.success && data.user) {
-        setUser(data.user);
-        // New user = no twitter; existing = has profile
-        setStep(data.user.twitterHandle ? 'profile' : 'setup');
+      // 1. Check existing verified session first
+      try {
+        const sessRes = await fetch('/api/auth/session');
+        const sessData = await sessRes.json();
+        if (sessData.authenticated && sessData.address?.toLowerCase() === addr.toLowerCase()) {
+          const res = await fetch(`/api/user?address=${addr}`);
+          const data = await res.json();
+          if (data.success && data.user) {
+            setUser(data.user);
+            setStep(data.user.twitterHandle ? 'profile' : 'setup');
+            return;
+          }
+        }
+      } catch {}
+
+      // 2. Request cryptographic nonce from server
+      const nonceRes = await fetch(`/api/auth/nonce?address=${addr}`);
+      const nonceData = await nonceRes.json();
+      if (!nonceRes.ok || !nonceData.message) {
+        throw new Error(nonceData.error || 'Failed to request challenge nonce');
       }
-    } catch {
-      setError('Failed to load profile. Please try again.');
+
+      // 3. Prompt user's MetaMask / Web3 wallet to sign
+      const signature = await signMessageAsync({ message: nonceData.message });
+
+      // 4. Verify signature on backend
+      const verifyRes = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: addr,
+          message: nonceData.message,
+          signature,
+        }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok || !verifyData.success) {
+        throw new Error(verifyData.error || 'Signature verification failed');
+      }
+
+      setUser(verifyData.user);
+      setStep(verifyData.user.twitterHandle ? 'profile' : 'setup');
+    } catch (err: any) {
+      console.error('Wallet verification failed:', err);
+      const isUserRejected =
+        err?.message?.includes('rejected') ||
+        err?.message?.includes('denied') ||
+        err?.code === 4001;
+      setError(
+        isUserRejected
+          ? 'Signature required to verify wallet ownership. Please reconnect and sign.'
+          : err?.message || 'Verification failed. Please try again.'
+      );
+      setStep('connect');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [signMessageAsync]);
 
   useEffect(() => {
-    if (isConnected && address && step === 'connect') {
-      fetchUser(address);
+    if (isConnected && address && step === 'connect' && isOpen) {
+      verifyAndFetchUser(address);
     }
-  }, [isConnected, address, step, fetchUser]);
+  }, [isConnected, address, step, isOpen, verifyAndFetchUser]);
 
   // Reset when modal closes
   useEffect(() => {
@@ -95,6 +141,19 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
     setIsLoading(true);
     setError('');
     try {
+      const code = referralInput.trim().toUpperCase();
+
+      // Pre-validate referral code if entered
+      if (code) {
+        const valRes = await fetch(`/api/referral/validate?code=${encodeURIComponent(code)}&address=${encodeURIComponent(address)}`);
+        const valData = await valRes.json();
+        if (!valData.valid) {
+          setError(valData.error || 'Referral code not found. Please enter an existing code or leave blank.');
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const handle = twitterInput.replace('@', '').trim();
       const res = await fetch('/api/user', {
         method: 'POST',
@@ -102,7 +161,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
         body: JSON.stringify({
           address,
           twitterHandle: handle,
-          referredBy: referralInput.trim().toUpperCase() || null,
+          referredBy: code || null,
         }),
       });
       const data = await res.json();

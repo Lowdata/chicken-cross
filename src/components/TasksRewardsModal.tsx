@@ -1,24 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  X,
-  XSquare,
-  Heart,
-  Share2,
-  Users,
-  Copy,
-  Check,
-  Gift,
-  Star,
-  Sparkles,
-  ChevronRight,
-  ExternalLink,
-  Shield,
-  Zap,
-} from 'lucide-react';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { soundEngine } from '@/lib/game/soundEngine';
 import { triggerHaptic } from '@/lib/game/haptics';
+import DialogShell from './landing/dialogs/DialogShell';
 
 interface UserProfile {
   walletAddress: string;
@@ -51,6 +37,47 @@ const TWITTER_LIKE_URL = 'https://twitter.com/intent/like?tweet_id=YOUR_TWEET_ID
 const TWITTER_RETWEET_URL = 'https://twitter.com/intent/retweet?tweet_id=YOUR_TWEET_ID';
 const TWITTER_POST_URL = 'https://twitter.com/BunnyHopGame';
 
+const TABS: { key: 'tasks' | 'rewards' | 'profile'; label: string }[] = [
+  { key: 'tasks', label: 'tasks' },
+  { key: 'rewards', label: 'rewards' },
+  { key: 'profile', label: 'profile' },
+];
+
+function CloseIcon(){
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true" width="20" height="20">
+      <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+const TaskRow: React.FC<{
+  icon: string;
+  title: string;
+  reward: string;
+  done: boolean;
+  action?: React.ReactNode;
+  children?: React.ReactNode;
+}> = ({ icon, title, reward, done, action, children }) => (
+  <div className="trItem">
+    <div className="dlgRow">
+      <span className="dlgRow__ico">
+        <img src={icon} alt="" aria-hidden="true" width={48} height={48} />
+      </span>
+      <div className="dlgRow__body">
+        <span className="dlgRow__title">{title}</span>
+        <span className={`dlgRow__reward${done ? ' is-done' : ''}`}>{done ? `✓ ${reward}` : reward}</span>
+      </div>
+      {done ? (
+        <button type="button" className="dlgRow__act" disabled>done</button>
+      ) : (
+        action
+      )}
+    </div>
+    {!done && children ? <div className="trExpand">{children}</div> : null}
+  </div>
+);
+
 export const TasksRewardsModal: React.FC<TasksRewardsModalProps> = ({ isOpen, onClose, address }) => {
   const [activeTab, setActiveTab] = useState<'tasks' | 'rewards' | 'profile'>('tasks');
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -61,6 +88,7 @@ export const TasksRewardsModal: React.FC<TasksRewardsModalProps> = ({ isOpen, on
   const [taskSuccess, setTaskSuccess] = useState<string | null>(null);
   const [taskError, setTaskError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const { openConnectModal } = useConnectModal();
 
   const fetchUser = useCallback(async () => {
     if (!address) return;
@@ -97,7 +125,6 @@ export const TasksRewardsModal: React.FC<TasksRewardsModalProps> = ({ isOpen, on
     if (!address || !user) return;
     if (user.completedTasks?.includes(task)) return;
 
-    // Validation before submit
     if (task === 'link_twitter' && !twitterInput.trim()) {
       setTaskError('Please enter your Twitter handle');
       return;
@@ -137,367 +164,278 @@ export const TasksRewardsModal: React.FC<TasksRewardsModalProps> = ({ isOpen, on
     }
   };
 
-  if (!isOpen) return null;
-
   const isDone = (task: string) => user?.completedTasks?.includes(task) || false;
+  const titleId = 'tasksTitle';
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="modal-container !p-0 w-full sm:max-w-md max-h-[92dvh] flex flex-col !rounded-b-none sm:!rounded-b-[var(--radius-modal)]">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-gradient-to-r from-brand-orange/10 to-brand-purple/10 shrink-0">
-          <div>
-            <h2 className="text-lg font-black text-white flex items-center gap-2">
-              <Gift className="w-5 h-5 text-brand-orange" />
-              Tasks & Rewards
-            </h2>
-            <p className="text-[11px] text-white/50 font-medium mt-0.5">Complete tasks to earn 🥕 carrots & lives</p>
-          </div>
-          <button
-            onClick={() => { soundEngine.playClick(); onClose(); }}
-            className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-          >
-            <X className="w-4 h-4 text-white/70" />
-          </button>
-        </div>
+    <DialogShell open={isOpen} onClose={onClose} labelledBy={titleId} maxWidth={520} maxHeight={760} panelClassName="dlgShell__panel--stack">
+      <div className="trDlg">
+        <p className="dlgKicker">tasks &amp; rewards</p>
+        <h2 className="dlgTitle" id={titleId}>earn your hearts</h2>
+        <p className="trSub">complete tasks to earn carrots and lives.</p>
 
-        {/* Tabs */}
-        <div className="flex border-b border-white/10 bg-brand-surface shrink-0">
-          {(['tasks', 'rewards', 'profile'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => { soundEngine.playClick(); setActiveTab(tab); setTaskError(null); setTaskSuccess(null); }}
-              className={`flex-1 py-3 text-[11px] font-black uppercase tracking-wider transition-all ${
-                activeTab === tab
-                  ? 'text-brand-orange border-b-2 border-brand-orange bg-brand-orange/5'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
-            >
-              {tab === 'tasks' ? '📋 Tasks' : tab === 'rewards' ? '🏆 Rewards' : '👤 Profile'}
-            </button>
+        <div className="dlgSteps dlgSteps--tabs" role="tablist" aria-label="Tasks and rewards sections">
+          {TABS.map((tab, i) => (
+            <React.Fragment key={tab.key}>
+              {i > 0 && <span className="dlgSteps__divider" aria-hidden="true" />}
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab.key}
+                className={`dlgSteps__item${activeTab === tab.key ? ' is-now' : ''}`}
+                onClick={() => { soundEngine.playClick(); setActiveTab(tab.key); setTaskError(null); setTaskSuccess(null); }}
+              >
+                {tab.label}
+              </button>
+            </React.Fragment>
           ))}
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto overscroll-contain bg-brand-dark">
-          {/* No wallet connected */}
+        <button
+          className="dlgClose"
+          onClick={() => { soundEngine.playClick(); onClose(); }}
+          aria-label="Close"
+        >
+          <CloseIcon />
+        </button>
+
+        <div className="trScroll">
           {!address && (
-            <div className="p-8 text-center">
-              <Shield className="w-10 h-10 text-white/20 mx-auto mb-4" />
-              <p className="text-sm font-bold text-white/50">Connect your wallet to access tasks & rewards</p>
+            <div className="trEmpty">
+              <img className="trEmpty__art" src="/pp-game/3d/bunny-01.png" alt="" aria-hidden="true" />
+              <p className="trEmpty__copy">connect your wallet to access tasks &amp; rewards</p>
+              <button className="dlgPrimary" onClick={() => openConnectModal?.()}>connect wallet</button>
             </div>
           )}
 
-          {/* Loading */}
           {address && loading && (
-            <div className="p-8 text-center">
-              <div className="w-8 h-8 border-4 border-brand-orange border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-xs text-white/40 font-medium">Loading your profile...</p>
+            <div className="trEmpty">
+              <span className="trSpin" aria-hidden="true" />
+              <p className="trEmpty__copy">loading your profile…</p>
             </div>
           )}
 
-          {/* TASKS TAB */}
           {address && !loading && activeTab === 'tasks' && user && (
-            <div className="p-5 space-y-4">
-              {taskError && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold p-3 rounded-xl">
-                  ⚠️ {taskError}
-                </div>
-              )}
-              {taskSuccess && (
-                <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold p-3 rounded-xl animate-fade-in">
-                  ✅ Task completed! Rewards added to your account.
-                </div>
-              )}
+            <div className="trList">
+              {taskError && <p className="trBanner is-err" role="alert">{taskError}</p>}
+              {taskSuccess && <p className="trBanner is-ok">task completed, rewards added to your account.</p>}
 
-              {/* Link Twitter */}
-              <TaskCard
-                icon={<XSquare className="w-5 h-5" />}
-                iconBg="bg-sky-500/10 text-sky-400"
-                title="Link Your Twitter"
-                description="Connect your X/Twitter account"
-                reward="+2 ❤️ Lives · +10 🥕 Carrots"
+              <TaskRow
+                icon="/pp-figma/dash-task-x.webp"
+                title="link your X account"
+                reward="+2 lives · +10 carrots"
                 done={isDone('link_twitter')}
               >
-                {!isDone('link_twitter') && (
-                  <div className="mt-3 space-y-2">
+                <label className="dlgField">
+                  <span className="dlgField__input">
+                    <span className="dlgField__at" aria-hidden="true">@</span>
                     <input
                       type="text"
-                      placeholder="@YourTwitterHandle"
+                      placeholder="yourhandle"
+                      aria-label="X handle"
+                      autoComplete="off"
+                      spellCheck={false}
                       value={twitterInput}
                       onChange={(e) => setTwitterInput(e.target.value)}
-                      className="w-full text-xs border-2 border-white/10 bg-brand-surface rounded-lg px-3 py-2.5 focus:outline-none focus:border-sky-400 font-medium text-white placeholder:text-white/20 transition-colors"
                     />
-                    <div className="flex gap-2">
-                      <a
-                        href={TWITTER_POST_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-bold text-sky-400 bg-sky-500/10 border border-sky-500/20 rounded-lg py-2 hover:bg-sky-500/20 transition-colors"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" /> Follow Us
-                      </a>
-                      <button
-                        onClick={() => completeTask('link_twitter')}
-                        disabled={submittingTask === 'link_twitter'}
-                        className="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-black text-white bg-sky-500 hover:bg-sky-600 rounded-lg py-2 transition-colors disabled:opacity-50"
-                      >
-                        {submittingTask === 'link_twitter' ? '...' : <><Check className="w-3.5 h-3.5" /> Verify</>}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </TaskCard>
-
-              {/* Like Post */}
-              <TaskCard
-                icon={<Heart className="w-5 h-5" />}
-                iconBg="bg-rose-500/10 text-rose-400"
-                title="Like Our Announcement"
-                description="Like our launch post on Twitter/X"
-                reward="+1 ❤️ Life · +5 🥕 Carrots"
-                done={isDone('like_post')}
-              >
-                {!isDone('like_post') && (
-                  <div className="mt-3 flex gap-2">
-                    <a
-                      href={TWITTER_LIKE_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setTimeout(() => completeTask('like_post'), 3000)}
-                      className="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-black text-white bg-rose-500 hover:bg-rose-600 rounded-lg py-2.5 transition-colors"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" /> Like Post & Claim
-                    </a>
-                  </div>
-                )}
-              </TaskCard>
-
-              {/* Retweet */}
-              <TaskCard
-                icon={<Share2 className="w-5 h-5" />}
-                iconBg="bg-emerald-500/10 text-emerald-400"
-                title="Retweet & Spread the Hop"
-                description="Retweet our post to earn rewards"
-                reward="+1 ❤️ Life · +5 🥕 Carrots"
-                done={isDone('retweet_post')}
-              >
-                {!isDone('retweet_post') && (
-                  <div className="mt-3 flex gap-2">
-                    <a
-                      href={TWITTER_RETWEET_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setTimeout(() => completeTask('retweet_post'), 3000)}
-                      className="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-black text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg py-2.5 transition-colors"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" /> Retweet & Claim
-                    </a>
-                  </div>
-                )}
-              </TaskCard>
-
-              {/* Refer a Friend */}
-              <TaskCard
-                icon={<Users className="w-5 h-5" />}
-                iconBg="bg-brand-purple/10 text-brand-purple"
-                title="Refer a Friend"
-                description="Enter a referral code from a friend"
-                reward="+3 ❤️ Lives · +20 🥕 Carrots"
-                done={isDone('refer_friend')}
-              >
-                {!isDone('refer_friend') && (
-                  <div className="mt-3 space-y-2">
-                    <input
-                      type="text"
-                      placeholder="Enter referral code (e.g. ABCD1234)"
-                      value={referralInput}
-                      onChange={(e) => setReferralInput(e.target.value.toUpperCase())}
-                      className="w-full text-xs border-2 border-white/10 bg-brand-surface rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand-purple font-mono tracking-wider uppercase text-white placeholder:text-white/20 transition-colors"
-                    />
-                    <button
-                      onClick={() => completeTask('refer_friend')}
-                      disabled={submittingTask === 'refer_friend'}
-                      className="w-full flex items-center justify-center gap-1.5 text-[11px] font-black text-white bg-brand-purple hover:bg-brand-purple-dark rounded-lg py-2.5 transition-colors disabled:opacity-50"
-                    >
-                      {submittingTask === 'refer_friend' ? '...' : <><ChevronRight className="w-3.5 h-3.5" /> Apply Code</>}
-                    </button>
-                  </div>
-                )}
-              </TaskCard>
-
-              {/* Invite Link */}
-              <div className="bg-brand-orange/10 border-2 border-brand-orange/20 rounded-2xl p-4 mt-2">
-                <div className="text-[10px] uppercase font-black text-brand-orange mb-2 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" /> Your Referral Link
-                </div>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 text-[11px] bg-brand-dark border border-brand-orange/30 rounded-lg px-3 py-2 font-mono text-brand-orange truncate">
-                    {user.referralCode ? `.../?ref=${user.referralCode}` : 'Loading...'}
-                  </code>
-                  <button
-                    onClick={handleCopyReferral}
-                    className="flex items-center gap-1.5 text-[11px] font-black text-white bg-brand-orange hover:bg-brand-orange-dark rounded-lg px-3 py-2 transition-colors"
+                  </span>
+                </label>
+                <div className="trActions">
+                  <a
+                    href={TWITTER_POST_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="dlgRow__act dlgRow__act--quiet"
                   >
-                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copied ? 'Copied!' : 'Copy'}
+                    follow us
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => completeTask('link_twitter')}
+                    disabled={submittingTask === 'link_twitter'}
+                    className="dlgRow__act"
+                  >
+                    {submittingTask === 'link_twitter' ? 'verifying…' : 'verify'}
                   </button>
                 </div>
-                <p className="text-[10px] text-brand-orange/70 mt-2">
-                  Friends who use your link &amp; enter your code earn you +10 🥕 extra!
-                </p>
+              </TaskRow>
+
+              <TaskRow
+                icon="/pp-figma/dash-task-heart.webp"
+                title="like the launch post"
+                reward="+1 life · +5 carrots"
+                done={isDone('like_post')}
+                action={
+                  <a
+                    href={TWITTER_LIKE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setTimeout(() => completeTask('like_post'), 3000)}
+                    className="dlgRow__act"
+                  >
+                    like it
+                  </a>
+                }
+              />
+
+              <TaskRow
+                icon="/pp-figma/dash-task-retweet.webp"
+                title="repost and spread the hop"
+                reward="+1 life · +5 carrots"
+                done={isDone('retweet_post')}
+                action={
+                  <a
+                    href={TWITTER_RETWEET_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setTimeout(() => completeTask('retweet_post'), 3000)}
+                    className="dlgRow__act"
+                  >
+                    repost
+                  </a>
+                }
+              />
+
+              <TaskRow
+                icon="/pp-figma/dash-task-people.webp"
+                title="refer a friend"
+                reward="+3 lives · +20 carrots"
+                done={isDone('refer_friend')}
+              >
+                <label className="dlgField">
+                  <span className="dlgField__input">
+                    <input
+                      type="text"
+                      placeholder="referral code"
+                      aria-label="Referral code"
+                      autoComplete="off"
+                      spellCheck={false}
+                      value={referralInput}
+                      onChange={(e) => setReferralInput(e.target.value.toUpperCase())}
+                    />
+                  </span>
+                </label>
+                <div className="trActions">
+                  <button
+                    type="button"
+                    onClick={() => completeTask('refer_friend')}
+                    disabled={submittingTask === 'refer_friend'}
+                    className="dlgRow__act"
+                  >
+                    {submittingTask === 'refer_friend' ? 'applying…' : 'apply code'}
+                  </button>
+                </div>
+              </TaskRow>
+
+              <div className="dlgSurface">
+                <span className="dlgLabel">your referral link</span>
+                <div className="trCodeRow">
+                  <code className="trCode">
+                    {user.referralCode ? `.../?ref=${user.referralCode}` : 'loading…'}
+                  </code>
+                  <button type="button" onClick={handleCopyReferral} className="dlgRow__act dlgRow__act--quiet">
+                    {copied ? 'copied' : 'copy'}
+                  </button>
+                </div>
+                <p className="trNote">friends who use your link and enter your code earn you 10 extra carrots.</p>
               </div>
             </div>
           )}
 
-          {/* REWARDS TAB */}
           {address && !loading && activeTab === 'rewards' && user && (
-            <div className="p-5 space-y-4">
-              {/* Legend */}
-              <div className="grid grid-cols-2 gap-3 mb-2">
-                <div className="bg-brand-orange/10 border border-brand-orange/20 rounded-xl p-3 text-center">
-                  <Zap className="w-5 h-5 text-brand-orange mx-auto mb-1.5" />
-                  <div className="text-[10px] font-black text-brand-orange uppercase">FCFS Tier</div>
-                  <div className="text-[10px] text-brand-orange/70 font-medium">5-8 Carrots</div>
+            <div className="trList">
+              <div className="trGrid">
+                <div className="dlgSurface trTier">
+                  <span className="trTier__name">fcfs tier</span>
+                  <span className="trTier__c">5 to 8 carrots in a run</span>
                 </div>
-                <div className="bg-brand-purple/10 border border-brand-purple/20 rounded-xl p-3 text-center">
-                  <Star className="w-5 h-5 text-brand-purple mx-auto mb-1.5" />
-                  <div className="text-[10px] font-black text-brand-purple uppercase">Guaranteed</div>
-                  <div className="text-[10px] text-brand-purple/70 font-medium">9 Carrots 🔥 1/100</div>
+                <div className="dlgSurface trTier">
+                  <span className="trTier__name is-alt">guaranteed</span>
+                  <span className="trTier__c">9 carrots in a run</span>
                 </div>
               </div>
 
               {user.rewards?.length === 0 ? (
-                <div className="text-center py-10">
-                  <Gift className="w-12 h-12 text-white/10 mx-auto mb-3" />
-                  <p className="text-sm font-bold text-white/50">No rewards yet</p>
-                  <p className="text-[11px] text-white/30 mt-1">Collect 5+ carrots in a run to qualify!</p>
+                <div className="trEmpty">
+                  <img className="trEmpty__art" src="/pp-game/chest.png" alt="" aria-hidden="true" />
+                  <p className="trEmpty__copy">no rewards yet — collect 5 or more carrots in a run to qualify.</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {[...(user.rewards || [])].reverse().map((reward) => (
-                    <div
-                      key={reward.id}
-                      className={`rounded-2xl border-2 p-4 ${
-                        reward.tier === 'guaranteed'
-                          ? 'bg-brand-purple/5 border-brand-purple/30'
-                          : 'bg-brand-orange/5 border-brand-orange/30'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          {reward.tier === 'guaranteed' ? (
-                            <Star className="w-5 h-5 text-brand-purple drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
-                          ) : (
-                            <Zap className="w-5 h-5 text-brand-orange drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-                          )}
-                          <div>
-                            <div className={`text-xs font-black ${reward.tier === 'guaranteed' ? 'text-brand-purple' : 'text-brand-orange'}`}>
-                              {reward.tier === 'guaranteed' ? '💎 GUARANTEED Reward' : '⚡ FCFS Reward'}
-                            </div>
-                            <div className="text-[11px] text-white/50 font-medium mt-0.5">
-                              {reward.carrotsCollected} 🥕 · Score {reward.runScore}
-                            </div>
-                          </div>
-                        </div>
-                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full ${
-                          reward.txHash || reward.claimCode
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-white/10 text-white/50'
-                        }`}>
-                          {reward.txHash || reward.claimCode ? 'CLAIMED' : 'PENDING'}
-                        </span>
-                      </div>
+                [...(user.rewards || [])].reverse().map((reward) => (
+                  <div className="dlgRow" key={reward.id}>
+                    <span className="dlgRow__ico">
+                      <img src="/pp-figma/dash-carrot.webp" alt="" aria-hidden="true" width={48} height={48} />
+                    </span>
+                    <div className="dlgRow__body">
+                      <span className="dlgRow__title">
+                        {reward.tier === 'guaranteed' ? 'guaranteed reward' : 'fcfs reward'}
+                      </span>
+                      <span className="dlgRow__reward">
+                        {reward.carrotsCollected} carrots · score {reward.runScore}
+                      </span>
                     </div>
-                  ))}
-                </div>
+                    <span className={`dlgTag${reward.txHash || reward.claimCode ? ' is-done' : ''}`}>
+                      {reward.txHash || reward.claimCode ? 'claimed' : 'pending'}
+                    </span>
+                  </div>
+                ))
               )}
             </div>
           )}
 
-          {/* PROFILE TAB */}
           {address && !loading && activeTab === 'profile' && user && (
-            <div className="p-5 space-y-4">
-              {/* Wallet */}
-              <div className="bg-brand-surface border border-white/10 rounded-2xl p-4">
-                <div className="text-[10px] uppercase font-black text-white/50 mb-1.5">Wallet Address</div>
-                <div className="text-xs font-mono text-white/90 break-all">{user.walletAddress}</div>
+            <div className="trList">
+              <div className="dlgSurface">
+                <span className="dlgLabel">wallet address</span>
+                <code className="trCode">{user.walletAddress}</code>
               </div>
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-3">
-                <StatCard label="Total Carrots" value={`${user.carrots} 🥕`} bg="bg-brand-orange/10 border-brand-orange/20" text="text-brand-orange" />
-                <StatCard label="Daily Lives" value={`${user.lives} ❤️`} bg="bg-rose-500/10 border-rose-500/20" text="text-rose-400" />
-                <StatCard label="Tasks Done" value={`${user.completedTasks?.length || 0} / 4`} bg="bg-emerald-500/10 border-emerald-500/20" text="text-emerald-400" />
-                <StatCard label="Rewards Earned" value={`${user.rewards?.length || 0} 🏆`} bg="bg-brand-purple/10 border-brand-purple/20" text="text-brand-purple" />
-              </div>
-
-              {/* Twitter */}
-              <div className="bg-sky-500/10 border border-sky-500/20 rounded-2xl p-4 flex items-center justify-between">
-                <div>
-                  <div className="text-[10px] uppercase font-black text-sky-500 mb-1">Twitter / X</div>
-                  <div className="text-xs font-bold text-sky-400">
-                    {user.twitterHandle ? `@${user.twitterHandle}` : 'Not linked'}
-                  </div>
+              <div className="trGrid">
+                <div className="dlgSurface">
+                  <span className="dlgLabel">total carrots</span>
+                  <span className="trStat__val is-carrot">{user.carrots}</span>
                 </div>
-                <XSquare className={`w-5 h-5 ${user.twitterHandle ? 'text-sky-400' : 'text-white/20'}`} />
+                <div className="dlgSurface">
+                  <span className="dlgLabel">daily lives</span>
+                  <span className="trStat__val is-life">{user.lives}</span>
+                </div>
+                <div className="dlgSurface">
+                  <span className="dlgLabel">tasks done</span>
+                  <span className="trStat__val is-done">{user.completedTasks?.length || 0} / 4</span>
+                </div>
+                <div className="dlgSurface">
+                  <span className="dlgLabel">rewards earned</span>
+                  <span className="trStat__val">{user.rewards?.length || 0}</span>
+                </div>
               </div>
 
-              {/* Referral */}
-              <div className="bg-brand-surface border border-white/10 rounded-2xl p-4">
-                <div className="text-[10px] uppercase font-black text-brand-orange mb-2">Your Referral Code</div>
-                <div className="flex items-center gap-3">
-                  <code className="flex-1 text-lg font-black text-white tracking-widest">{user.referralCode}</code>
-                  <button onClick={handleCopyReferral} className="flex items-center gap-1.5 text-[11px] font-bold text-brand-dark bg-brand-orange hover:bg-brand-orange-dark rounded-lg px-3 py-2 transition-colors">
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    {copied ? 'Copied!' : 'Copy'}
+              <div className="dlgRow">
+                <span className="dlgRow__ico">
+                  <img src="/pp-figma/dash-task-x.webp" alt="" aria-hidden="true" width={48} height={48} />
+                </span>
+                <div className="dlgRow__body">
+                  <span className="dlgRow__title">X account</span>
+                  <span className={`dlgRow__reward${user.twitterHandle ? ' is-done' : ''}`}>
+                    {user.twitterHandle ? `@${user.twitterHandle}` : 'not linked'}
+                  </span>
+                </div>
+                <span className="dlgTag">{user.twitterHandle ? 'linked' : 'open'}</span>
+              </div>
+
+              <div className="dlgSurface">
+                <span className="dlgLabel">your referral code</span>
+                <div className="trCodeRow">
+                  <code className="trCode">{user.referralCode}</code>
+                  <button type="button" onClick={handleCopyReferral} className="dlgRow__act dlgRow__act--quiet">
+                    {copied ? 'copied' : 'copy'}
                   </button>
                 </div>
-                <p className="text-[11px] text-white/50 mt-2">Friends referred: {user.referralCount}</p>
+                <p className="trNote">friends referred: {user.referralCount}</p>
               </div>
             </div>
           )}
         </div>
       </div>
-    </div>
+    </DialogShell>
   );
 };
-
-// Sub-components
-
-const TaskCard: React.FC<{
-  icon: React.ReactNode;
-  iconBg: string;
-  title: string;
-  description: string;
-  reward: string;
-  done: boolean;
-  children?: React.ReactNode;
-}> = ({ icon, iconBg, title, description, reward, done, children }) => (
-  <div className={`rounded-2xl border-2 p-4 transition-all ${done ? 'bg-emerald-500/5 border-emerald-500/20 opacity-70' : 'bg-brand-surface border-white/10 hover:border-brand-orange/50'}`}>
-    <div className="flex items-start gap-3.5">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
-        {icon}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <div className="text-sm font-black text-white">{title}</div>
-          {done && <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full shrink-0">✓ Done</span>}
-        </div>
-        <div className="text-xs text-white/50 font-medium mt-1">{description}</div>
-        <div className="text-[11px] font-black text-brand-orange mt-1.5">{reward}</div>
-        {children}
-      </div>
-    </div>
-  </div>
-);
-
-const StatCard: React.FC<{ label: string; value: string; bg: string; text: string }> = ({
-  label, value, bg, text,
-}) => (
-  <div className={`rounded-xl border p-3.5 ${bg}`}>
-    <div className="text-[10px] uppercase font-black text-white/50 mb-1">{label}</div>
-    <div className={`text-base font-black ${text}`}>{value}</div>
-  </div>
-);
-

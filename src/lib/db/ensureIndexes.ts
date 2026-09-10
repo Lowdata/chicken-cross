@@ -24,7 +24,13 @@ export async function ensureIndexes() {
     await users.createIndex({ walletAddress: 1 }, { unique: true, background: true });
     await users.createIndex({ twitterHandle: 1 }, { sparse: true, background: true });
     await users.createIndex({ referralCode: 1 }, { unique: true, background: true });
+    await users.createIndex({ referralCode: 1, walletAddress: 1 }, { background: true });
     await users.createIndex({ createdAt: -1 }, { background: true });
+
+    // ── auth_nonces (TTL: expires in 10 minutes) ──
+    const nonces = db.collection('auth_nonces');
+    await nonces.createIndex({ address: 1, nonce: 1 }, { background: true });
+    await nonces.createIndex({ createdAt: 1 }, { expireAfterSeconds: 600, background: true });
 
     // ── game_sessions ──
     const sessions = db.collection('game_sessions');
@@ -63,6 +69,15 @@ export async function ensureIndexes() {
     await rewards.createIndex({ walletAddress: 1 }, { background: true });
     await rewards.createIndex({ tier: 1, claimedAt: 1 }, { background: true });
     await rewards.createIndex({ earnedAt: -1 }, { background: true });
+
+    // ── scores (Leaderboard heavy query optimization) ──
+    const scores = db.collection('scores');
+    await scores.createIndex({ score: -1, createdAt: -1 }, { background: true });
+    await scores.createIndex({ address: 1, score: -1 }, { background: true });
+
+    // ── players ──
+    const players = db.collection('players');
+    await players.createIndex({ address: 1 }, { unique: true, background: true });
 
     console.log('✅ MongoDB indexes ensured');
   } catch (err) {

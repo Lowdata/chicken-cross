@@ -1,4 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+
+// Leaderboard is currently disabled / not in use.
+export async function GET() {
+  return NextResponse.json({ error: 'Leaderboard feature is currently disabled' }, { status: 404 });
+}
+
+export async function POST() {
+  return NextResponse.json({ error: 'Leaderboard submissions are currently disabled' }, { status: 404 });
+}
+
+/*
+import { NextRequest } from 'next/server';
 import { getDb } from '@/lib/db/mongodb';
 
 export async function GET() {
@@ -20,7 +32,7 @@ export async function GET() {
 
     const leaderboard = await db
       .collection('scores')
-      .find({})
+      .find({}, { projection: { name: 1, score: 1, carrots: 1, skin: 1, createdAt: 1, address: 1 } })
       .sort({ score: -1, createdAt: -1 })
       .limit(10)
       .toArray();
@@ -72,3 +84,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Failed to submit score' }, { status: 500 });
   }
 }
+*/

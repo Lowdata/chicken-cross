@@ -1,0 +1,7 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon">
+<path id="Icon glyph" d="M8.25 15.75V7.5C8.25 7.00272 8.44754 6.52581 8.79917 6.17417C9.15081 5.82254 9.62772 5.625 10.125 5.625C10.6223 5.625 11.0992 5.82254 11.4508 6.17417C11.8025 6.52581 12 7.00272 12 7.5V12" stroke="#2A1145" stroke-width="1.5" stroke-linecap="round"/>
+<path id="Icon glyph_2" d="M12 12.375C12 11.9374 12.1738 11.5177 12.4833 11.2083C12.7927 10.8988 13.2124 10.725 13.65 10.725C14.0876 10.725 14.5073 10.8988 14.8167 11.2083C15.1262 11.5177 15.3 11.9374 15.3 12.375V13.5" stroke="#2A1145" stroke-width="1.5" stroke-linecap="round"/>
+<path id="Icon glyph_3" d="M15.3 13.5C15.3 13.0624 15.4738 12.6427 15.7833 12.3333C16.0927 12.0238 16.5124 11.85 16.95 11.85C17.3876 11.85 17.8073 12.0238 18.1167 12.3333C18.4262 12.6427 18.6 13.0624 18.6 13.5V16.2C18.6 18.75 16.65 21 13.95 21H12.15C10.65 21 9.6 20.4 8.7 19.2L6 16.2" stroke="#2A1145" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>
