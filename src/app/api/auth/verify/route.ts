@@ -8,6 +8,8 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.SESSION_SECRET || 'bunny-hop-session-secret-2024'
 );
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();

@@ -3,6 +3,7 @@ import { getDb } from '@/lib/db/mongodb';
 import { nanoid } from 'nanoid';
 import { isAddress, verifyMessage } from 'viem';
 import { jwtVerify } from 'jose';
+import { validateReferralCode } from '@/lib/services/referralService';
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.SESSION_SECRET || 'bunny-hop-session-secret-2024'
@@ -76,39 +77,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
     }
 
-    // ── Strict Referral Code Validation (Optimized with covered index query) ──
+    // ── Strict Referral Code Validation (Optimized with shared service) ──
     let validReferralCode: string | null = null;
     let referrerWallet: string | null = null;
 
     if (referredBy && typeof referredBy === 'string' && referredBy.trim()) {
-      const code = referredBy.trim().toUpperCase();
-
-      if (!/^[A-Z0-9_-]{4,16}$/.test(code)) {
-        return NextResponse.json({ error: 'Invalid referral code format' }, { status: 400 });
+      const valResult = await validateReferralCode(referredBy, wallet, db);
+      if (!valResult.valid) {
+        return NextResponse.json({ error: valResult.error }, { status: 400 });
       }
-
-      // Fast projection query: index on { referralCode: 1 }
-      const referrer = await db.collection('users').findOne(
-        { referralCode: code },
-        { projection: { _id: 0, walletAddress: 1 } }
-      );
-
-      if (!referrer) {
-        return NextResponse.json(
-          { error: 'Referral code does not exist. Please check the code or leave blank.' },
-          { status: 400 }
-        );
-      }
-
-      if (referrer.walletAddress.toLowerCase() === wallet) {
-        return NextResponse.json(
-          { error: 'You cannot use your own referral code.' },
-          { status: 400 }
-        );
-      }
-
-      validReferralCode = code;
-      referrerWallet = referrer.walletAddress;
+      validReferralCode = valResult.referralCode;
+      referrerWallet = valResult.referrerWallet;
     }
 
     const existing = await db.collection('users').findOne({ walletAddress: wallet });
