@@ -6,25 +6,31 @@ export type TraitItem = { name: string; url: string; thumb?: string };
 type Manifest = Record<string, TraitItem[]>;
 
 const LAYERS = [
-  'Body', 'Clothes', 'Eyes', 'Mouth', 'Hand Held Item',
+  'Backgrounds', 'Aura - Power Effect', 'Origin Region', 'Breed - Kind', 'Evolution Stage',
+  'Fur - Body', 'Skin - Material', 'Bottoms', 'Footwear', 'Clothing', 'Body Accessories',
+  'Ears', 'Eyes', 'Mouths', 'Facial Hair', 'Face Accessories', 'Eyewear', 'Headwears',
+  'Held Items', 'Companion - Pet', 'Specialty', '1-1 Special',
 ] as const;
 
 const GLYPH: Record<string, string> = {
-  'Body': '❋',
-  'Clothes': '✚',
-  'Eyes': '◉',
-  'Mouth': '‿',
-  'Hand Held Item': '✱',
+  'Backgrounds': '▢', 'Aura - Power Effect': '✷', 'Origin Region': '◈', 'Breed - Kind': '❥',
+  'Evolution Stage': '⇡', 'Fur - Body': '❋', 'Skin - Material': '◐', 'Bottoms': '▽',
+  'Footwear': '△', 'Clothing': '✚', 'Body Accessories': '✧', 'Ears': '∩', 'Eyes': '◉',
+  'Mouths': '‿', 'Facial Hair': '〰', 'Face Accessories': '❂', 'Eyewear': '◎',
+  'Headwears': '⌂', 'Held Items': '✱', 'Companion - Pet': '❀', 'Specialty': '★',
+  '1-1 Special': '✦',
 };
 
-const HIDDEN = new Set<string>();
+const HIDDEN = new Set(['Aura - Power Effect']);
 
 const OPENING: Record<string, string> = {
-  'Body': 'Blush Pink',
-  'Clothes': 'Basic Hoodie',
+  'Backgrounds': 'Cloud Sky Scene',
+  'Breed - Kind': 'Netherland Dwarf',
+  'Fur - Body': 'Blush Pink',
   'Eyes': 'Default Round',
-  'Mouth': 'Cute Smile',
-  'Hand Held Item': 'Carrot',
+  'Mouths': 'Cute Smile',
+  'Clothing': 'Plain Tee',
+  'Held Items': 'Carrot',
 };
 
 const pretty = (c: string) => c.replace(/ - /g, ' / ').toLowerCase();
@@ -80,12 +86,13 @@ export default function TraitLab(){
     [order, eq]
   );
 
-  const skin = eq['Body']?.name;
-  const buildName = dispName(skin ? `${skin} bounce` : 'empty build').toLowerCase();
+  const kind = eq['Breed - Kind']?.name;
+  const skin = eq['Skin - Material']?.name || eq['Fur - Body']?.name;
+  const buildName = dispName(kind && skin ? `${skin} ${kind}` : kind || skin || 'empty build').toLowerCase();
 
-  const tone = dispName(eq['Body']?.name || 'none').toUpperCase();
-  const fit = dispName(eq['Clothes']?.name || 'none').toUpperCase();
-  const held = dispName(eq['Hand Held Item']?.name || 'none').toUpperCase();
+  const tone = dispName(eq['Skin - Material']?.name || eq['Fur - Body']?.name || 'none').toUpperCase();
+  const fit = dispName(eq['Clothing']?.name || 'none').toUpperCase();
+  const held = dispName(eq['Held Items']?.name || 'none').toUpperCase();
 
   const items = cats[cat] || [];
 
@@ -97,7 +104,7 @@ export default function TraitLab(){
     el.classList.add('is-bounce');
   };
 
-  const ROLL = ['Body', 'Clothes', 'Eyes', 'Mouth', 'Hand Held Item'];
+  const ROLL = ['Backgrounds', 'Breed - Kind', 'Eyes', 'Mouths', 'Clothing', 'Held Items', 'Headwears'];
   const randomise = () => {
     setEq(prev => {
       const next = { ...prev };
@@ -155,7 +162,8 @@ export default function TraitLab(){
 
       <div className="panel panel--traits glass-card">
         <div className="pick__head">
-          <span className="pick__label">2 · pick a trait</span>
+          <span className="pick__label">2 · pick a trait · <b>{pretty(cat)}</b></span>
+          <span className="pick__count">{items.length} options</span>
         </div>
         <div className="tilewrap">
           <div className="tilewrap__scroll" data-lenis-prevent>

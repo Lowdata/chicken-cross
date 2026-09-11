@@ -73,8 +73,7 @@
   margin:0 auto !important; padding:0 !important;
   line-height:1.15 !important; letter-spacing:.06em !important; text-align:center !important;
 }
-#signal .sg__coinwrap--d{ margin-top:-150px !important; margin-left:-90px !important }
-#signal .sg__boombox{ margin-left:-90px !important }
+#signal .sg__coinwrap--d{ margin-top:-150px !important }
 
 #physical .ph__tab{ transform:none !important; rotate:0deg !important;
   display:flex !important; flex-direction:column !important;
