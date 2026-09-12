@@ -349,7 +349,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          <div className="bg-[rgba(34,23,101,0.42)] ring-[1.5px] ring-inset ring-[rgba(255,143,208,0.55)] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl p-5 backdrop-blur-[22px] backdrop-saturate-[1.35] relative">
+          <div className="order-2 lg:order-1 bg-[rgba(34,23,101,0.42)] ring-[1.5px] ring-inset ring-[rgba(255,143,208,0.55)] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl p-5 backdrop-blur-[22px] backdrop-saturate-[1.35] relative">
             <div className="flex items-center justify-between min-h-[60px] pb-4">
               <h2 className="font-bungee text-xl leading-[22px] text-white tracking-[0.4px] uppercase">
                 earn your hearts
@@ -431,7 +431,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-[rgba(34,23,101,0.42)] ring-[1.5px] ring-inset ring-[rgba(255,143,208,0.55)] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl p-5 backdrop-blur-[22px] backdrop-saturate-[1.35] relative">
+          <div className="order-1 lg:order-2 bg-[rgba(34,23,101,0.42)] ring-[1.5px] ring-inset ring-[rgba(255,143,208,0.55)] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl p-5 backdrop-blur-[22px] backdrop-saturate-[1.35] relative">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="font-bungee text-xl leading-[22px] text-white tracking-[0.4px] uppercase min-h-[60px] pb-4 flex items-center">
