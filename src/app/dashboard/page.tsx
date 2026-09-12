@@ -246,8 +246,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <header className="relative z-20 max-w-[1212px] w-full mx-auto px-4 pt-4 sm:pt-0 sm:h-16 before:absolute before:inset-y-0 before:left-1/2 before:-translate-x-1/2 before:w-screen before:bg-[rgba(12,6,40,0.72)] before:backdrop-blur-[20px] before:border-b before:border-white/10 before:-z-10 before:pointer-events-none">
-        <div className="flex items-center justify-between gap-2 flex-wrap h-full">
+      <header className="relative z-20 max-w-[1212px] w-full mx-auto px-4 pt-3 pb-3 sm:py-0 sm:h-16 before:absolute before:inset-y-0 before:left-1/2 before:-translate-x-1/2 before:w-screen before:bg-[rgba(12,6,40,0.72)] before:backdrop-blur-[20px] before:border-b before:border-white/10 before:-z-10 before:pointer-events-none">
+        <div className="flex items-center justify-between gap-3 sm:gap-2 flex-wrap h-full">
           <div className="order-2 sm:order-1 w-full sm:w-auto flex items-center gap-2 sm:gap-3.5 flex-wrap">
             <div className="bg-white/[0.06] backdrop-blur-md border border-white/[0.12] rounded-xl h-[34px] px-[15px] flex items-center gap-[9px]">
               <Image src="/pp-figma/dash-heart.webp" alt="" width={18} height={18} className="w-[18px] h-[18px]" />
@@ -331,7 +331,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="relative z-10 max-w-[1212px] w-full mx-auto px-4 pt-10 pb-8 flex-1 flex flex-col">
+      <main className="relative z-10 max-w-[1212px] w-full mx-auto px-4 pt-6 sm:pt-10 pb-8 flex-1 flex flex-col">
         <div className="text-left mb-7">
           <div className="relative mb-[26px]">
             <Image
