@@ -248,7 +248,7 @@ export default function DashboardPage() {
 
       <header className="relative z-20 max-w-[1212px] w-full mx-auto px-4 pt-4 sm:pt-0 sm:h-16 before:absolute before:inset-y-0 before:left-1/2 before:-translate-x-1/2 before:w-screen before:bg-[rgba(12,6,40,0.72)] before:backdrop-blur-[20px] before:border-b before:border-white/10 before:-z-10 before:pointer-events-none">
         <div className="flex items-center justify-between gap-2 flex-wrap h-full">
-          <div className="flex items-center gap-2 sm:gap-3.5 flex-wrap">
+          <div className="order-2 sm:order-1 w-full sm:w-auto flex items-center gap-2 sm:gap-3.5 flex-wrap">
             <div className="bg-white/[0.06] backdrop-blur-md border border-white/[0.12] rounded-xl h-[34px] px-[15px] flex items-center gap-[9px]">
               <Image src="/pp-figma/dash-heart.webp" alt="" width={18} height={18} className="w-[18px] h-[18px]" />
               <span className="font-bungee text-base leading-5 tracking-[0.16px] text-[#ffe14d]">{hearts}</span>
@@ -271,7 +271,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex items-center flex-wrap gap-2 sm:gap-3.5">
+          <div className="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-end flex-wrap gap-2 sm:gap-3.5">
             <Link
               href="/"
               className="bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white min-h-11 min-w-11 px-2 sm:px-3 rounded-xl border border-white/10 flex items-center justify-center gap-1.5 text-xs font-bold transition-[transform,background-color,color,box-shadow,filter] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100"
@@ -351,7 +351,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <div className="order-2 lg:order-1 bg-[rgba(34,23,101,0.42)] ring-[1.5px] ring-inset ring-[rgba(255,143,208,0.55)] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl p-5 backdrop-blur-[22px] backdrop-saturate-[1.35] relative">
             <div className="flex items-center justify-between min-h-[60px] pb-4">
-              <h2 className="font-bungee text-xl leading-[22px] text-white tracking-[0.4px] uppercase">
+              <h2 className="font-bungee text-lg sm:text-xl leading-[22px] text-white tracking-[0.4px] uppercase whitespace-nowrap">
                 earn your hearts
               </h2>
               <button
@@ -415,19 +415,31 @@ export default function DashboardPage() {
 
             <div className="text-center pt-[18px]">
               <p className="text-xs leading-4 text-white/55 mb-2">
-                you have {hearts} hearts · 5 free every day
+                {hearts > 0
+                  ? `you have ${hearts} hearts · 5 free every day`
+                  : 'out of hearts. finish a task, or wait for the daily refill.'}
               </p>
 
-              <Link
-                href="/game"
-                onClick={() => {
-                  soundEngine.playClick();
-                  triggerHaptic('hop');
-                }}
-                className="w-full h-16 bg-gradient-to-b from-[#ff9ed6] via-[#ff74be] via-[46%] to-[#f4479f] hover:brightness-110 text-white font-bungee text-xl leading-6 tracking-[0.4px] uppercase px-[18px] rounded-xl shadow-[0_3px_0_rgba(160,40,110,0.5),inset_0_2px_0_rgba(255,255,255,0.72),inset_0_-3px_0_rgba(150,30,100,0.42)] flex items-center justify-center transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100"
-              >
-                <FlipLabel>play bunny hop</FlipLabel>
-              </Link>
+              {hearts > 0 ? (
+                <Link
+                  href="/game"
+                  onClick={() => {
+                    soundEngine.playClick();
+                    triggerHaptic('hop');
+                  }}
+                  className="w-full h-16 bg-gradient-to-b from-[#ff9ed6] via-[#ff74be] via-[46%] to-[#f4479f] hover:brightness-110 text-white font-bungee text-xl leading-6 tracking-[0.4px] uppercase px-[18px] rounded-xl shadow-[0_3px_0_rgba(160,40,110,0.5),inset_0_2px_0_rgba(255,255,255,0.72),inset_0_-3px_0_rgba(150,30,100,0.42)] flex items-center justify-center transition-[transform,filter,box-shadow] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100"
+                >
+                  <FlipLabel>play bunny hop</FlipLabel>
+                </Link>
+              ) : (
+                <span
+                  role="button"
+                  aria-disabled="true"
+                  className="w-full h-16 bg-white/[0.07] text-white/45 opacity-50 font-bungee text-xl leading-6 tracking-[0.4px] uppercase px-[18px] rounded-xl flex items-center justify-center cursor-not-allowed select-none"
+                >
+                  play bunny hop
+                </span>
+              )}
             </div>
           </div>
 
