@@ -248,18 +248,18 @@ export default function DashboardPage() {
 
       <header className="relative z-20 max-w-[1212px] w-full mx-auto px-4 pt-3 pb-3 sm:py-0 sm:h-16 before:absolute before:inset-y-0 before:left-1/2 before:-translate-x-1/2 before:w-screen before:bg-[rgba(12,6,40,0.72)] before:backdrop-blur-[20px] before:border-b before:border-white/10 before:-z-10 before:pointer-events-none">
         <div className="flex items-center justify-between gap-3 sm:gap-2 flex-wrap h-full">
-          <div className="order-2 sm:order-1 w-full sm:w-auto flex items-center gap-2 sm:gap-3.5 flex-wrap">
-            <div className="bg-white/[0.06] backdrop-blur-md border border-white/[0.12] rounded-xl h-[34px] px-[15px] flex items-center gap-[9px]">
+          <div className="order-2 sm:order-1 w-full sm:w-auto flex items-center gap-2 sm:gap-3.5 flex-nowrap sm:flex-wrap">
+            <div className="flex-1 sm:flex-none bg-white/[0.06] backdrop-blur-md border border-white/[0.12] rounded-xl h-[34px] px-[15px] flex items-center gap-[9px]">
               <Image src="/pp-figma/dash-heart.webp" alt="" width={18} height={18} className="w-[18px] h-[18px]" />
-              <span className="font-bungee text-base leading-5 tracking-[0.16px] text-[#ffe14d]">{hearts}</span>
               <span className="text-xs font-bold uppercase tracking-[0.55px] text-white/55">hearts</span>
               <span className="text-xs text-white/45 font-dm-mono pl-1 hidden sm:inline">resets in {timeRemaining}</span>
+              <span className="font-bungee text-base leading-5 tracking-[0.16px] text-[#ffe14d] ml-auto sm:ml-0">{hearts}</span>
             </div>
 
-            <div className="bg-white/[0.06] backdrop-blur-md border border-white/[0.12] rounded-xl h-[34px] px-[15px] flex items-center gap-[9px] sm:w-[320px]">
+            <div className="flex-1 sm:flex-none bg-white/[0.06] backdrop-blur-md border border-white/[0.12] rounded-xl h-[34px] px-[15px] flex items-center gap-[9px] sm:w-[320px]">
               <Image src="/pp-figma/dash-flower.webp" alt="" width={18} height={18} className="w-[18px] h-[18px]" />
               <span className="text-xs font-bold uppercase tracking-[0.55px] text-white/55">tasks</span>
-              <span className="font-bungee text-base leading-5 tracking-[0.16px] text-[#ffe14d]">
+              <span className="font-bungee text-base leading-5 tracking-[0.16px] text-[#ffe14d] ml-auto sm:ml-0">
                 {completedCount.toString().padStart(2, '0')}
               </span>
               <div className="flex-1 h-1.5 bg-white/[0.12] rounded-full overflow-hidden hidden sm:block">
@@ -271,7 +271,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-end flex-wrap gap-2 sm:gap-3.5">
+          <div className="order-1 sm:order-2 w-full sm:w-auto flex items-center justify-end flex-nowrap sm:flex-wrap gap-2 sm:gap-3.5">
             <Link
               href="/"
               className="bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white min-h-11 min-w-11 px-2 sm:px-3 rounded-xl border border-white/10 flex items-center justify-center gap-1.5 text-xs font-bold transition-[transform,background-color,color,box-shadow,filter] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:translate-y-px active:scale-[0.96] active:duration-[90ms] active:ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bh-accent)] motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100"
