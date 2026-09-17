@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export type TraitItem = { name: string; url: string; thumb?: string };
 type Manifest = Record<string, TraitItem[]>;
@@ -23,7 +24,10 @@ const GLYPH: Record<string, string> = {
 
 const HIDDEN = new Set(['Aura - Power Effect']);
 
-const OPENING: Record<string, string> = {
+/* ==========================================================================
+   [TEMPORARY DISABLE - LAUNCH GATE] Curated Arts Presets (Only 2 available)
+   ========================================================================== */
+export const ART_PRESET_1: Record<string, string> = {
   'Backgrounds': 'Cloud Sky Scene',
   'Breed - Kind': 'Netherland Dwarf',
   'Fur - Body': 'Blush Pink',
@@ -32,6 +36,21 @@ const OPENING: Record<string, string> = {
   'Clothing': 'Plain Tee',
   'Held Items': 'Carrot',
 };
+
+export const ART_PRESET_2: Record<string, string> = {
+  'Backgrounds': 'Galaxy Nebula',
+  'Breed - Kind': 'Cyber Construct',
+  'Fur - Body': '24K Gold Fur',
+  'Eyes': 'Galaxy Swirl Eyes',
+  'Mouths': 'Excited Open Grin',
+  'Clothing': 'Astronaut Jumpsuit',
+  'Headwears': 'Blocky Pixel Crown',
+  'Held Items': 'Golden Carrot Scepter',
+};
+
+const ART_PRESETS = [ART_PRESET_1, ART_PRESET_2];
+
+const OPENING = ART_PRESET_1;
 
 const pretty = (c: string) => c.replace(/ - /g, ' / ').toLowerCase();
 
@@ -45,6 +64,35 @@ export default function TraitLab(){
   const [cat, setCat] = useState('');
   const [eq, setEq] = useState<Equipped>({});
   const stageRef = useRef<HTMLDivElement>(null);
+
+  /* [TEMPORARY DISABLE - LAUNCH GATE] Presets and Tooltip state */
+  const [activePresetIndex, setActivePresetIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; text: string } | null>(null);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleDisabledAction = useCallback((e: React.MouseEvent | React.TouchEvent, text = 'Coming Soon') => {
+    if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+    const target = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = target.left + target.width / 2;
+    const y = target.top - 6;
+
+    setTooltip({ visible: true, x, y, text });
+    hideTimeoutRef.current = setTimeout(() => {
+      setTooltip(null);
+    }, 2200);
+  }, []);
+
+  const hideTooltip = useCallback(() => {
+    if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+    hideTimeoutRef.current = setTimeout(() => {
+      setTooltip(null);
+    }, 150);
+  }, []);
 
   useEffect(() => {
     let live = true;
@@ -104,13 +152,19 @@ export default function TraitLab(){
     el.classList.add('is-bounce');
   };
 
-  const ROLL = ['Backgrounds', 'Breed - Kind', 'Eyes', 'Mouths', 'Clothing', 'Held Items', 'Headwears'];
+  /* [TEMPORARY DISABLE - LAUNCH GATE] Only 2 curated arts available on randomize */
   const randomise = () => {
-    setEq(prev => {
-      const next = { ...prev };
-      for (const c of ROLL){
-        const a = cats[c];
-        if (a?.length) next[c] = a[Math.floor(Math.random() * a.length)];
+    const nextIndex = (activePresetIndex + 1) % ART_PRESETS.length;
+    setActivePresetIndex(nextIndex);
+    const targetPreset = ART_PRESETS[nextIndex];
+
+    setEq(() => {
+      const next: Equipped = {};
+      for (const [c, name] of Object.entries(targetPreset)) {
+        const pool = cats[c];
+        if (pool?.length) {
+          next[c] = pool.find(i => i.name === name) || pool[0];
+        }
       }
       return next;
     });
@@ -119,10 +173,23 @@ export default function TraitLab(){
 
   return (
     <div className="lab">
+      {/* PANEL 1: SLOT SELECTION (GATED WITH COMING SOON TOOLTIP) */}
       <div className="panel panel--pick glass-card">
         <div className="pick__head">
-          <span className="pick__label">1 · choose a slot</span>
-          <button className="pick__clear" type="button" onClick={() => setEq({})}>clear all</button>
+          <span className="pick__label">1 · choose a slot <span className="pick__badge">Coming Soon</span></span>
+          <button
+            className="pick__clear is-disabled"
+            type="button"
+            title="Coming Soon"
+            aria-disabled="true"
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleDisabledAction(e, 'Coming Soon');
+            }}
+            onMouseEnter={e => handleDisabledAction(e, 'Coming Soon')}
+            onMouseLeave={hideTooltip}
+          >clear all</button>
         </div>
 
         <div className="slotlist" data-lenis-prevent>
@@ -133,8 +200,16 @@ export default function TraitLab(){
               <button
                 key={c}
                 type="button"
-                className={`slotrow${cat === c ? ' is-on' : ''}${worn ? ' has' : ''}`}
-                onClick={() => setCat(c)}
+                title="Coming Soon"
+                className={`slotrow is-disabled${cat === c ? ' is-on' : ''}${worn ? ' has' : ''}`}
+                aria-disabled="true"
+                onClick={e => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDisabledAction(e, 'Coming Soon');
+                }}
+                onMouseEnter={e => handleDisabledAction(e, 'Coming Soon')}
+                onMouseLeave={hideTooltip}
               >
                 <span className="slotrow__thumb">
                   {worn
@@ -149,9 +224,13 @@ export default function TraitLab(){
                 </span>
                 {worn && (
                   <span
-                    className="slotrow__x"
+                    className="slotrow__x is-disabled"
+                    title="Coming Soon"
                     aria-label={`clear ${pretty(c)}`}
-                    onClick={e => { e.stopPropagation(); setEq(p => ({ ...p, [c]: undefined })); }}
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleDisabledAction(e, 'Coming Soon');
+                    }}
                   >✕</span>
                 )}
               </button>
@@ -160,9 +239,10 @@ export default function TraitLab(){
         </div>
       </div>
 
+      {/* PANEL 2: TRAIT SELECTION (GATED WITH COMING SOON TOOLTIP) */}
       <div className="panel panel--traits glass-card">
         <div className="pick__head">
-          <span className="pick__label">2 · pick a trait · <b>{pretty(cat)}</b></span>
+          <span className="pick__label">2 · pick a trait · <b>{pretty(cat)}</b> <span className="pick__badge">Coming Soon</span></span>
           <span className="pick__count">{items.length} options</span>
         </div>
         <div className="tilewrap">
@@ -172,8 +252,16 @@ export default function TraitLab(){
                 <button
                   key={it.url}
                   type="button"
-                  className={`tile${eq[cat]?.url === it.url ? ' is-on' : ''}`}
-                  onClick={() => setEq(p => ({ ...p, [cat]: p[cat]?.url === it.url ? undefined : it }))}
+                  title="Coming Soon"
+                  className={`tile is-disabled${eq[cat]?.url === it.url ? ' is-on' : ''}`}
+                  aria-disabled="true"
+                  onClick={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDisabledAction(e, 'Coming Soon');
+                  }}
+                  onMouseEnter={e => handleDisabledAction(e, 'Coming Soon')}
+                  onMouseLeave={hideTooltip}
                 >
                   <span className="tile__tick">✓</span>
                   <span className="tile__img">
@@ -187,6 +275,7 @@ export default function TraitLab(){
         </div>
       </div>
 
+      {/* PANEL 3: PREVIEW STAGE */}
       <div className="panel panel--preview glass-card">
         <div className="pick__head stagebar">
           <span className="pick__label stage__id" title={buildName}>{buildName}</span>
@@ -197,7 +286,6 @@ export default function TraitLab(){
           {stack.map(({ cat: c, item }) => (
             <img
               key={c}
-
               className={c === 'Backgrounds' ? 'ly ly--bg' : 'ly'}
               src={item.url}
               alt=""
@@ -210,10 +298,29 @@ export default function TraitLab(){
         </div>
 
         <div className="labbar">
-          <button className="btn --glass --primary" data-shine type="button">Save Build</button>
+          <button
+            className="btn --glass --primary"
+            data-shine
+            type="button"
+            onClick={e => handleDisabledAction(e, 'Coming Soon')}
+          >Save Build</button>
           <button className="btn --glass" data-shine type="button" onClick={randomise}>Randomize</button>
         </div>
       </div>
+
+      {/* [TEMPORARY DISABLE - LAUNCH GATE] Floating Portal Tooltip */}
+      {mounted && tooltip && tooltip.visible && createPortal(
+        <div
+          className="lab-tooltip-portal"
+          style={{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }}
+        >
+          <div className="lab-tooltip-box">
+            <i>🔒</i>
+            <span>{tooltip.text}</span>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
